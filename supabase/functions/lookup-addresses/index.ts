@@ -44,8 +44,13 @@ serve(async (req) => {
     console.log(`Fetching addresses for postcode: ${postcode}`);
 
     const response = await fetch(apiUrl);
+    
+    console.log(`API Response Status: ${response.status}`);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error Response: ${errorText}`);
+      
       if (response.status === 404) {
         return new Response(
           JSON.stringify({ addresses: [] }),
@@ -87,6 +92,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log(`API Response Data:`, JSON.stringify(data));
     console.log(`Found ${data.addresses?.length || 0} addresses`);
 
     return new Response(
