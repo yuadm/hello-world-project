@@ -38,8 +38,8 @@ serve(async (req) => {
       );
     }
 
-    const cleanPostcode = postcode.replace(/\s/g, "").toLowerCase();
-    const apiUrl = `https://api.getAddress.io/find/${cleanPostcode}?api-key=${apiKey}&expand=true`;
+    const cleanPostcode = postcode.replace(/\s/g, "");
+    const apiUrl = `https://api.getAddress.io/find/${encodeURIComponent(cleanPostcode)}?api-key=${apiKey}`;
 
     console.log(`Fetching addresses for postcode: ${postcode}`);
 
@@ -95,8 +95,25 @@ serve(async (req) => {
     console.log(`API Response Data:`, JSON.stringify(data));
     console.log(`Found ${data.addresses?.length || 0} addresses`);
 
+    // Transform the comma-separated addresses into the expanded format expected by the frontend
+    const transformedData = {
+      addresses: data.addresses?.map((address: string) => {
+        const parts = address.split(',').map((p: string) => p.trim());
+        return {
+          line_1: parts[0] || "",
+          line_2: parts[1] || "",
+          line_3: parts[2] || "",
+          line_4: parts[3] || "",
+          locality: parts[4] || "",
+          town_or_city: parts[5] || "",
+          county: parts[6] || "",
+          formatted_address: parts
+        };
+      }) || []
+    };
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(transformedData),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
