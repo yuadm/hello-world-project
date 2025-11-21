@@ -4,47 +4,33 @@ import { ArrowRight } from "lucide-react";
 
 const CTA = () => {
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-4">
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-12 md:p-16 text-center relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-          
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
-              Ready to Transform Your Agency?
-            </h2>
-            <p className="text-xl text-primary-foreground/90 mb-8">
-              Join hundreds of childminder agencies already using ChildMinderPro to streamline operations and ensure compliance.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <NavLink to="/join">
-                <Button 
-                  size="lg" 
-                  variant="secondary"
-                  className="group w-full sm:w-auto"
-                >
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </NavLink>
-              <NavLink to="/contact">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary w-full sm:w-auto"
-                >
-                  Schedule a Demo
-                </Button>
-              </NavLink>
-            </div>
-
-            <p className="text-sm text-primary-foreground/80 mt-6">
-              No credit card required • 14-day free trial • Cancel anytime
-            </p>
+    <section className="py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10" />
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-card/90 to-card/70 backdrop-blur-xl rounded-3xl p-16 border-2 border-border/50 shadow-2xl">
+          <h2 className="text-4xl lg:text-5xl font-bold mb-6 tracking-tight">
+            Ready to Transform Your{" "}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Childminding Agency?</span>
+          </h2>
+          <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
+            Join hundreds of agencies already streamlining their operations with ChildMinderPro
+          </p>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
+            <NavLink to="/join">
+              <Button size="lg" className="group w-full sm:w-auto text-base px-10 py-7 h-auto shadow-xl hover:shadow-2xl transition-all">
+                Join as Agency
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </NavLink>
+            <NavLink to="/apply">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-10 py-7 h-auto border-2 hover:bg-primary/5 shadow-lg">
+                Apply as Childminder
+              </Button>
+            </NavLink>
           </div>
+          <p className="text-sm text-muted-foreground mt-8">
+            No credit card required • Get started in minutes • Cancel anytime
+          </p>
         </div>
       </div>
     </section>
