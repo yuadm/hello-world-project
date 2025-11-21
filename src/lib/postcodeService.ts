@@ -111,38 +111,24 @@ export function postcodeResultToAddress(result: PostcodeResult, addressLine1: st
 }
 
 /**
- * Lookup addresses using getAddress.io API
+ * Lookup addresses using getAddress.io API via Supabase edge function
  */
 export async function lookupAddressesByPostcode(postcode: string): Promise<AddressListItem[]> {
-  const apiKey = "jWbrYO6OSEqT52cM2_hBsA48837";
-  
-  if (!apiKey) {
-    throw new Error("getAddress.io API key not configured");
-  }
-
   try {
-    const cleanPostcode = postcode.replace(/\s/g, "").toLowerCase();
+    const cleanPostcode = postcode.replace(/\s/g, "");
     const response = await fetch(
-      `https://api.getAddress.io/find/${cleanPostcode}?api-key=${apiKey}&expand=true`
+      `https://pnslbftwceqremqsfylk.supabase.co/functions/v1/lookup-addresses?postcode=${encodeURIComponent(cleanPostcode)}`
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return [];
-      }
-      if (response.status === 401) {
-        throw new Error("Invalid API key");
-      }
-      if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please try again later.");
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
 
     if (data.addresses && Array.isArray(data.addresses)) {
-      return data.addresses.map((addr: GetAddressResult, index: number) => {
+      return data.addresses.map((addr: GetAddressResult) => {
         const line1 = addr.line_1 || "";
         const line2 = addr.line_2 || "";
         const town = addr.town_or_city || addr.locality || "";

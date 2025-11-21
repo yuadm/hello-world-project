@@ -1,1 +1,4 @@
 project_id = "pnslbftwceqremqsfylk"
+
+[functions.lookup-addresses]
+verify_jwt = false
