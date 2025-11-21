@@ -12,22 +12,18 @@ interface Props {
 export const Section7People = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   const workWithOthers = watch("workWithOthers");
-  const numberOfAssistants = watch("numberOfAssistants") || 0;
   const assistants = watch("assistants") || [];
   const adultsInHome = watch("adultsInHome");
   const adults = watch("adults") || [];
   const childrenInHome = watch("childrenInHome");
   const children = watch("children") || [];
 
-  // Ensure assistants array matches numberOfAssistants
-  const ensureAssistants = () => {
-    if (workWithOthers === "Yes" && assistants.length < numberOfAssistants) {
-      const newAssistants = [...assistants];
-      while (newAssistants.length < numberOfAssistants) {
-        newAssistants.push({ fullName: "", relationship: "", dob: "" });
-      }
-      setValue("assistants", newAssistants);
-    }
+  const addAssistant = () => {
+    setValue("assistants", [...assistants, { fullName: "", relationship: "", dob: "" }]);
+  };
+
+  const removeAssistant = (index: number) => {
+    setValue("assistants", assistants.filter((_, i) => i !== index));
   };
 
   const addAdult = () => {
@@ -59,19 +55,28 @@ export const Section7People = ({ form }: Props) => {
       </div>
 
       {/* Assistants */}
-      {workWithOthers === "Yes" && numberOfAssistants > 0 && (
+      {workWithOthers === "Yes" && (
         <div className="space-y-4">
           <h3 className="text-xl font-bold">Assistants/Co-Childminders</h3>
           <p className="text-base">
-            You indicated you work with {numberOfAssistants} assistant(s). Please provide their
-            details.
+            Please provide details of anyone who will assist you with childminding or work alongside you.
           </p>
-          {Array.from({ length: numberOfAssistants }).map((_, index) => (
+          {assistants.map((_, index) => (
             <div
               key={index}
               className="p-6 bg-[hsl(var(--govuk-grey-background))] border-l-4 border-[hsl(var(--govuk-grey-border))] space-y-4"
             >
-              <h4 className="font-semibold">Assistant {index + 1}</h4>
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold">Assistant {index + 1}</h4>
+                <button
+                  type="button"
+                  onClick={() => removeAssistant(index)}
+                  className="text-[hsl(var(--govuk-red))] hover:underline flex items-center gap-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove
+                </button>
+              </div>
               <GovUKInput
                 label="Full name"
                 required
@@ -79,6 +84,7 @@ export const Section7People = ({ form }: Props) => {
               />
               <GovUKInput
                 label="Relationship to you"
+                hint="e.g., Partner, Friend, Employee, etc."
                 required
                 {...register(`assistants.${index}.relationship`)}
               />
@@ -91,6 +97,15 @@ export const Section7People = ({ form }: Props) => {
               />
             </div>
           ))}
+          <GovUKButton
+            type="button"
+            variant="secondary"
+            onClick={addAssistant}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add assistant
+          </GovUKButton>
         </div>
       )}
 
@@ -127,11 +142,21 @@ export const Section7People = ({ form }: Props) => {
                   Remove
                 </button>
               </div>
-              <GovUKInput label="Full name" {...register(`adults.${index}.fullName`)} />
-              <GovUKInput label="Relationship to you" {...register(`adults.${index}.relationship`)} />
+              <GovUKInput 
+                label="Full name" 
+                required
+                {...register(`adults.${index}.fullName`)} 
+              />
+              <GovUKInput 
+                label="Relationship to you"
+                hint="e.g., Partner, Adult child, Parent, Lodger, etc."
+                required
+                {...register(`adults.${index}.relationship`)} 
+              />
               <GovUKInput
                 label="Date of birth"
                 type="date"
+                required
                 widthClass="10"
                 {...register(`adults.${index}.dob`)}
               />
@@ -182,10 +207,15 @@ export const Section7People = ({ form }: Props) => {
                   Remove
                 </button>
               </div>
-              <GovUKInput label="Full name" {...register(`children.${index}.fullName`)} />
+              <GovUKInput 
+                label="Full name"
+                required
+                {...register(`children.${index}.fullName`)} 
+              />
               <GovUKInput
                 label="Date of birth"
                 type="date"
+                required
                 widthClass="10"
                 {...register(`children.${index}.dob`)}
               />

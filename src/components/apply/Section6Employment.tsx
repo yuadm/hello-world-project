@@ -4,7 +4,9 @@ import { GovUKInput } from "./GovUKInput";
 import { GovUKTextarea } from "./GovUKTextarea";
 import { GovUKButton } from "./GovUKButton";
 import { GovUKRadio } from "./GovUKRadio";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { calculateEmploymentCoverage } from "@/lib/employmentHistoryCalculator";
+import { format } from "date-fns";
 
 interface Props {
   form: UseFormReturn<Partial<ChildminderApplication>>;
@@ -14,6 +16,9 @@ export const Section6Employment = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   const employmentHistory = watch("employmentHistory") || [];
   const childVolunteered = watch("childVolunteered");
+
+  // Calculate employment coverage
+  const coverage = calculateEmploymentCoverage(employmentHistory);
 
   const addEmployment = () => {
     setValue("employmentHistory", [
@@ -32,8 +37,66 @@ export const Section6Employment = ({ form }: Props) => {
 
       <h3 className="text-xl font-bold">Employment/Education History</h3>
       <p className="text-base">
-        Please provide details of your employment or education for the last 5 years.
+        Please provide details of your employment or education for the last 5 years. We need a complete 5-year history.
       </p>
+
+      {/* Coverage Indicator */}
+      {employmentHistory.length > 0 && (
+        <div className={`p-4 border-l-[10px] ${
+          coverage.isComplete 
+            ? "border-[hsl(var(--govuk-green))] bg-[hsl(var(--govuk-inset-blue-bg))]"
+            : "border-[hsl(var(--govuk-orange))] bg-[hsl(var(--govuk-inset-blue-bg))]"
+        }`}>
+          <div className="flex items-start gap-2">
+            {coverage.isComplete ? (
+              <CheckCircle2 className="h-5 w-5 text-[hsl(var(--govuk-green))] mt-0.5 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-[hsl(var(--govuk-orange))] mt-0.5 flex-shrink-0" />
+            )}
+            <div className="space-y-2">
+              <p className="text-sm font-bold">
+                5-Year Coverage: {coverage.percentageCovered}%
+              </p>
+              <div className="w-full bg-white border border-border rounded-none h-6 overflow-hidden">
+                <div
+                  className={`h-full ${
+                    coverage.isComplete ? "bg-[hsl(var(--govuk-green))]" : "bg-[hsl(var(--govuk-orange))]"
+                  }`}
+                  style={{ width: `${Math.min(coverage.percentageCovered, 100)}%` }}
+                />
+              </div>
+              <p className="text-sm">
+                {coverage.isComplete
+                  ? "✓ Complete 5-year employment/education history provided"
+                  : `You have covered ${coverage.coveredMonths} of 60 months (5 years)`}
+              </p>
+              {coverage.hasGaps && coverage.gaps.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-bold">Gaps detected:</p>
+                  <ul className="text-sm list-disc list-inside">
+                    {coverage.gaps.map((gap, idx) => (
+                      <li key={idx}>
+                        {format(gap.start, "MMM yyyy")} to {format(gap.end, "MMM yyyy")} ({gap.months} months)
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-sm mt-2">
+                    Please add more employment/education entries or explain these gaps below.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {employmentHistory.length === 0 && (
+        <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-blue))] bg-[hsl(var(--govuk-inset-blue-bg))]">
+          <p className="text-sm">
+            Click "Add employment/education entry" below to start providing your 5-year history.
+          </p>
+        </div>
+      )}
 
       {employmentHistory.map((_, index) => (
         <div
@@ -88,7 +151,7 @@ export const Section6Employment = ({ form }: Props) => {
 
       <GovUKTextarea
         label="Explain any gaps in employment/education history"
-        hint="If there are gaps, please explain what you were doing during those periods."
+        hint="If there are gaps in your 5-year history, please explain what you were doing during those periods (e.g., caring for family, traveling, unemployed, etc.)."
         rows={4}
         {...register("employmentGaps")}
       />
