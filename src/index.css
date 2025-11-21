@@ -58,6 +58,7 @@ All colors MUST be HSL.
     --govuk-inset-grey: 0 0% 95%;
     --govuk-inset-red-bg: 0 100% 99%;
     --govuk-inset-blue-bg: 208 100% 97%;
+    --govuk-inset-green-bg: 150 100% 97%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

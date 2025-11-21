@@ -4,8 +4,13 @@ import { GovUKInput } from "./GovUKInput";
 import { GovUKRadio } from "./GovUKRadio";
 import { GovUKButton } from "./GovUKButton";
 import { GovUKTextarea } from "./GovUKTextarea";
-import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { 
+  calculateAddressHistoryCoverage, 
+  formatDateRange, 
+  daysBetween 
+} from "@/lib/addressHistoryCalculator";
 
 interface Props {
   form: UseFormReturn<Partial<ChildminderApplication>>;
@@ -17,6 +22,17 @@ export const Section2AddressHistory = ({ form }: Props) => {
   const addressHistory = watch("addressHistory") || [];
   const livedOutsideUK = watch("livedOutsideUK");
   const militaryBase = watch("militaryBase");
+  const homeMoveIn = watch("homeMoveIn");
+
+  // Calculate address history coverage
+  const coverage = useMemo(() => {
+    if (!homeMoveIn) return null;
+    
+    return calculateAddressHistoryCoverage(
+      { moveIn: homeMoveIn },
+      addressHistory
+    );
+  }, [homeMoveIn, addressHistory]);
 
   const addAddressHistory = () => {
     setValue("addressHistory", [
@@ -98,12 +114,62 @@ export const Section2AddressHistory = ({ form }: Props) => {
           above.
         </p>
 
-        <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-grey-border))] bg-[hsl(var(--govuk-inset-grey))] mb-4">
-          <p className="text-sm">
-            Please add all previous addresses for the last 5 years. We'll calculate if there are
-            any gaps in your history.
-          </p>
-        </div>
+        {/* Coverage Status Display */}
+        {coverage && (
+          <div className="mb-6 space-y-4">
+            {coverage.isCovered ? (
+              <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-green))] bg-[hsl(var(--govuk-inset-green-bg))] flex items-start gap-3">
+                <CheckCircle2 className="h-6 w-6 text-[hsl(var(--govuk-green))] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-[hsl(var(--govuk-green))] mb-1">
+                    ✓ Your address history covers the last 5 years
+                  </p>
+                  <p className="text-sm">
+                    Coverage: {Math.round(coverage.coveragePercentage)}% ({coverage.totalDaysCovered} of {coverage.requiredDays} days)
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-red))] bg-[hsl(var(--govuk-inset-red-bg))] flex items-start gap-3">
+                  <AlertCircle className="h-6 w-6 text-[hsl(var(--govuk-red))] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-[hsl(var(--govuk-red))] mb-1">
+                      Incomplete address history
+                    </p>
+                    <p className="text-sm">
+                      Coverage: {Math.round(coverage.coveragePercentage)}% ({coverage.totalDaysCovered} of {coverage.requiredDays} days)
+                    </p>
+                  </div>
+                </div>
+
+                {coverage.gaps.length > 0 && (
+                  <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-blue))] bg-[hsl(var(--govuk-inset-blue-bg))]">
+                    <p className="font-bold mb-2">Gaps detected in your address history:</p>
+                    <ul className="space-y-1">
+                      {coverage.gaps.map((gap, index) => (
+                        <li key={index} className="text-sm">
+                          • {formatDateRange(gap.start, gap.end)} ({daysBetween(gap.start, gap.end)} days)
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-sm mt-3">
+                      Please add previous addresses to fill these gaps, or explain them in the "Explain any gaps" section below.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!homeMoveIn && (
+          <div className="p-4 border-l-[10px] border-[hsl(var(--govuk-grey-border))] bg-[hsl(var(--govuk-inset-grey))] mb-4">
+            <p className="text-sm">
+              Please enter your current address move-in date above to calculate address history coverage.
+            </p>
+          </div>
+        )}
 
         {addressHistory.map((_, index) => (
           <div
@@ -140,9 +206,10 @@ export const Section2AddressHistory = ({ form }: Props) => {
           variant="secondary"
           onClick={addAddressHistory}
           className="flex items-center gap-2"
+          disabled={coverage?.isCovered}
         >
           <Plus className="h-4 w-4" />
-          Add previous address
+          {coverage?.isCovered ? "Address history complete" : "Add previous address"}
         </GovUKButton>
       </div>
 
