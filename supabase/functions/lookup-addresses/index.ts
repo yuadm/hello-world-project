@@ -30,7 +30,7 @@ serve(async (req) => {
     if (!apiKey) {
       console.error('IDEALPOSTCODES_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
+        JSON.stringify({ error: 'IDEALPOSTCODES_API_KEY not configured' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
