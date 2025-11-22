@@ -26,9 +26,9 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('GETADDRESS_API_KEY');
+    const apiKey = Deno.env.get('IDEALPOSTCODES_API_KEY');
     if (!apiKey) {
-      console.error('GETADDRESS_API_KEY not configured');
+      console.error('IDEALPOSTCODES_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { 
@@ -39,7 +39,7 @@ serve(async (req) => {
     }
 
     const cleanPostcode = postcode.replace(/\s/g, "");
-    const apiUrl = `https://api.getAddress.io/find/${encodeURIComponent(cleanPostcode)}?api-key=${apiKey}`;
+    const apiUrl = `https://api.ideal-postcodes.co.uk/v1/postcodes/${encodeURIComponent(cleanPostcode)}?api_key=${apiKey}`;
 
     console.log(`Fetching addresses for postcode: ${postcode}`);
 
@@ -52,6 +52,16 @@ serve(async (req) => {
       console.error(`API Error Response: ${errorText}`);
       
       if (response.status === 404) {
+        // Try to parse suggestions if available
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.suggestions && errorData.suggestions.length > 0) {
+            console.log(`Postcode not found. Suggestions: ${errorData.suggestions.join(', ')}`);
+          }
+        } catch (e) {
+          console.error('Failed to parse error response');
+        }
+        
         return new Response(
           JSON.stringify({ addresses: [] }),
           { 
@@ -60,17 +70,17 @@ serve(async (req) => {
           }
         );
       }
-      if (response.status === 401) {
-        console.error('Invalid API key');
+      if (response.status === 401 || response.status === 402) {
+        console.error('Invalid API key or insufficient credit');
         return new Response(
-          JSON.stringify({ error: 'Invalid API key' }),
+          JSON.stringify({ error: 'Invalid API key or insufficient credit' }),
           { 
             status: 401, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
       }
-      if (response.status === 429) {
+      if (response.status === 429 || response.status === 503) {
         console.error('Rate limit exceeded');
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
@@ -93,21 +103,27 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log(`API Response Data:`, JSON.stringify(data));
-    console.log(`Found ${data.addresses?.length || 0} addresses`);
+    console.log(`Found ${data.result?.length || 0} addresses`);
 
-    // Transform the comma-separated addresses into the expanded format expected by the frontend
+    // Transform Ideal Postcodes response format to match frontend expectations
     const transformedData = {
-      addresses: data.addresses?.map((address: string) => {
-        const parts = address.split(',').map((p: string) => p.trim());
+      addresses: data.result?.map((address: any) => {
         return {
-          line_1: parts[0] || "",
-          line_2: parts[1] || "",
-          line_3: parts[2] || "",
-          line_4: parts[3] || "",
-          locality: parts[4] || "",
-          town_or_city: parts[5] || "",
-          county: parts[6] || "",
-          formatted_address: parts
+          line_1: address.line_1 || "",
+          line_2: address.line_2 || "",
+          line_3: address.line_3 || "",
+          line_4: "",
+          locality: address.locality || "",
+          town_or_city: address.post_town || "",
+          county: address.county || "",
+          formatted_address: [
+            address.line_1,
+            address.line_2,
+            address.line_3,
+            address.locality,
+            address.post_town,
+            address.county
+          ].filter(Boolean)
         };
       }) || []
     };
