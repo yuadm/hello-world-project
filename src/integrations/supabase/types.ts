@@ -278,52 +278,91 @@ export type Database = {
       household_member_dbs_tracking: {
         Row: {
           application_id: string
+          application_reference: string | null
+          application_submitted: boolean | null
+          compliance_status: string | null
           created_at: string
           date_of_birth: string
           dbs_certificate_date: string | null
+          dbs_certificate_expiry_date: string | null
           dbs_certificate_number: string | null
           dbs_request_date: string | null
           dbs_status: string
           email: string | null
+          expiry_reminder_sent: boolean | null
+          follow_up_due_date: string | null
           full_name: string
           id: string
+          last_contact_date: string | null
+          last_reminder_date: string | null
           member_type: string
           notes: string | null
           relationship: string | null
+          reminder_count: number | null
+          reminder_history: Json | null
+          response_date: string | null
+          response_received: boolean | null
+          risk_level: string | null
           turning_16_notification_sent: boolean | null
           updated_at: string
         }
         Insert: {
           application_id: string
+          application_reference?: string | null
+          application_submitted?: boolean | null
+          compliance_status?: string | null
           created_at?: string
           date_of_birth: string
           dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
           dbs_certificate_number?: string | null
           dbs_request_date?: string | null
           dbs_status?: string
           email?: string | null
+          expiry_reminder_sent?: boolean | null
+          follow_up_due_date?: string | null
           full_name: string
           id?: string
+          last_contact_date?: string | null
+          last_reminder_date?: string | null
           member_type: string
           notes?: string | null
           relationship?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          response_date?: string | null
+          response_received?: boolean | null
+          risk_level?: string | null
           turning_16_notification_sent?: boolean | null
           updated_at?: string
         }
         Update: {
           application_id?: string
+          application_reference?: string | null
+          application_submitted?: boolean | null
+          compliance_status?: string | null
           created_at?: string
           date_of_birth?: string
           dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
           dbs_certificate_number?: string | null
           dbs_request_date?: string | null
           dbs_status?: string
           email?: string | null
+          expiry_reminder_sent?: boolean | null
+          follow_up_due_date?: string | null
           full_name?: string
           id?: string
+          last_contact_date?: string | null
+          last_reminder_date?: string | null
           member_type?: string
           notes?: string | null
           relationship?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          response_date?: string | null
+          response_received?: boolean | null
+          risk_level?: string | null
           turning_16_notification_sent?: boolean | null
           updated_at?: string
         }
@@ -360,10 +399,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dbs_compliance_metrics: {
+        Row: {
+          application_id: string | null
+          at_risk_count: number | null
+          compliant_count: number | null
+          critical_risk_count: number | null
+          expired_count: number | null
+          expiring_soon_count: number | null
+          high_risk_count: number | null
+          medium_risk_count: number | null
+          overdue_count: number | null
+          pending_count: number | null
+          total_members: number | null
+          turning_16_soon_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_member_dbs_tracking_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "childminder_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_age: { Args: { dob: string }; Returns: number }
+      calculate_compliance_status: {
+        Args: {
+          member_row: Database["public"]["Tables"]["household_member_dbs_tracking"]["Row"]
+        }
+        Returns: {
+          calculated_compliance_status: string
+          calculated_risk_level: string
+          days_overdue: number
+        }[]
+      }
       get_members_approaching_16: {
         Args: { days_ahead?: number }
         Returns: {
