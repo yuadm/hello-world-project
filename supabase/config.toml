@@ -2,3 +2,18 @@ project_id = "pnslbftwceqremqsfylk"
 
 [functions.lookup-addresses]
 verify_jwt = false
+
+[functions.send-dbs-request-email]
+verify_jwt = false
+
+[functions.send-applicant-dbs-summary]
+verify_jwt = false
+
+[functions.send-16th-birthday-alert]
+verify_jwt = false
+
+[functions.check-upcoming-birthdays]
+verify_jwt = false
+
+[functions.sync-household-members]
+verify_jwt = false
