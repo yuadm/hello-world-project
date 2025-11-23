@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "Childminder Registration", email: "noreply@yourdomain.com" },
+        sender: { name: "Childminder Registration", email: "yuadm3@gmail.com" },
         to: [{ email: memberEmail, name: memberName }],
         subject: "DBS Check Required - Childminder Registration",
         htmlContent: `
