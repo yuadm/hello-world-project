@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, AlertCircle, CheckCircle, Clock, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Mail, AlertCircle, CheckCircle, Clock, FileText, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RecordCertificateModal } from "./RecordCertificateModal";
 import { RequestDBSModal } from "./RequestDBSModal";
+import { BatchDBSRequestModal } from "./BatchDBSRequestModal";
 import { format, differenceInYears, addYears, differenceInDays } from "date-fns";
 
 interface DBSMember {
@@ -37,7 +39,9 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
   const [selectedMember, setSelectedMember] = useState<DBSMember | null>(null);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showBatchRequestModal, setShowBatchRequestModal] = useState(false);
   const [requestMember, setRequestMember] = useState<DBSMember | null>(null);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -97,6 +101,25 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
     setShowRequestModal(true);
   };
 
+  const handleToggleMemberSelection = (memberId: string) => {
+    const newSelection = new Set(selectedMemberIds);
+    if (newSelection.has(memberId)) {
+      newSelection.delete(memberId);
+    } else {
+      newSelection.add(memberId);
+    }
+    setSelectedMemberIds(newSelection);
+  };
+
+  const handleSendBatchRequests = () => {
+    setShowBatchRequestModal(true);
+  };
+
+  const handleBatchRequestSuccess = () => {
+    setSelectedMemberIds(new Set());
+    loadMembers();
+  };
+
   const sendBirthdayAlert = async (member: DBSMember) => {
     const daysUntil16 = differenceInDays(addYears(new Date(member.date_of_birth), 16), new Date());
 
@@ -139,6 +162,10 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
     setShowCertificateModal(false);
     setSelectedMember(null);
     loadMembers();
+  };
+
+  const getSelectedMembers = () => {
+    return members.filter(m => selectedMemberIds.has(m.id));
   };
 
   const getStatusBadge = (status: string) => {
@@ -210,9 +237,17 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
               {stats.completed} of {stats.total} required DBS checks completed
             </p>
           </div>
-          <Button onClick={syncMembers} disabled={syncing} variant="outline" size="sm">
-            {syncing ? "Syncing..." : "Sync from Application"}
-          </Button>
+          <div className="flex gap-2">
+            {selectedMemberIds.size > 0 && (
+              <Button onClick={handleSendBatchRequests} variant="default" size="sm">
+                <Send className="h-4 w-4 mr-2" />
+                Send {selectedMemberIds.size} Request{selectedMemberIds.size > 1 ? 's' : ''}
+              </Button>
+            )}
+            <Button onClick={syncMembers} disabled={syncing} variant="outline" size="sm">
+              {syncing ? "Syncing..." : "Sync from Application"}
+            </Button>
+          </div>
         </div>
         
         <div className="w-full bg-muted rounded-full h-4 overflow-hidden">
@@ -273,6 +308,7 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
+                  <th className="w-12 p-3"></th>
                   <th className="text-left p-3 font-medium">Name</th>
                   <th className="text-left p-3 font-medium">Relationship</th>
                   <th className="text-left p-3 font-medium">DOB / Age</th>
@@ -284,6 +320,12 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
               <tbody>
                 {adults.map(member => (
                   <tr key={member.id} className="border-t">
+                    <td className="p-3">
+                      <Checkbox
+                        checked={selectedMemberIds.has(member.id)}
+                        onCheckedChange={() => handleToggleMemberSelection(member.id)}
+                      />
+                    </td>
                     <td className="p-3 font-medium">{member.full_name}</td>
                     <td className="p-3 text-sm">{member.relationship || member.member_type}</td>
                     <td className="p-3 text-sm">
@@ -408,6 +450,16 @@ export const DBSComplianceSection = ({ applicationId, applicantEmail, applicantN
           onSuccess={loadMembers}
         />
       )}
+
+      <BatchDBSRequestModal
+        open={showBatchRequestModal}
+        onOpenChange={setShowBatchRequestModal}
+        members={getSelectedMembers()}
+        applicationId={applicationId}
+        applicantEmail={applicantEmail}
+        applicantName={applicantName}
+        onSuccess={handleBatchRequestSuccess}
+      />
     </div>
   );
 };
