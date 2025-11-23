@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ChildminderApplication } from "@/types/childminder";
@@ -20,20 +18,12 @@ import { Section9Declaration } from "@/components/apply/Section9Declaration";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getValidatorForSection } from "@/lib/formValidation";
 
-const formSchema = z.object({
-  // Basic validation - sections will have their own detailed validation
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-});
-
 const Apply = () => {
   const [currentSection, setCurrentSection] = useState(1);
   const [errors, setErrors] = useState<string[]>([]);
   const totalSections = 9;
 
   const form = useForm<Partial<ChildminderApplication>>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       previousNames: [],
       addressHistory: [],
@@ -129,7 +119,12 @@ const Apply = () => {
     }
   };
 
-  const onSubmit = form.handleSubmit(async (data) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Get all form values directly
+    const data = form.getValues();
+    
     // Final validation of all sections
     const allErrors: string[] = [];
     for (let section = 1; section <= totalSections; section++) {
@@ -179,7 +174,7 @@ const Apply = () => {
       console.error("Submission error:", error);
       toast.error("Failed to submit application. Please try again.");
     }
-  });
+  };
 
   const renderSection = () => {
     switch (currentSection) {
