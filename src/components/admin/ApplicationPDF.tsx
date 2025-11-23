@@ -5,18 +5,8 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
 } from "@react-pdf/renderer";
 import { ChildminderApplication } from "@/types/childminder";
-
-// Register Inter font for modern look
-Font.register({
-  family: "Inter",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" },
-    { src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2", fontWeight: "bold" },
-  ],
-});
 
 // Modern color palette matching web design
 const colors = {
@@ -37,7 +27,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingHorizontal: 40,
     fontSize: 10,
-    fontFamily: "Inter",
+    fontFamily: "Helvetica",
     backgroundColor: colors.background,
     color: colors.textPrimary,
   },
