@@ -48,13 +48,28 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           const { data: existing } = await supabase
             .from('household_member_dbs_tracking')
-            .select('id')
+            .select('id, date_of_birth')
             .eq('application_id', applicationId)
             .eq('full_name', adult.fullName)
-            .eq('date_of_birth', adult.dob)
+            .eq('member_type', 'adult')
             .maybeSingle();
 
-          if (!existing) {
+          if (existing) {
+            // Update if DOB changed
+            if (existing.date_of_birth !== adult.dob) {
+              const { error: updateError } = await supabase
+                .from('household_member_dbs_tracking')
+                .update({
+                  date_of_birth: adult.dob,
+                  relationship: adult.relationship,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', existing.id);
+
+              if (updateError) throw updateError;
+              synced.push({ name: adult.fullName, type: 'adult', action: 'updated' });
+            }
+          } else {
             const { error: insertError } = await supabase
               .from('household_member_dbs_tracking')
               .insert({
@@ -67,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
               });
 
             if (insertError) throw insertError;
-            synced.push({ name: adult.fullName, type: 'adult' });
+            synced.push({ name: adult.fullName, type: 'adult', action: 'created' });
           }
         } catch (error: any) {
           errors.push({ name: adult.fullName, error: error.message });
@@ -81,13 +96,27 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           const { data: existing } = await supabase
             .from('household_member_dbs_tracking')
-            .select('id')
+            .select('id, date_of_birth')
             .eq('application_id', applicationId)
             .eq('full_name', child.fullName)
-            .eq('date_of_birth', child.dob)
+            .eq('member_type', 'child')
             .maybeSingle();
 
-          if (!existing) {
+          if (existing) {
+            // Update if DOB changed
+            if (existing.date_of_birth !== child.dob) {
+              const { error: updateError } = await supabase
+                .from('household_member_dbs_tracking')
+                .update({
+                  date_of_birth: child.dob,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', existing.id);
+
+              if (updateError) throw updateError;
+              synced.push({ name: child.fullName, type: 'child', action: 'updated' });
+            }
+          } else {
             const { error: insertError } = await supabase
               .from('household_member_dbs_tracking')
               .insert({
@@ -99,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
               });
 
             if (insertError) throw insertError;
-            synced.push({ name: child.fullName, type: 'child' });
+            synced.push({ name: child.fullName, type: 'child', action: 'created' });
           }
         } catch (error: any) {
           errors.push({ name: child.fullName, error: error.message });
@@ -113,13 +142,28 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           const { data: existing } = await supabase
             .from('household_member_dbs_tracking')
-            .select('id')
+            .select('id, date_of_birth')
             .eq('application_id', applicationId)
             .eq('full_name', assistant.fullName)
-            .eq('date_of_birth', assistant.dob)
+            .eq('member_type', 'assistant')
             .maybeSingle();
 
-          if (!existing) {
+          if (existing) {
+            // Update if DOB changed
+            if (existing.date_of_birth !== assistant.dob) {
+              const { error: updateError } = await supabase
+                .from('household_member_dbs_tracking')
+                .update({
+                  date_of_birth: assistant.dob,
+                  relationship: assistant.relationship,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', existing.id);
+
+              if (updateError) throw updateError;
+              synced.push({ name: assistant.fullName, type: 'assistant', action: 'updated' });
+            }
+          } else {
             const { error: insertError } = await supabase
               .from('household_member_dbs_tracking')
               .insert({
@@ -132,7 +176,7 @@ const handler = async (req: Request): Promise<Response> => {
               });
 
             if (insertError) throw insertError;
-            synced.push({ name: assistant.fullName, type: 'assistant' });
+            synced.push({ name: assistant.fullName, type: 'assistant', action: 'created' });
           }
         } catch (error: any) {
           errors.push({ name: assistant.fullName, error: error.message });
