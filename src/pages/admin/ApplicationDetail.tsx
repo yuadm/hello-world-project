@@ -4,8 +4,10 @@ import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Save, X, ArrowRight } from "lucide-react";
+import { ArrowLeft, Edit, Save, X, ArrowRight, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { pdf } from '@react-pdf/renderer';
+import { ApplicationPDF } from "@/components/admin/ApplicationPDF";
 import { format } from "date-fns";
 import {
   Select,
@@ -389,6 +391,39 @@ const ApplicationDetail = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      const formData = form.getValues();
+      const blob = await pdf(
+        <ApplicationPDF 
+          application={formData}
+          applicationId={id || ''}
+          submittedDate={dbApplication?.created_at || ''}
+          status={dbApplication?.status || 'pending'}
+        />
+      ).toBlob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `application-${formData.firstName}-${formData.lastName}-${id}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "PDF Downloaded",
+        description: "Application has been downloaded successfully",
+      });
+    } catch (error: any) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       pending: "secondary",
@@ -555,6 +590,10 @@ const ApplicationDetail = () => {
             <Button onClick={() => setIsEditMode(true)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit Application
+            </Button>
+            <Button onClick={handleDownloadPDF} variant="secondary">
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
             </Button>
           </div>
         </div>
