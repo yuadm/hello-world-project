@@ -80,6 +80,42 @@ interface DBApplication {
   declaration_signature: string;
   user_id: string;
   updated_at: string;
+  // New fields for complete data capture
+  right_to_work: string;
+  home_postcode: string;
+  home_move_in: string;
+  address_gaps: string;
+  lived_outside_uk: string;
+  military_base: string;
+  same_address: string;
+  use_additional_premises: string;
+  additional_premises: any;
+  outdoor_space: string;
+  work_with_others: string;
+  number_of_assistants: number;
+  overnight_care: string;
+  employment_gaps: string;
+  child_volunteered: string;
+  child_volunteered_consent: boolean;
+  applicant_references: any;
+  adults_in_home: string;
+  children_in_home: string;
+  prev_reg_agency: string;
+  prev_reg_other_uk: string;
+  prev_reg_eu: string;
+  smoker: string;
+  disqualified: string;
+  other_circumstances: string;
+  other_circumstances_details: string;
+  has_dbs: string;
+  dbs_number: string;
+  dbs_enhanced: string;
+  dbs_update: string;
+  declaration_change_notification: boolean;
+  declaration_inspection_cooperation: boolean;
+  declaration_information_sharing: boolean;
+  declaration_data_processing: boolean;
+  payment_method: string;
 }
 
 const ApplicationDetail = () => {
@@ -150,6 +186,7 @@ const ApplicationDetail = () => {
     const serviceCapacity = data.service_capacity || {};
     const peopleInHousehold = data.people_in_household || {};
     const registrationDetails = data.registration_details || {};
+    const references = data.applicant_references || {};
 
     return {
       title: data.title,
@@ -162,41 +199,83 @@ const ApplicationDetail = () => {
       gender: data.gender as any,
       niNumber: data.national_insurance_number,
       previousNames: data.previous_names || [],
+      rightToWork: data.right_to_work,
+      homePostcode: data.home_postcode,
       homeAddress: data.current_address,
+      homeMoveIn: data.home_move_in,
       addressHistory: data.address_history || [],
+      addressGaps: data.address_gaps,
+      livedOutsideUK: data.lived_outside_uk as any,
+      militaryBase: data.military_base as any,
+      localAuthority: data.service_local_authority,
+      sameAddress: data.same_address as any,
       childcareAddress: data.premises_address,
       premisesType: data.premises_ownership as any,
+      useAdditionalPremises: data.use_additional_premises as any,
+      additionalPremises: data.additional_premises || [],
+      outdoorSpace: data.outdoor_space as any,
       pets: data.premises_animals as any,
       petsDetails: data.premises_animal_details,
-      localAuthority: data.service_local_authority,
       ageGroups: data.service_age_range || [],
+      workWithOthers: data.work_with_others as any,
+      numberOfAssistants: data.number_of_assistants,
       proposedUnder1: serviceCapacity.under1,
       proposedUnder5: serviceCapacity.under5,
       proposed5to8: serviceCapacity.ages5to8,
       proposed8plus: serviceCapacity.ages8plus,
       childcareTimes: data.service_hours || [],
+      overnightCare: data.overnight_care as any,
       firstAid: qualifications.firstAid || { completed: "No" },
       safeguarding: qualifications.safeguarding,
       eyfsChildminding: qualifications.eyfsChildminding,
       level2Qual: qualifications.level2Qual,
       employmentHistory: data.employment_history || [],
+      employmentGaps: data.employment_gaps,
+      childVolunteered: data.child_volunteered as any,
+      childVolunteeredConsent: data.child_volunteered_consent,
+      reference1Name: references.reference1?.name,
+      reference1Relationship: references.reference1?.relationship,
+      reference1Contact: references.reference1?.contact,
+      reference1Childcare: references.reference1?.childcare as any,
+      reference2Name: references.reference2?.name,
+      reference2Relationship: references.reference2?.relationship,
+      reference2Contact: references.reference2?.contact,
+      reference2Childcare: references.reference2?.childcare as any,
       assistants: data.people_regular_contact || [],
+      adultsInHome: data.adults_in_home as any,
       adults: peopleInHousehold.adults || [],
+      childrenInHome: data.children_in_home as any,
       children: peopleInHousehold.children || [],
       prevRegOfsted: data.previous_registration as any,
       prevRegOfstedDetails: registrationDetails.ofsted || [],
+      prevRegAgency: data.prev_reg_agency as any,
       prevRegAgencyDetails: registrationDetails.agency || [],
+      prevRegOtherUK: data.prev_reg_other_uk as any,
       prevRegOtherUKDetails: registrationDetails.otherUK || [],
+      prevRegEU: data.prev_reg_eu as any,
       prevRegEUDetails: registrationDetails.eu || [],
       healthCondition: data.health_conditions as any,
       healthConditionDetails: data.health_details,
-      offenceHistory: data.criminal_convictions as any,
-      offenceDetails: data.convictions_details ? JSON.parse(data.convictions_details) : [],
+      smoker: data.smoker as any,
+      disqualified: data.disqualified as any,
       socialServices: data.safeguarding_concerns as any,
       socialServicesDetails: data.safeguarding_details,
+      otherCircumstances: data.other_circumstances as any,
+      otherCircumstancesDetails: data.other_circumstances_details,
+      hasDBS: data.has_dbs as any,
+      dbsNumber: data.dbs_number,
+      dbsEnhanced: data.dbs_enhanced as any,
+      dbsUpdate: data.dbs_update as any,
+      offenceHistory: data.criminal_convictions as any,
+      offenceDetails: data.convictions_details ? JSON.parse(data.convictions_details) : [],
       declarationAccuracy: data.declaration_confirmed,
+      declarationChangeNotification: data.declaration_change_notification,
+      declarationInspectionCooperation: data.declaration_inspection_cooperation,
+      declarationInformationSharing: data.declaration_information_sharing,
+      declarationDataProcessing: data.declaration_data_processing,
       signatureFullName: data.declaration_signature,
       signatureDate: data.declaration_date,
+      paymentMethod: data.payment_method,
     };
   };
 
@@ -323,14 +402,26 @@ const ApplicationDetail = () => {
           national_insurance_number: data.niNumber,
           email: data.email,
           phone_mobile: data.phone,
+          right_to_work: data.rightToWork,
+          home_postcode: data.homePostcode,
           current_address: data.homeAddress,
+          home_move_in: data.homeMoveIn,
           address_history: data.addressHistory,
+          address_gaps: data.addressGaps,
+          lived_outside_uk: data.livedOutsideUK,
+          military_base: data.militaryBase,
+          same_address: data.sameAddress,
           premises_address: data.childcareAddress || data.homeAddress,
           premises_ownership: data.premisesType,
+          use_additional_premises: data.useAdditionalPremises,
+          additional_premises: data.additionalPremises,
+          outdoor_space: data.outdoorSpace,
           premises_animals: data.pets,
           premises_animal_details: data.petsDetails,
           service_type: data.premisesType,
           service_age_range: data.ageGroups,
+          work_with_others: data.workWithOthers,
+          number_of_assistants: data.numberOfAssistants,
           service_capacity: {
             under1: data.proposedUnder1,
             under5: data.proposedUnder5,
@@ -338,6 +429,7 @@ const ApplicationDetail = () => {
             ages8plus: data.proposed8plus
           },
           service_hours: data.childcareTimes,
+          overnight_care: data.overnightCare,
           service_local_authority: data.localAuthority,
           qualifications: {
             firstAid: data.firstAid,
@@ -346,12 +438,34 @@ const ApplicationDetail = () => {
             level2Qual: data.level2Qual
           },
           employment_history: data.employmentHistory,
+          employment_gaps: data.employmentGaps,
+          child_volunteered: data.childVolunteered,
+          child_volunteered_consent: data.childVolunteeredConsent,
+          applicant_references: {
+            reference1: {
+              name: data.reference1Name,
+              relationship: data.reference1Relationship,
+              contact: data.reference1Contact,
+              childcare: data.reference1Childcare
+            },
+            reference2: {
+              name: data.reference2Name,
+              relationship: data.reference2Relationship,
+              contact: data.reference2Contact,
+              childcare: data.reference2Childcare
+            }
+          },
           people_in_household: {
             adults: data.adults,
             children: data.children
           },
+          adults_in_home: data.adultsInHome,
+          children_in_home: data.childrenInHome,
           people_regular_contact: data.assistants,
           previous_registration: data.prevRegOfsted,
+          prev_reg_agency: data.prevRegAgency,
+          prev_reg_other_uk: data.prevRegOtherUK,
+          prev_reg_eu: data.prevRegEU,
           registration_details: {
             ofsted: data.prevRegOfstedDetails,
             agency: data.prevRegAgencyDetails,
@@ -360,13 +474,26 @@ const ApplicationDetail = () => {
           },
           health_conditions: data.healthCondition,
           health_details: data.healthConditionDetails,
+          smoker: data.smoker,
+          disqualified: data.disqualified,
+          other_circumstances: data.otherCircumstances,
+          other_circumstances_details: data.otherCircumstancesDetails,
+          has_dbs: data.hasDBS,
+          dbs_number: data.dbsNumber,
+          dbs_enhanced: data.dbsEnhanced,
+          dbs_update: data.dbsUpdate,
           criminal_convictions: data.offenceHistory,
           convictions_details: data.offenceDetails ? JSON.stringify(data.offenceDetails) : null,
           safeguarding_concerns: data.socialServices,
           safeguarding_details: data.socialServicesDetails,
           declaration_confirmed: data.declarationAccuracy,
+          declaration_change_notification: data.declarationChangeNotification,
+          declaration_inspection_cooperation: data.declarationInspectionCooperation,
+          declaration_information_sharing: data.declarationInformationSharing,
+          declaration_data_processing: data.declarationDataProcessing,
           declaration_signature: data.signatureFullName,
           declaration_date: data.signatureDate,
+          payment_method: data.paymentMethod,
         } as any)
         .eq('id', id);
 

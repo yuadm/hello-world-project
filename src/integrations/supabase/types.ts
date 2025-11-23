@@ -16,26 +16,53 @@ export type Database = {
     Tables: {
       childminder_applications: {
         Row: {
+          additional_premises: Json | null
+          address_gaps: string | null
           address_history: Json | null
+          adults_in_home: string | null
+          applicant_references: Json | null
+          child_volunteered: string | null
+          child_volunteered_consent: boolean | null
+          children_in_home: string | null
           convictions_details: string | null
           created_at: string
           criminal_convictions: string | null
           current_address: Json | null
           current_employment: string | null
           date_of_birth: string | null
+          dbs_enhanced: string | null
+          dbs_number: string | null
+          dbs_update: string | null
+          declaration_change_notification: boolean | null
           declaration_confirmed: boolean | null
+          declaration_data_processing: boolean | null
           declaration_date: string | null
+          declaration_information_sharing: boolean | null
+          declaration_inspection_cooperation: boolean | null
           declaration_signature: string | null
+          disqualified: string | null
           email: string | null
+          employment_gaps: string | null
           employment_history: Json | null
           first_name: string | null
           gender: string | null
+          has_dbs: string | null
           health_conditions: string | null
           health_details: string | null
+          home_move_in: string | null
+          home_postcode: string | null
           id: string
           last_name: string | null
+          lived_outside_uk: string | null
           middle_names: string | null
+          military_base: string | null
           national_insurance_number: string | null
+          number_of_assistants: number | null
+          other_circumstances: string | null
+          other_circumstances_details: string | null
+          outdoor_space: string | null
+          overnight_care: string | null
+          payment_method: string | null
           people_in_household: Json | null
           people_regular_contact: Json | null
           phone_home: string | null
@@ -47,12 +74,17 @@ export type Database = {
           premises_landlord_details: Json | null
           premises_other_residents: Json | null
           premises_ownership: string | null
+          prev_reg_agency: string | null
+          prev_reg_eu: string | null
+          prev_reg_other_uk: string | null
           previous_names: Json | null
           previous_registration: string | null
           qualifications: Json | null
           registration_details: Json | null
+          right_to_work: string | null
           safeguarding_concerns: string | null
           safeguarding_details: string | null
+          same_address: string | null
           service_age_range: Json | null
           service_capacity: Json | null
           service_hours: Json | null
@@ -60,33 +92,63 @@ export type Database = {
           service_ofsted_number: string | null
           service_ofsted_registered: string | null
           service_type: string | null
+          smoker: string | null
           status: string
           title: string | null
           training_courses: Json | null
           updated_at: string
+          use_additional_premises: string | null
           user_id: string | null
+          work_with_others: string | null
         }
         Insert: {
+          additional_premises?: Json | null
+          address_gaps?: string | null
           address_history?: Json | null
+          adults_in_home?: string | null
+          applicant_references?: Json | null
+          child_volunteered?: string | null
+          child_volunteered_consent?: boolean | null
+          children_in_home?: string | null
           convictions_details?: string | null
           created_at?: string
           criminal_convictions?: string | null
           current_address?: Json | null
           current_employment?: string | null
           date_of_birth?: string | null
+          dbs_enhanced?: string | null
+          dbs_number?: string | null
+          dbs_update?: string | null
+          declaration_change_notification?: boolean | null
           declaration_confirmed?: boolean | null
+          declaration_data_processing?: boolean | null
           declaration_date?: string | null
+          declaration_information_sharing?: boolean | null
+          declaration_inspection_cooperation?: boolean | null
           declaration_signature?: string | null
+          disqualified?: string | null
           email?: string | null
+          employment_gaps?: string | null
           employment_history?: Json | null
           first_name?: string | null
           gender?: string | null
+          has_dbs?: string | null
           health_conditions?: string | null
           health_details?: string | null
+          home_move_in?: string | null
+          home_postcode?: string | null
           id?: string
           last_name?: string | null
+          lived_outside_uk?: string | null
           middle_names?: string | null
+          military_base?: string | null
           national_insurance_number?: string | null
+          number_of_assistants?: number | null
+          other_circumstances?: string | null
+          other_circumstances_details?: string | null
+          outdoor_space?: string | null
+          overnight_care?: string | null
+          payment_method?: string | null
           people_in_household?: Json | null
           people_regular_contact?: Json | null
           phone_home?: string | null
@@ -98,12 +160,17 @@ export type Database = {
           premises_landlord_details?: Json | null
           premises_other_residents?: Json | null
           premises_ownership?: string | null
+          prev_reg_agency?: string | null
+          prev_reg_eu?: string | null
+          prev_reg_other_uk?: string | null
           previous_names?: Json | null
           previous_registration?: string | null
           qualifications?: Json | null
           registration_details?: Json | null
+          right_to_work?: string | null
           safeguarding_concerns?: string | null
           safeguarding_details?: string | null
+          same_address?: string | null
           service_age_range?: Json | null
           service_capacity?: Json | null
           service_hours?: Json | null
@@ -111,33 +178,63 @@ export type Database = {
           service_ofsted_number?: string | null
           service_ofsted_registered?: string | null
           service_type?: string | null
+          smoker?: string | null
           status?: string
           title?: string | null
           training_courses?: Json | null
           updated_at?: string
+          use_additional_premises?: string | null
           user_id?: string | null
+          work_with_others?: string | null
         }
         Update: {
+          additional_premises?: Json | null
+          address_gaps?: string | null
           address_history?: Json | null
+          adults_in_home?: string | null
+          applicant_references?: Json | null
+          child_volunteered?: string | null
+          child_volunteered_consent?: boolean | null
+          children_in_home?: string | null
           convictions_details?: string | null
           created_at?: string
           criminal_convictions?: string | null
           current_address?: Json | null
           current_employment?: string | null
           date_of_birth?: string | null
+          dbs_enhanced?: string | null
+          dbs_number?: string | null
+          dbs_update?: string | null
+          declaration_change_notification?: boolean | null
           declaration_confirmed?: boolean | null
+          declaration_data_processing?: boolean | null
           declaration_date?: string | null
+          declaration_information_sharing?: boolean | null
+          declaration_inspection_cooperation?: boolean | null
           declaration_signature?: string | null
+          disqualified?: string | null
           email?: string | null
+          employment_gaps?: string | null
           employment_history?: Json | null
           first_name?: string | null
           gender?: string | null
+          has_dbs?: string | null
           health_conditions?: string | null
           health_details?: string | null
+          home_move_in?: string | null
+          home_postcode?: string | null
           id?: string
           last_name?: string | null
+          lived_outside_uk?: string | null
           middle_names?: string | null
+          military_base?: string | null
           national_insurance_number?: string | null
+          number_of_assistants?: number | null
+          other_circumstances?: string | null
+          other_circumstances_details?: string | null
+          outdoor_space?: string | null
+          overnight_care?: string | null
+          payment_method?: string | null
           people_in_household?: Json | null
           people_regular_contact?: Json | null
           phone_home?: string | null
@@ -149,12 +246,17 @@ export type Database = {
           premises_landlord_details?: Json | null
           premises_other_residents?: Json | null
           premises_ownership?: string | null
+          prev_reg_agency?: string | null
+          prev_reg_eu?: string | null
+          prev_reg_other_uk?: string | null
           previous_names?: Json | null
           previous_registration?: string | null
           qualifications?: Json | null
           registration_details?: Json | null
+          right_to_work?: string | null
           safeguarding_concerns?: string | null
           safeguarding_details?: string | null
+          same_address?: string | null
           service_age_range?: Json | null
           service_capacity?: Json | null
           service_hours?: Json | null
@@ -162,11 +264,14 @@ export type Database = {
           service_ofsted_number?: string | null
           service_ofsted_registered?: string | null
           service_type?: string | null
+          smoker?: string | null
           status?: string
           title?: string | null
           training_courses?: Json | null
           updated_at?: string
+          use_additional_premises?: string | null
           user_id?: string | null
+          work_with_others?: string | null
         }
         Relationships: []
       }
