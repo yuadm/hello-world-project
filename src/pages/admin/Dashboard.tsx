@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Clock, CheckCircle, XCircle, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { GlobalComplianceDashboard } from "@/components/admin/GlobalComplianceDashboard";
 
 interface DashboardMetrics {
   totalApplications: number;
@@ -175,6 +176,16 @@ const AdminDashboard = () => {
           <p className="text-muted-foreground">
             Here's an overview of childminder applications
           </p>
+        </div>
+
+        {/* Global DBS Compliance Dashboard */}
+        <div className="mb-8">
+          <GlobalComplianceDashboard />
+        </div>
+
+        {/* Application Statistics */}
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-4">Application Statistics</h3>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
