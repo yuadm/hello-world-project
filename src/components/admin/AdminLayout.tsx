@@ -90,6 +90,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 >
                   Applications
                 </NavLink>
+                <NavLink
+                  to="/admin/employees"
+                  className="px-4 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
+                  activeClassName="bg-accent text-accent-foreground"
+                >
+                  Employees
+                </NavLink>
               </nav>
             </div>
             <Button variant="outline" onClick={handleLogout}>
