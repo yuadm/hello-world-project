@@ -94,11 +94,34 @@ const handler = async (req: Request): Promise<Response> => {
     const emailData = await emailResponse.json();
     console.log("Birthday alert sent successfully:", emailData);
 
-    // Update notification sent flag
+    // Get current member data to track reminder history
+    const { data: memberData } = await supabase
+      .from("household_member_dbs_tracking")
+      .select("reminder_count, reminder_history")
+      .eq("id", memberId)
+      .single();
+
+    const currentReminderCount = memberData?.reminder_count || 0;
+    const currentHistory = memberData?.reminder_history || [];
+    
+    // Add to reminder history
+    const newHistoryEntry = {
+      date: new Date().toISOString(),
+      type: '16th_birthday_alert',
+      recipient: applicantEmail,
+      success: true,
+      urgency: urgencyLevel
+    };
+
+    // Update notification sent flag and reminder tracking
     const { error: updateError } = await supabase
       .from("household_member_dbs_tracking")
       .update({
         turning_16_notification_sent: true,
+        last_contact_date: new Date().toISOString(),
+        reminder_count: currentReminderCount + 1,
+        last_reminder_date: new Date().toISOString(),
+        reminder_history: [...currentHistory, newHistoryEntry],
       })
       .eq("id", memberId);
 

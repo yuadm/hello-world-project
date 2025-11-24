@@ -79,12 +79,34 @@ const handler = async (req: Request): Promise<Response> => {
     const emailData = await emailResponse.json();
     console.log("Email sent successfully:", emailData);
 
-    // Update DBS tracking record
+    // Get current member data to track reminder history
+    const { data: memberData } = await supabase
+      .from("household_member_dbs_tracking")
+      .select("reminder_count, reminder_history")
+      .eq("id", memberId)
+      .single();
+
+    const currentReminderCount = memberData?.reminder_count || 0;
+    const currentHistory = memberData?.reminder_history || [];
+    
+    // Add to reminder history
+    const newHistoryEntry = {
+      date: new Date().toISOString(),
+      type: 'dbs_request',
+      recipient: memberEmail,
+      success: true
+    };
+    
+    // Update request date and reminder tracking in table
     const { error: updateError } = await supabase
       .from("household_member_dbs_tracking")
       .update({
         dbs_status: "requested",
         dbs_request_date: new Date().toISOString(),
+        last_contact_date: new Date().toISOString(),
+        reminder_count: currentReminderCount + 1,
+        last_reminder_date: new Date().toISOString(),
+        reminder_history: [...currentHistory, newHistoryEntry],
       })
       .eq("id", memberId);
 
