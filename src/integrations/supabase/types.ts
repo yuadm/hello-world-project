@@ -275,6 +275,199 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_household_members: {
+        Row: {
+          age_group_changed_at: string | null
+          created_at: string | null
+          date_of_birth: string
+          dbs_certificate_date: string | null
+          dbs_certificate_expiry_date: string | null
+          dbs_certificate_number: string | null
+          dbs_status: Database["public"]["Enums"]["dbs_status"] | null
+          email: string | null
+          employee_id: string
+          full_name: string
+          id: string
+          member_type: Database["public"]["Enums"]["member_type"]
+          relationship: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          age_group_changed_at?: string | null
+          created_at?: string | null
+          date_of_birth: string
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email?: string | null
+          employee_id: string
+          full_name: string
+          id?: string
+          member_type: Database["public"]["Enums"]["member_type"]
+          relationship?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          age_group_changed_at?: string | null
+          created_at?: string | null
+          date_of_birth?: string
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email?: string | null
+          employee_id?: string
+          full_name?: string
+          id?: string
+          member_type?: Database["public"]["Enums"]["member_type"]
+          relationship?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_household_members_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          age_groups_cared_for: Json | null
+          application_id: string | null
+          county: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          dbs_certificate_date: string | null
+          dbs_certificate_expiry_date: string | null
+          dbs_certificate_number: string | null
+          dbs_status: Database["public"]["Enums"]["dbs_status"] | null
+          email: string
+          employment_start_date: string | null
+          employment_status:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          eyfs_completion_date: string | null
+          eyfs_training: string | null
+          first_aid_expiry_date: string | null
+          first_aid_qualification: string | null
+          first_name: string
+          id: string
+          last_name: string
+          level_2_completion_date: string | null
+          level_2_qualification: string | null
+          local_authority: string | null
+          local_authority_other: string | null
+          max_capacity: number | null
+          ni_number: string | null
+          phone: string | null
+          position: string | null
+          postcode: string | null
+          premises_postcode: string | null
+          premises_type: string | null
+          safeguarding_completion_date: string | null
+          safeguarding_training: string | null
+          service_type: string | null
+          town_city: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          age_groups_cared_for?: Json | null
+          application_id?: string | null
+          county?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email: string
+          employment_start_date?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          eyfs_completion_date?: string | null
+          eyfs_training?: string | null
+          first_aid_expiry_date?: string | null
+          first_aid_qualification?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          level_2_completion_date?: string | null
+          level_2_qualification?: string | null
+          local_authority?: string | null
+          local_authority_other?: string | null
+          max_capacity?: number | null
+          ni_number?: string | null
+          phone?: string | null
+          position?: string | null
+          postcode?: string | null
+          premises_postcode?: string | null
+          premises_type?: string | null
+          safeguarding_completion_date?: string | null
+          safeguarding_training?: string | null
+          service_type?: string | null
+          town_city?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          age_groups_cared_for?: Json | null
+          application_id?: string | null
+          county?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email?: string
+          employment_start_date?: string | null
+          employment_status?:
+            | Database["public"]["Enums"]["employment_status"]
+            | null
+          eyfs_completion_date?: string | null
+          eyfs_training?: string | null
+          first_aid_expiry_date?: string | null
+          first_aid_qualification?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          level_2_completion_date?: string | null
+          level_2_qualification?: string | null
+          local_authority?: string | null
+          local_authority_other?: string | null
+          max_capacity?: number | null
+          ni_number?: string | null
+          phone?: string | null
+          position?: string | null
+          postcode?: string | null
+          premises_postcode?: string | null
+          premises_type?: string | null
+          safeguarding_completion_date?: string | null
+          safeguarding_training?: string | null
+          service_type?: string | null
+          town_city?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "childminder_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_member_dbs_tracking: {
         Row: {
           application_id: string
@@ -437,6 +630,19 @@ export type Database = {
           days_overdue: number
         }[]
       }
+      days_until_16th_birthday: { Args: { dob: string }; Returns: number }
+      get_children_turning_16_soon: {
+        Args: { days_ahead?: number }
+        Returns: {
+          current_age: number
+          date_of_birth: string
+          days_until_16: number
+          employee_id: string
+          full_name: string
+          id: string
+          turns_16_on: string
+        }[]
+      }
       get_members_approaching_16: {
         Args: { days_ahead?: number }
         Returns: {
@@ -459,6 +665,9 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      dbs_status: "not_requested" | "requested" | "received" | "expired"
+      employment_status: "active" | "on_leave" | "terminated"
+      member_type: "adult" | "child"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -587,6 +796,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      dbs_status: ["not_requested", "requested", "received", "expired"],
+      employment_status: ["active", "on_leave", "terminated"],
+      member_type: ["adult", "child"],
     },
   },
 } as const

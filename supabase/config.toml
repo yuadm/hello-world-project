@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.sync-household-members]
 verify_jwt = false
+
+[functions.approve-and-convert-to-employee]
+verify_jwt = false
