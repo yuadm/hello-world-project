@@ -143,7 +143,7 @@ const AdminDashboard = () => {
         <h3 className="text-xl font-semibold mb-4">Application Statistics</h3>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {metricCards.map((metric) => (
           <Card key={metric.title} className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -163,23 +163,6 @@ const AdminDashboard = () => {
           </Card>
         ))}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Manage childminder applications</CardDescription>
-        </CardHeader>
-        <CardContent className="flex gap-4">
-          <Button onClick={() => navigate('/admin/applications')}>
-            <FileText className="mr-2 h-4 w-4" />
-            View All Applications
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/admin/applications?status=pending')}>
-            <Clock className="mr-2 h-4 w-4" />
-            Review Pending
-          </Button>
-        </CardContent>
-      </Card>
     </AdminLayout>
   );
 };
