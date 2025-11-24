@@ -3,12 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, AlertCircle, CheckCircle, Clock, FileText, Send, AlertTriangle } from "lucide-react";
+import { Mail, AlertCircle, CheckCircle, Clock, FileText, Send, AlertTriangle, UserPlus, Edit, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmployeeRecordCertificateModal } from "./EmployeeRecordCertificateModal";
 import { EmployeeRequestDBSModal } from "./EmployeeRequestDBSModal";
 import { EmployeeBatchDBSRequestModal } from "./EmployeeBatchDBSRequestModal";
+import { AddEditHouseholdMemberModal } from "./AddEditHouseholdMemberModal";
 import { ComplianceFilters } from "./ComplianceFilters";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format, differenceInYears, addYears, differenceInDays } from "date-fns";
 
 interface DBSMember {
@@ -51,6 +62,10 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
   const [statusFilter, setStatusFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAddEditModal, setShowAddEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<DBSMember | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingMember, setDeletingMember] = useState<DBSMember | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -152,6 +167,55 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
     return members.filter(m => selectedMemberIds.has(m.id));
   };
 
+  const handleAddMember = () => {
+    setEditingMember(null);
+    setShowAddEditModal(true);
+  };
+
+  const handleEditMember = (member: DBSMember) => {
+    setEditingMember(member);
+    setShowAddEditModal(true);
+  };
+
+  const handleDeleteMember = (member: DBSMember) => {
+    setDeletingMember(member);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteMember = async () => {
+    if (!deletingMember) return;
+    
+    try {
+      const { error } = await supabase
+        .from('employee_household_members')
+        .delete()
+        .eq('id', deletingMember.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Member Deleted",
+        description: `${deletingMember.full_name} has been removed from the household.`,
+      });
+
+      loadMembers();
+      setShowDeleteDialog(false);
+      setDeletingMember(null);
+    } catch (error: any) {
+      toast({
+        title: "Failed to Delete",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMemberSaved = () => {
+    setShowAddEditModal(false);
+    setEditingMember(null);
+    loadMembers();
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       not_requested: { label: "Not Requested", variant: "destructive" as const, icon: AlertCircle },
@@ -246,6 +310,10 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={handleAddMember} variant="outline" size="sm">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Household Member
+          </Button>
           {selectedMemberIds.size > 0 && (
             <Button onClick={handleSendBatchRequests} variant="default" size="sm">
               <Send className="h-4 w-4 mr-2" />
@@ -368,7 +436,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                         )}
                       </td>
                       <td className="p-3">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {(member.dbs_status === 'not_requested' || member.dbs_status === 'requested') && (
                             <Button
                               size="sm"
@@ -386,6 +454,22 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                           >
                             <FileText className="h-4 w-4 mr-1" />
                             {member.dbs_certificate_number ? 'Update' : 'Record'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditMember(member)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteMember(member)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </td>
@@ -430,16 +514,34 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                         )}
                       </td>
                       <td className="p-3">
-                        {is16Plus && (
+                        <div className="flex flex-wrap gap-2">
+                          {is16Plus && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleRecordCertificate(child)}
+                            >
+                              <FileText className="h-4 w-4 mr-1" />
+                              {child.dbs_certificate_number ? 'Update' : 'Record'}
+                            </Button>
+                          )}
                           <Button
                             size="sm"
-                            variant="secondary"
-                            onClick={() => handleRecordCertificate(child)}
+                            variant="outline"
+                            onClick={() => handleEditMember(child)}
                           >
-                            <FileText className="h-4 w-4 mr-1" />
-                            {child.dbs_certificate_number ? 'Update' : 'Record'}
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
                           </Button>
-                        )}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteMember(child)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -451,8 +553,16 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
       )}
 
       {members.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No household members found.</p>
+        <div className="text-center py-12 border rounded-lg bg-muted/30">
+          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <p className="text-lg font-medium mb-2">No Household Members</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Add adults and children living in the same household as the employee.
+          </p>
+          <Button onClick={handleAddMember}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add First Member
+          </Button>
         </div>
       )}
 
@@ -488,6 +598,35 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
         employeeName={employeeName}
         onSuccess={handleBatchRequestSuccess}
       />
+
+      <AddEditHouseholdMemberModal
+        open={showAddEditModal}
+        onOpenChange={setShowAddEditModal}
+        member={editingMember}
+        employeeId={employeeId}
+        onSave={handleMemberSaved}
+      />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Household Member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{deletingMember?.full_name}</strong> from the household?
+              This will permanently delete their DBS tracking records. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteMember} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
