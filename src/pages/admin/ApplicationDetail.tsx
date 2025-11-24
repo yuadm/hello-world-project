@@ -293,22 +293,63 @@ const ApplicationDetail = () => {
   const updateStatus = async (newStatus: string) => {
     setUpdating(true);
     try {
-      const { error } = await supabase
-        .from('childminder_applications' as any)
-        .update({ status: newStatus })
-        .eq('id', id);
+      if (newStatus === 'approved') {
+        // Call edge function to convert applicant to employee
+        const { data, error } = await supabase.functions.invoke('approve-and-convert-to-employee', {
+          body: { applicationId: id },
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setDbApplication(prev => prev ? { ...prev, status: newStatus } : null);
-      toast({
-        title: "Status Updated",
-        description: `Application ${newStatus}`,
-      });
+        if (data?.success) {
+          setDbApplication(prev => prev ? { ...prev, status: newStatus } : null);
+          toast({
+            title: "Application Approved",
+            description: `Applicant successfully converted to employee. ${data.householdMembersCount} household members transferred.`,
+          });
+
+          // Show link to employee record
+          setTimeout(() => {
+            const viewEmployeeButton = document.createElement('button');
+            viewEmployeeButton.textContent = 'View Employee Record';
+            viewEmployeeButton.className = 'mt-2';
+            viewEmployeeButton.onclick = () => navigate(`/admin/employees/${data.employeeId}`);
+            toast({
+              title: "View Employee",
+              description: `Click to view the new employee record.`,
+              action: (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate(`/admin/employees/${data.employeeId}`)}
+                >
+                  View Employee
+                </Button>
+              ),
+            });
+          }, 1000);
+        } else {
+          throw new Error('Failed to convert applicant to employee');
+        }
+      } else {
+        // Regular status update for other statuses
+        const { error } = await supabase
+          .from('childminder_applications' as any)
+          .update({ status: newStatus })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        setDbApplication(prev => prev ? { ...prev, status: newStatus } : null);
+        toast({
+          title: "Status Updated",
+          description: `Application ${newStatus}`,
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update status",
+        description: error.message || "Failed to update status",
         variant: "destructive",
       });
     } finally {
