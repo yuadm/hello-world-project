@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
 
     // Copy household members to employee_household_members
     if (householdMembers && householdMembers.length > 0) {
-      const employeeHouseholdMembers = householdMembers.map((member: HouseholdMember) => {
+      const employeeHouseholdMembers = await Promise.all(householdMembers.map(async (member: HouseholdMember) => {
         // Calculate age to determine member_type
         const dob = new Date(member.date_of_birth);
         const today = new Date();
@@ -192,6 +192,14 @@ Deno.serve(async (req) => {
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
           age--;
         }
+
+        // Check if member has a completed form
+        const { data: formData } = await supabase
+          .from('household_member_forms')
+          .select('form_token')
+          .eq('member_id', member.id)
+          .eq('status', 'submitted')
+          .maybeSingle();
 
         return {
           employee_id: employee.id,
@@ -204,8 +212,11 @@ Deno.serve(async (req) => {
           dbs_certificate_number: member.dbs_certificate_number,
           dbs_certificate_date: member.dbs_certificate_date,
           dbs_certificate_expiry_date: member.dbs_certificate_expiry_date,
+          form_token: formData?.form_token || null,
+          application_submitted: formData ? true : false,
+          response_received: formData ? true : false,
         };
-      });
+      }));
 
       const { error: insertMembersError } = await supabase
         .from('employee_household_members')
