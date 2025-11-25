@@ -1,10 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollTo: sectionId } });
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -16,44 +31,45 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <NavLink 
-              to="/" 
+            <button 
+              onClick={() => scrollToSection('home')}
               className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary font-medium"
             >
               Home
-            </NavLink>
-            <NavLink 
-              to="/features" 
+            </button>
+            <button 
+              onClick={() => scrollToSection('features')}
               className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary font-medium"
             >
               Features
-            </NavLink>
-            <NavLink 
-              to="/pricing" 
+            </button>
+            <button 
+              onClick={() => scrollToSection('pricing')}
               className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary font-medium"
             >
               Pricing
-            </NavLink>
-            <NavLink 
-              to="/about" 
+            </button>
+            <button 
+              onClick={() => scrollToSection('benefits')}
               className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary font-medium"
             >
               About
-            </NavLink>
-            <NavLink 
-              to="/contact" 
+            </button>
+            <button 
+              onClick={() => scrollToSection('contact')}
               className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary font-medium"
             >
               Contact
-            </NavLink>
+            </button>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            <NavLink to="/admin/login">
+              <Button variant="ghost" size="sm">
+                <LogIn className="w-4 h-4 mr-2" />
+                Admin
+              </Button>
+            </NavLink>
             <NavLink to="/apply">
               <Button variant="outline">Apply as Childminder</Button>
             </NavLink>
@@ -75,46 +91,47 @@ const Navigation = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden pt-4 pb-6 space-y-4">
-            <NavLink 
-              to="/" 
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+            <button 
+              onClick={() => scrollToSection('home')}
+              className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
             >
               Home
-            </NavLink>
-            <NavLink 
-              to="/features" 
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+            </button>
+            <button 
+              onClick={() => scrollToSection('features')}
+              className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
             >
               Features
-            </NavLink>
-            <NavLink 
-              to="/pricing" 
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+            </button>
+            <button 
+              onClick={() => scrollToSection('pricing')}
+              className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
             >
               Pricing
-            </NavLink>
-            <NavLink 
-              to="/about" 
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+            </button>
+            <button 
+              onClick={() => scrollToSection('benefits')}
+              className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
             >
               About
-            </NavLink>
-            <NavLink 
-              to="/contact" 
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+            </button>
+            <button 
+              onClick={() => scrollToSection('contact')}
+              className="block w-full text-left py-2 text-foreground hover:text-primary transition-colors"
             >
               Contact
-            </NavLink>
+            </button>
             <div className="pt-4 space-y-3">
-              <NavLink to="/apply" className="block">
+              <NavLink to="/admin/login" className="block" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Admin Login
+                </Button>
+              </NavLink>
+              <NavLink to="/apply" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full">Apply as Childminder</Button>
               </NavLink>
-              <NavLink to="/join" className="block">
+              <NavLink to="/join" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="default" className="w-full">Join as Agency</Button>
               </NavLink>
             </div>
