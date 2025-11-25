@@ -64,7 +64,7 @@ const Navigation = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <NavLink to="/admin/login">
+            <NavLink to="/admin">
               <Button variant="ghost" size="sm">
                 <LogIn className="w-4 h-4 mr-2" />
                 Admin
@@ -122,7 +122,7 @@ const Navigation = () => {
               Contact
             </button>
             <div className="pt-4 space-y-3">
-              <NavLink to="/admin/login" className="block" onClick={() => setMobileMenuOpen(false)}>
+              <NavLink to="/admin" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start">
                   <LogIn className="w-4 h-4 mr-2" />
                   Admin Login
