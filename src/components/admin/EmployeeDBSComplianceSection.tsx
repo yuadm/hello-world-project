@@ -117,8 +117,55 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
   };
 
   const handleDownloadFormPDF = async (member: DBSMember) => {
-    // For now, show a message that this feature is coming
-    toast.error("PDF download for employee forms is not yet available. Please use the applicant form system.");
+    try {
+      // Query the household_member_forms table for this member's form
+      const { data: formData, error } = await supabase
+        .from("household_member_forms")
+        .select("*")
+        .eq("member_id", member.id)
+        .eq("status", "submitted")
+        .single();
+
+      if (error || !formData) {
+        toastHook({
+          title: "Error",
+          description: "No completed form found for this household member",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Generate the PDF
+      const blob = await pdf(
+        <HouseholdFormPDF
+          formData={formData}
+          memberName={member.full_name}
+          applicantName={employeeName}
+        />
+      ).toBlob();
+
+      // Download the PDF
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `household-form-${member.full_name.replace(/\s+/g, "-")}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toastHook({
+        title: "Success",
+        description: "PDF downloaded successfully",
+      });
+    } catch (error: any) {
+      console.error("Error downloading PDF:", error);
+      toastHook({
+        title: "Error",
+        description: "Failed to download PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleToggleMemberSelection = (memberId: string) => {

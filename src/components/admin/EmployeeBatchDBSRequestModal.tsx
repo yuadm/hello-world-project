@@ -152,7 +152,18 @@ export function EmployeeBatchDBSRequestModal({
         requestedMemberIds.push(member.id);
       }
 
-      toast.success(`DBS requests sent to ${members.length} household member(s)`);
+      // Send summary email to employee
+      const updatedEmployeeEmail = employeeEmailChanged ? data.employeeEmail : employeeEmail;
+      await supabase.functions.invoke("send-employee-dbs-summary", {
+        body: {
+          employeeId: employeeId,
+          employeeEmail: updatedEmployeeEmail,
+          employeeName: employeeName,
+          requestedMemberIds
+        },
+      });
+
+      toast.success(`DBS requests sent to ${members.length} household member(s) and summary sent to employee`);
       onSuccess();
       onOpenChange(false);
       form.reset();

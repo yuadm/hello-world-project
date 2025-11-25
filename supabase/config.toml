@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.send-applicant-dbs-summary]
 verify_jwt = false
 
+[functions.send-employee-dbs-summary]
+verify_jwt = false
+
 [functions.send-16th-birthday-alert]
 verify_jwt = false
 
