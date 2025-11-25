@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
           date_of_birth: member.date_of_birth,
           relationship: member.relationship,
           email: member.email,
-          dbs_status: member.dbs_status || 'not_requested',
+          dbs_status: (member.dbs_status === 'certificate_received' ? 'received' : member.dbs_status) as any || 'not_requested',
           dbs_certificate_number: member.dbs_certificate_number,
           dbs_certificate_date: member.dbs_certificate_date,
           dbs_certificate_expiry_date: member.dbs_certificate_expiry_date,

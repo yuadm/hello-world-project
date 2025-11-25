@@ -676,6 +676,22 @@ export type Database = {
         }[]
       }
       days_until_16th_birthday: { Args: { dob: string }; Returns: number }
+      get_applicant_children_turning_16_soon: {
+        Args: { days_ahead?: number }
+        Returns: {
+          application_id: string
+          current_age: number
+          date_of_birth: string
+          days_until_16: number
+          dbs_status: string
+          email: string
+          full_name: string
+          id: string
+          relationship: string
+          turning_16_notification_sent: boolean
+          turns_16_on: string
+        }[]
+      }
       get_children_turning_16_soon: {
         Args: { days_ahead?: number }
         Returns: {
@@ -688,6 +704,20 @@ export type Database = {
           turns_16_on: string
         }[]
       }
+      get_expiring_dbs_certificates: {
+        Args: { days_ahead?: number }
+        Returns: {
+          certificate_date: string
+          certificate_number: string
+          days_until_expiry: number
+          email: string
+          expiry_date: string
+          member_id: string
+          member_name: string
+          member_type: string
+          source_table: string
+        }[]
+      }
       get_members_approaching_16: {
         Args: { days_ahead?: number }
         Returns: {
@@ -698,6 +728,19 @@ export type Database = {
           id: string
           relationship: string
           turning_16_notification_sent: boolean
+        }[]
+      }
+      get_overdue_dbs_requests: {
+        Args: never
+        Returns: {
+          days_overdue: number
+          email: string
+          last_reminder_date: string
+          member_id: string
+          member_name: string
+          member_type: string
+          reminder_count: number
+          source_table: string
         }[]
       }
       has_role: {

@@ -38,7 +38,10 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "Childminder Registration", email: "yuadm3@gmail.com" },
+        sender: { 
+          name: "Childminder Registration", 
+          email: Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@yourdomain.com"
+        },
         to: [{ email: memberEmail, name: memberName }],
         subject: "DBS Check Required - Childminder Registration",
         htmlContent: `
