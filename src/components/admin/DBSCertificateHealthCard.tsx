@@ -40,20 +40,15 @@ export const DBSCertificateHealthCard = () => {
     try {
       const today = new Date();
 
-      // Fetch ALL active employees (they all need DBS)
+      // Fetch ALL active employees
       const { data: employees } = await supabase
         .from('employees')
         .select('id, dbs_status, dbs_certificate_expiry_date, first_name, last_name')
         .eq('employment_status', 'active');
 
-      // Fetch ALL employee household members (adults and 16+ need DBS)
+      // Fetch ALL employee household members (this is what we track for compliance)
       const { data: employeeHousehold } = await supabase
         .from('employee_household_members')
-        .select('id, member_type, date_of_birth, dbs_status, dbs_certificate_expiry_date, full_name');
-
-      // Fetch ALL household members from applicants (adults and 16+ need DBS)
-      const { data: householdMembers } = await supabase
-        .from('household_member_dbs_tracking')
         .select('id, member_type, date_of_birth, dbs_status, dbs_certificate_expiry_date, full_name');
 
       // Function to check if someone needs DBS
@@ -63,16 +58,20 @@ export const DBSCertificateHealthCard = () => {
         return age >= 16;
       };
 
-      // Categorize ALL people who need DBS
+      // Categorize employee household members who need DBS
       let validCount = 0;
       let expiringCount = 0;
       let expiredCount = 0;
       let missingCount = 0;
 
-      // Process employees
-      (employees || []).forEach(emp => {
-        if (emp.dbs_status === 'received' && emp.dbs_certificate_expiry_date) {
-          const daysUntilExpiry = differenceInDays(new Date(emp.dbs_certificate_expiry_date), today);
+      // Process employee household members only
+      const householdMembersNeedingDBS = (employeeHousehold || []).filter(member => 
+        needsDBS(member.member_type, member.date_of_birth)
+      );
+
+      householdMembersNeedingDBS.forEach(member => {
+        if (member.dbs_status === 'received' && member.dbs_certificate_expiry_date) {
+          const daysUntilExpiry = differenceInDays(new Date(member.dbs_certificate_expiry_date), today);
           if (daysUntilExpiry < 0) expiredCount++;
           else if (daysUntilExpiry <= 90) expiringCount++;
           else validCount++;
@@ -81,35 +80,7 @@ export const DBSCertificateHealthCard = () => {
         }
       });
 
-      // Process employee household members
-      (employeeHousehold || []).forEach(member => {
-        if (needsDBS(member.member_type, member.date_of_birth)) {
-          if (member.dbs_status === 'received' && member.dbs_certificate_expiry_date) {
-            const daysUntilExpiry = differenceInDays(new Date(member.dbs_certificate_expiry_date), today);
-            if (daysUntilExpiry < 0) expiredCount++;
-            else if (daysUntilExpiry <= 90) expiringCount++;
-            else validCount++;
-          } else {
-            missingCount++;
-          }
-        }
-      });
-
-      // Process applicant household members
-      (householdMembers || []).forEach(member => {
-        if (needsDBS(member.member_type, member.date_of_birth)) {
-          if (member.dbs_status === 'received' && member.dbs_certificate_expiry_date) {
-            const daysUntilExpiry = differenceInDays(new Date(member.dbs_certificate_expiry_date), today);
-            if (daysUntilExpiry < 0) expiredCount++;
-            else if (daysUntilExpiry <= 90) expiringCount++;
-            else validCount++;
-          } else {
-            missingCount++;
-          }
-        }
-      });
-
-      const total = validCount + expiringCount + expiredCount + missingCount;
+      const total = householdMembersNeedingDBS.length;
 
       if (total === 0) {
         setMetrics({
@@ -119,7 +90,7 @@ export const DBSCertificateHealthCard = () => {
           expired: { count: 0, percentage: 0 },
           missing: { count: 0, percentage: 0 },
           total: 0,
-          totalEmployees: 0,
+          totalEmployees: employees?.length || 0,
           totalMembers: 0,
         });
         setLoading(false);
@@ -149,7 +120,7 @@ export const DBSCertificateHealthCard = () => {
         },
         total,
         totalEmployees: employees?.length || 0,
-        totalMembers: (employeeHousehold?.length || 0) + (householdMembers?.length || 0),
+        totalMembers: employeeHousehold?.length || 0,
       });
     } catch (error) {
       console.error("Error fetching certificate health:", error);

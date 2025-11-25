@@ -53,6 +53,8 @@ export const GlobalComplianceDashboard = () => {
 
   const loadGlobalMetrics = async () => {
     try {
+      const today = new Date();
+      
       // Fetch from all three tables for complete compliance picture
       const [
         { data: householdMembers, error: hmError },
@@ -68,49 +70,30 @@ export const GlobalComplianceDashboard = () => {
         throw hmError || ehmError || empError;
       }
 
-      // Combine all members who need DBS tracking
-      const allMembers: any[] = [];
-      
-      // Add household members from applicants
-      (householdMembers || []).forEach(m => {
+      // For DBS Certificate Health: Include all members who need DBS
+      // For Compliance Overview: Focus on employee household members only
+      const employeeHouseholdMembers16Plus = (employeeHouseholdMembers || []).filter(m => {
         const age = today.getFullYear() - new Date(m.date_of_birth).getFullYear();
-        if (m.member_type === 'adult' || age >= 16) {
-          allMembers.push(m);
-        }
+        return m.member_type === 'adult' || age >= 16;
       });
       
-      // Add employee household members
-      (employeeHouseholdMembers || []).forEach(m => {
-        const age = today.getFullYear() - new Date(m.date_of_birth).getFullYear();
-        if (m.member_type === 'adult' || age >= 16) {
-          allMembers.push(m);
-        }
-      });
-      
-      // Add all active employees
-      (employees || []).forEach(emp => {
-        allMembers.push(emp);
-      });
+      // Calculate metrics based on employee household members only (as per user requirements)
+      const criticalCount = employeeHouseholdMembers16Plus.filter(m => m.risk_level === 'critical').length;
+      const atRiskCount = employeeHouseholdMembers16Plus.filter(m => m.compliance_status === 'at_risk').length;
+      const pendingCount = employeeHouseholdMembers16Plus.filter(m => m.compliance_status === 'pending').length;
+      const compliantCount = employeeHouseholdMembers16Plus.filter(m => m.compliance_status === 'compliant').length;
+      const overdueCount = employeeHouseholdMembers16Plus.filter(m => m.compliance_status === 'overdue').length;
 
-      const today = new Date();
-      
-      // Calculate metrics
-      const criticalCount = allMembers.filter(m => m.risk_level === 'critical').length;
-      const atRiskCount = allMembers.filter(m => m.compliance_status === 'at_risk').length;
-      const pendingCount = allMembers.filter(m => m.compliance_status === 'pending').length;
-      const compliantCount = allMembers.filter(m => m.compliance_status === 'compliant').length;
-      const overdueCount = allMembers.filter(m => m.compliance_status === 'overdue').length;
-      
       // Calculate expiring soon
-      const expiringSoonCount = allMembers.filter(m => {
+      const expiringSoonCount = employeeHouseholdMembers16Plus.filter(m => {
         if (!m.dbs_certificate_expiry_date) return false;
         const expiryDate = new Date(m.dbs_certificate_expiry_date);
         const daysUntilExpiry = differenceInDays(expiryDate, today);
         return daysUntilExpiry <= 90 && daysUntilExpiry > 0;
       }).length;
 
-      // Calculate approaching 16 (only relevant for household members, not employees)
-      const turning16SoonCount = [...(householdMembers || []), ...(employeeHouseholdMembers || [])].filter(m => {
+      // Calculate approaching 16 (only for employee household members)
+      const turning16SoonCount = (employeeHouseholdMembers || []).filter(m => {
         if (m.member_type !== 'child') return false;
         const birthDate = new Date(m.date_of_birth);
         const age = today.getFullYear() - birthDate.getFullYear();
@@ -121,12 +104,12 @@ export const GlobalComplianceDashboard = () => {
         return daysUntil16 <= 90 && daysUntil16 >= 0;
       }).length;
 
-      // Calculate completion rate
-      const completed = allMembers.filter(m => 
+      // Calculate completion rate (of employee household members 16+)
+      const completed = employeeHouseholdMembers16Plus.filter(m => 
         m.dbs_status === 'received'
       ).length;
-      const completionRate = allMembers.length > 0 
-        ? Math.round((completed / allMembers.length) * 100) 
+      const completionRate = employeeHouseholdMembers16Plus.length > 0 
+        ? Math.round((completed / employeeHouseholdMembers16Plus.length) * 100) 
         : 0;
 
       setMetrics({
@@ -137,7 +120,7 @@ export const GlobalComplianceDashboard = () => {
         overdueCount,
         expiringSoonCount,
         turning16SoonCount,
-        totalMembers: allMembers.length,
+        totalMembers: employeeHouseholdMembers16Plus.length,
         completionRate,
       });
     } catch (error) {
@@ -161,10 +144,10 @@ export const GlobalComplianceDashboard = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">DBS Compliance Overview</h2>
-          <p className="text-muted-foreground">Monitoring {metrics.totalMembers} household members across all applications</p>
+          <p className="text-muted-foreground">Monitoring {metrics.totalMembers} employee household members requiring DBS checks</p>
         </div>
-        <Button onClick={() => navigate('/admin/applications')} variant="outline">
-          View All Applications
+        <Button onClick={() => navigate('/admin/employees')} variant="outline">
+          View All Employees
         </Button>
       </div>
 
