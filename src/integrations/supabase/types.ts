@@ -292,6 +292,7 @@ export type Database = {
           employee_id: string
           expiry_reminder_sent: boolean | null
           follow_up_due_date: string | null
+          form_token: string | null
           full_name: string
           id: string
           last_contact_date: string | null
@@ -323,6 +324,7 @@ export type Database = {
           employee_id: string
           expiry_reminder_sent?: boolean | null
           follow_up_due_date?: string | null
+          form_token?: string | null
           full_name: string
           id?: string
           last_contact_date?: string | null
@@ -354,6 +356,7 @@ export type Database = {
           employee_id?: string
           expiry_reminder_sent?: boolean | null
           follow_up_due_date?: string | null
+          form_token?: string | null
           full_name?: string
           id?: string
           last_contact_date?: string | null

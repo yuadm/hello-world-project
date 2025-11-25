@@ -17,6 +17,8 @@ interface SendHouseholdFormModalProps {
   applicantEmail: string;
   applicantName: string;
   onSuccess: () => void;
+  isEmployee?: boolean;
+  employeeId?: string;
 }
 
 export function SendHouseholdFormModal({
@@ -26,6 +28,8 @@ export function SendHouseholdFormModal({
   applicantEmail,
   applicantName,
   onSuccess,
+  isEmployee = false,
+  employeeId,
 }: SendHouseholdFormModalProps) {
   const [memberEmail, setMemberEmail] = useState(member.email || "");
   const [sending, setSending] = useState(false);
@@ -44,6 +48,8 @@ export function SendHouseholdFormModal({
           memberEmail: memberEmail.trim(),
           applicantEmail,
           applicantName,
+          isEmployee,
+          employeeId,
         },
       });
 

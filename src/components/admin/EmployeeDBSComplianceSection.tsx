@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, AlertCircle, CheckCircle, Clock, FileText, Send, AlertTriangle, UserPlus, Edit, Trash2, Users } from "lucide-react";
+import { Mail, AlertCircle, CheckCircle, Clock, FileText, Send, AlertTriangle, UserPlus, Edit, Trash2, Users, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { EmployeeRecordCertificateModal } from "./EmployeeRecordCertificateModal";
 import { EmployeeRequestDBSModal } from "./EmployeeRequestDBSModal";
 import { EmployeeBatchDBSRequestModal } from "./EmployeeBatchDBSRequestModal";
 import { AddEditHouseholdMemberModal } from "./AddEditHouseholdMemberModal";
+import { SendHouseholdFormModal } from "./SendHouseholdFormModal";
 import { ComplianceFilters } from "./ComplianceFilters";
 import {
   AlertDialog,
@@ -22,6 +24,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { format, differenceInYears, addYears, differenceInDays } from "date-fns";
+import { pdf } from "@react-pdf/renderer";
+import { HouseholdFormPDF } from "./HouseholdFormPDF";
 
 interface DBSMember {
   id: string;
@@ -43,6 +47,10 @@ interface DBSMember {
   compliance_status: string;
   risk_level: string;
   last_contact_date: string | null;
+  form_token: string | null;
+  application_submitted: boolean;
+  response_received: boolean;
+  form_data?: any;
 }
 
 interface EmployeeDBSComplianceSectionProps {
@@ -68,7 +76,9 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingMember, setDeletingMember] = useState<DBSMember | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "adults" | "children">("all");
-  const { toast } = useToast();
+  const [showSendFormModal, setShowSendFormModal] = useState(false);
+  const [formMember, setFormMember] = useState<DBSMember | null>(null);
+  const { toast: toastHook } = useToast();
 
   useEffect(() => {
     loadMembers();
@@ -86,7 +96,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
       if (error) throw error;
       setMembers(data || []);
     } catch (error: any) {
-      toast({
+      toastHook({
         title: "Error",
         description: "Failed to load household members",
         variant: "destructive",
@@ -99,6 +109,16 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
   const handleRequestDBS = (member: DBSMember) => {
     setRequestMember(member);
     setShowRequestModal(true);
+  };
+
+  const handleSendForm = (member: DBSMember) => {
+    setFormMember(member);
+    setShowSendFormModal(true);
+  };
+
+  const handleDownloadFormPDF = async (member: DBSMember) => {
+    // For now, show a message that this feature is coming
+    toast.error("PDF download for employee forms is not yet available. Please use the applicant form system.");
   };
 
   const handleToggleMemberSelection = (memberId: string) => {
@@ -139,14 +159,14 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
 
       if (error) throw error;
 
-      toast({
+      toastHook({
         title: "Alert Sent",
         description: `Birthday alert sent to ${employeeName}`,
       });
 
       loadMembers();
     } catch (error: any) {
-      toast({
+      toastHook({
         title: "Failed to Send Alert",
         description: error.message,
         variant: "destructive",
@@ -195,7 +215,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
 
       if (error) throw error;
 
-      toast({
+      toastHook({
         title: "Member Deleted",
         description: `${deletingMember.full_name} has been removed from the household.`,
       });
@@ -204,7 +224,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
       setShowDeleteDialog(false);
       setDeletingMember(null);
     } catch (error: any) {
-      toast({
+      toastHook({
         title: "Failed to Delete",
         description: error.message,
         variant: "destructive",
@@ -308,8 +328,8 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
   }
 
   const renderAdultsTable = () => (
-    <div className="border rounded-lg overflow-hidden">
-      <table className="w-full">
+    <div className="border rounded-lg overflow-x-auto">
+      <table className="w-full min-w-[1200px]">
         <thead className="bg-muted">
           <tr>
             <th className="w-12 p-3">
@@ -331,6 +351,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
             <th className="text-left p-3 font-medium">DOB / Age</th>
             <th className="text-left p-3 font-medium">Risk Level</th>
             <th className="text-left p-3 font-medium">DBS Status</th>
+            <th className="text-left p-3 font-medium">Form Status</th>
             <th className="text-left p-3 font-medium">Reminders</th>
             <th className="text-left p-3 font-medium">Certificate #</th>
             <th className="text-left p-3 font-medium">Actions</th>
@@ -363,6 +384,21 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                 <td className="p-3">{getRiskBadge(member.risk_level)}</td>
                 <td className="p-3">{getStatusBadge(member.dbs_status)}</td>
                 <td className="p-3">
+                  {member.application_submitted ? (
+                    <Badge variant="default">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Completed
+                    </Badge>
+                  ) : member.form_token ? (
+                    <Badge variant="secondary">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">Not Sent</Badge>
+                  )}
+                </td>
+                <td className="p-3">
                   <div className="text-sm">
                     <div className="font-medium">{member.reminder_count || 0} sent</div>
                     {daysSinceContact !== null && (
@@ -383,25 +419,48 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                   )}
                 </td>
                 <td className="p-3">
-                  <div className="flex flex-wrap gap-2">
-                    {(member.dbs_status === 'not_requested' || member.dbs_status === 'requested') && (
-                      <Button size="sm" variant="outline" onClick={() => handleRequestDBS(member)}>
-                        <Mail className="h-4 w-4 mr-1" />
-                        {member.dbs_status === 'requested' ? 'Resend' : 'Request'}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      {(member.dbs_status === 'not_requested' || member.dbs_status === 'requested') && (
+                        <Button size="sm" variant="outline" onClick={() => handleRequestDBS(member)}>
+                          <Mail className="h-4 w-4 mr-1" />
+                          {member.dbs_status === 'requested' ? 'Resend' : 'Request'}
+                        </Button>
+                      )}
+                      <Button size="sm" variant="secondary" onClick={() => handleRecordCertificate(member)}>
+                        <FileText className="h-4 w-4 mr-1" />
+                        {member.dbs_certificate_number ? 'Update' : 'Record'}
+                      </Button>
+                    </div>
+                    {member.application_submitted ? (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => handleDownloadFormPDF(member)}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Download Form
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSendForm(member)}
+                      >
+                        <Send className="h-4 w-4 mr-1" />
+                        {member.form_token ? 'Resend Form' : 'Send Form'}
                       </Button>
                     )}
-                    <Button size="sm" variant="secondary" onClick={() => handleRecordCertificate(member)}>
-                      <FileText className="h-4 w-4 mr-1" />
-                      {member.dbs_certificate_number ? 'Update' : 'Record'}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleEditMember(member)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDeleteMember(member)}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleEditMember(member)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteMember(member)}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -666,6 +725,19 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
           employeeEmail={employeeEmail}
           employeeName={employeeName}
           onSuccess={handleBatchRequestSuccess}
+        />
+      )}
+
+      {formMember && (
+        <SendHouseholdFormModal
+          isOpen={showSendFormModal}
+          onClose={() => setShowSendFormModal(false)}
+          member={formMember}
+          applicantEmail={employeeEmail}
+          applicantName={employeeName}
+          onSuccess={loadMembers}
+          isEmployee={true}
+          employeeId={employeeId}
         />
       )}
     </div>
