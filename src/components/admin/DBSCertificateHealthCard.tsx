@@ -98,7 +98,7 @@ export const DBSCertificateHealthCard = () => {
       // Process applicant household members
       (householdMembers || []).forEach(member => {
         if (needsDBS(member.member_type, member.date_of_birth)) {
-          if (member.dbs_status === 'certificate_received' && member.dbs_certificate_expiry_date) {
+          if (member.dbs_status === 'received' && member.dbs_certificate_expiry_date) {
             const daysUntilExpiry = differenceInDays(new Date(member.dbs_certificate_expiry_date), today);
             if (daysUntilExpiry < 0) expiredCount++;
             else if (daysUntilExpiry <= 90) expiringCount++;

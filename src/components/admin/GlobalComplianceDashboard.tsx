@@ -53,32 +53,64 @@ export const GlobalComplianceDashboard = () => {
 
   const loadGlobalMetrics = async () => {
     try {
-      // Fetch all household members across all applications
-      const { data: members, error } = await supabase
-        .from('household_member_dbs_tracking')
-        .select('*');
+      // Fetch from all three tables for complete compliance picture
+      const [
+        { data: householdMembers, error: hmError },
+        { data: employeeHouseholdMembers, error: ehmError },
+        { data: employees, error: empError }
+      ] = await Promise.all([
+        supabase.from('household_member_dbs_tracking').select('*'),
+        supabase.from('employee_household_members').select('*'),
+        supabase.from('employees').select('*').eq('employment_status', 'active')
+      ]);
 
-      if (error) throw error;
+      if (hmError || ehmError || empError) {
+        throw hmError || ehmError || empError;
+      }
+
+      // Combine all members who need DBS tracking
+      const allMembers: any[] = [];
+      
+      // Add household members from applicants
+      (householdMembers || []).forEach(m => {
+        const age = today.getFullYear() - new Date(m.date_of_birth).getFullYear();
+        if (m.member_type === 'adult' || age >= 16) {
+          allMembers.push(m);
+        }
+      });
+      
+      // Add employee household members
+      (employeeHouseholdMembers || []).forEach(m => {
+        const age = today.getFullYear() - new Date(m.date_of_birth).getFullYear();
+        if (m.member_type === 'adult' || age >= 16) {
+          allMembers.push(m);
+        }
+      });
+      
+      // Add all active employees
+      (employees || []).forEach(emp => {
+        allMembers.push(emp);
+      });
 
       const today = new Date();
       
       // Calculate metrics
-      const criticalCount = members?.filter(m => m.risk_level === 'critical').length || 0;
-      const atRiskCount = members?.filter(m => m.compliance_status === 'at_risk').length || 0;
-      const pendingCount = members?.filter(m => m.compliance_status === 'pending').length || 0;
-      const compliantCount = members?.filter(m => m.compliance_status === 'compliant').length || 0;
-      const overdueCount = members?.filter(m => m.compliance_status === 'overdue').length || 0;
+      const criticalCount = allMembers.filter(m => m.risk_level === 'critical').length;
+      const atRiskCount = allMembers.filter(m => m.compliance_status === 'at_risk').length;
+      const pendingCount = allMembers.filter(m => m.compliance_status === 'pending').length;
+      const compliantCount = allMembers.filter(m => m.compliance_status === 'compliant').length;
+      const overdueCount = allMembers.filter(m => m.compliance_status === 'overdue').length;
       
       // Calculate expiring soon
-      const expiringSoonCount = members?.filter(m => {
+      const expiringSoonCount = allMembers.filter(m => {
         if (!m.dbs_certificate_expiry_date) return false;
         const expiryDate = new Date(m.dbs_certificate_expiry_date);
         const daysUntilExpiry = differenceInDays(expiryDate, today);
         return daysUntilExpiry <= 90 && daysUntilExpiry > 0;
-      }).length || 0;
+      }).length;
 
-      // Calculate approaching 16
-      const turning16SoonCount = members?.filter(m => {
+      // Calculate approaching 16 (only relevant for household members, not employees)
+      const turning16SoonCount = [...(householdMembers || []), ...(employeeHouseholdMembers || [])].filter(m => {
         if (m.member_type !== 'child') return false;
         const birthDate = new Date(m.date_of_birth);
         const age = today.getFullYear() - birthDate.getFullYear();
@@ -87,22 +119,14 @@ export const GlobalComplianceDashboard = () => {
         sixteenthBirthday.setFullYear(birthDate.getFullYear() + 16);
         const daysUntil16 = differenceInDays(sixteenthBirthday, today);
         return daysUntil16 <= 90 && daysUntil16 >= 0;
-      }).length || 0;
+      }).length;
 
       // Calculate completion rate
-      const adultsAndOlder = members?.filter(m => {
-        if (m.member_type === 'adult' || m.member_type === 'assistant') return true;
-        // Include children 16+
-        const birthDate = new Date(m.date_of_birth);
-        const age = today.getFullYear() - birthDate.getFullYear();
-        return age >= 16;
-      }) || [];
-
-      const completed = adultsAndOlder.filter(m => 
-        m.dbs_status === 'certificate_received' || m.dbs_status === 'exempt'
+      const completed = allMembers.filter(m => 
+        m.dbs_status === 'received'
       ).length;
-      const completionRate = adultsAndOlder.length > 0 
-        ? Math.round((completed / adultsAndOlder.length) * 100) 
+      const completionRate = allMembers.length > 0 
+        ? Math.round((completed / allMembers.length) * 100) 
         : 0;
 
       setMetrics({
@@ -113,7 +137,7 @@ export const GlobalComplianceDashboard = () => {
         overdueCount,
         expiringSoonCount,
         turning16SoonCount,
-        totalMembers: members?.length || 0,
+        totalMembers: allMembers.length,
         completionRate,
       });
     } catch (error) {

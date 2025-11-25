@@ -388,25 +388,31 @@ export type Database = {
           address_line_2: string | null
           age_groups_cared_for: Json | null
           application_id: string | null
+          compliance_status: string | null
           county: string | null
           created_at: string | null
           date_of_birth: string | null
           dbs_certificate_date: string | null
           dbs_certificate_expiry_date: string | null
           dbs_certificate_number: string | null
+          dbs_request_date: string | null
           dbs_status: Database["public"]["Enums"]["dbs_status"] | null
           email: string
           employment_start_date: string | null
           employment_status:
             | Database["public"]["Enums"]["employment_status"]
             | null
+          expiry_reminder_sent: boolean | null
           eyfs_completion_date: string | null
           eyfs_training: string | null
           first_aid_expiry_date: string | null
           first_aid_qualification: string | null
           first_name: string
+          follow_up_due_date: string | null
           id: string
+          last_contact_date: string | null
           last_name: string
+          last_reminder_date: string | null
           level_2_completion_date: string | null
           level_2_qualification: string | null
           local_authority: string | null
@@ -418,6 +424,9 @@ export type Database = {
           postcode: string | null
           premises_postcode: string | null
           premises_type: string | null
+          reminder_count: number | null
+          reminder_history: Json | null
+          risk_level: string | null
           safeguarding_completion_date: string | null
           safeguarding_training: string | null
           service_type: string | null
@@ -429,25 +438,31 @@ export type Database = {
           address_line_2?: string | null
           age_groups_cared_for?: Json | null
           application_id?: string | null
+          compliance_status?: string | null
           county?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dbs_certificate_date?: string | null
           dbs_certificate_expiry_date?: string | null
           dbs_certificate_number?: string | null
+          dbs_request_date?: string | null
           dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
           email: string
           employment_start_date?: string | null
           employment_status?:
             | Database["public"]["Enums"]["employment_status"]
             | null
+          expiry_reminder_sent?: boolean | null
           eyfs_completion_date?: string | null
           eyfs_training?: string | null
           first_aid_expiry_date?: string | null
           first_aid_qualification?: string | null
           first_name: string
+          follow_up_due_date?: string | null
           id?: string
+          last_contact_date?: string | null
           last_name: string
+          last_reminder_date?: string | null
           level_2_completion_date?: string | null
           level_2_qualification?: string | null
           local_authority?: string | null
@@ -459,6 +474,9 @@ export type Database = {
           postcode?: string | null
           premises_postcode?: string | null
           premises_type?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          risk_level?: string | null
           safeguarding_completion_date?: string | null
           safeguarding_training?: string | null
           service_type?: string | null
@@ -470,25 +488,31 @@ export type Database = {
           address_line_2?: string | null
           age_groups_cared_for?: Json | null
           application_id?: string | null
+          compliance_status?: string | null
           county?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dbs_certificate_date?: string | null
           dbs_certificate_expiry_date?: string | null
           dbs_certificate_number?: string | null
+          dbs_request_date?: string | null
           dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
           email?: string
           employment_start_date?: string | null
           employment_status?:
             | Database["public"]["Enums"]["employment_status"]
             | null
+          expiry_reminder_sent?: boolean | null
           eyfs_completion_date?: string | null
           eyfs_training?: string | null
           first_aid_expiry_date?: string | null
           first_aid_qualification?: string | null
           first_name?: string
+          follow_up_due_date?: string | null
           id?: string
+          last_contact_date?: string | null
           last_name?: string
+          last_reminder_date?: string | null
           level_2_completion_date?: string | null
           level_2_qualification?: string | null
           local_authority?: string | null
@@ -500,6 +524,9 @@ export type Database = {
           postcode?: string | null
           premises_postcode?: string | null
           premises_type?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          risk_level?: string | null
           safeguarding_completion_date?: string | null
           safeguarding_training?: string | null
           service_type?: string | null
