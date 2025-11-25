@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         sender: { 
           name: "Childminder Registration", 
-          email: Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@yourdomain.com"
+          email: Deno.env.get("BREVO_SENDER_EMAIL") || "yuadm3@gmail.com"
         },
         to: [{ email: memberEmail, name: memberData.full_name }],
         subject: "Complete Your CMA-H2 Suitability Check Form",
@@ -168,7 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         sender: { 
           name: "Childminder Registration", 
-          email: Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@yourdomain.com"
+          email: Deno.env.get("BREVO_SENDER_EMAIL") || "yuadm3@gmail.com"
         },
         to: [{ email: applicantEmail, name: applicantName }],
         subject: "Household Member Form Sent",
