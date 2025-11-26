@@ -408,8 +408,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
               </th>
               <th className="text-left px-4 py-3 font-semibold text-sm">Name</th>
               <th className="text-left px-4 py-3 font-semibold text-sm">Relationship</th>
-              <th className="text-left px-4 py-3 font-semibold text-sm">Age</th>
-              <th className="text-left px-4 py-3 font-semibold text-sm">Risk</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Date of Birth</th>
               <th className="text-left px-4 py-3 font-semibold text-sm">DBS Status</th>
               <th className="text-left px-4 py-3 font-semibold text-sm">Form Status</th>
               <th className="w-12 px-4 py-3"></th>
@@ -417,11 +416,16 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
           </thead>
           <tbody className="bg-card">
             {adults.map(member => {
+              const isCompliant = member.dbs_status === 'received' && member.application_submitted;
+              const isCritical = member.dbs_status !== 'received' || !member.application_submitted;
+              
               return (
                 <tr 
                   key={member.id} 
-                  className={`border-b border-border/30 hover:bg-muted/30 transition-colors ${
-                    member.risk_level === 'critical' ? 'bg-destructive/5' : ''
+                  className={`border-b border-border/30 hover:opacity-90 transition-all ${
+                    isCompliant 
+                      ? 'bg-green-50/50 dark:bg-green-950/20 hover:bg-green-50/70 dark:hover:bg-green-950/30' 
+                      : 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/70 dark:hover:bg-red-950/30'
                   }`}
                 >
                   <td className="px-4 py-4">
@@ -431,20 +435,16 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
                     />
                   </td>
                   <td className="px-4 py-4">
-                    <div>
-                      <div className="font-semibold text-foreground">{member.full_name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        DOB: {format(new Date(member.date_of_birth), 'dd/MM/yyyy')}
-                      </div>
-                    </div>
+                    <div className="font-semibold text-foreground">{member.full_name}</div>
                   </td>
                   <td className="px-4 py-4 text-sm text-muted-foreground">
                     {member.relationship || member.member_type}
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm font-medium">{calculateAge(member.date_of_birth)} years</span>
+                    <div className="text-sm">
+                      DOB: {format(new Date(member.date_of_birth), 'dd/MM/yyyy')} ({calculateAge(member.date_of_birth)} years)
+                    </div>
                   </td>
-                  <td className="px-4 py-4">{getRiskBadge(member.risk_level)}</td>
                   <td className="px-4 py-4">{getStatusBadge(member.dbs_status)}</td>
                   <td className="px-4 py-4">
                     {member.application_submitted ? (
@@ -489,7 +489,7 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
             <tr className="border-b border-border/50">
               <th className="text-left px-4 py-3 font-semibold text-sm">Name</th>
               <th className="text-left px-4 py-3 font-semibold text-sm">Relationship</th>
-              <th className="text-left px-4 py-3 font-semibold text-sm">Age</th>
+              <th className="text-left px-4 py-3 font-semibold text-sm">Date of Birth</th>
               <th className="text-left px-4 py-3 font-semibold text-sm">Certificate</th>
               <th className="w-12 px-4 py-3"></th>
             </tr>
@@ -502,18 +502,15 @@ export const EmployeeDBSComplianceSection = ({ employeeId, employeeEmail, employ
               return (
                 <tr key={child.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-4">
-                    <div>
-                      <div className="font-semibold text-foreground">{child.full_name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        DOB: {format(new Date(child.date_of_birth), 'dd/MM/yyyy')}
-                      </div>
-                    </div>
+                    <div className="font-semibold text-foreground">{child.full_name}</div>
                   </td>
                   <td className="px-4 py-4 text-sm text-muted-foreground">
                     {child.relationship || child.member_type}
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm font-medium">{age} years</span>
+                    <div className="text-sm">
+                      DOB: {format(new Date(child.date_of_birth), 'dd/MM/yyyy')} ({age} years)
+                    </div>
                   </td>
                   <td className="px-4 py-4 text-sm">
                     {child.dbs_certificate_number ? (
