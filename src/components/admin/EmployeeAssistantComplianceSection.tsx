@@ -10,6 +10,7 @@ import { pdf } from "@react-pdf/renderer";
 import { AddEditEmployeeAssistantModal } from "./AddEditEmployeeAssistantModal";
 import { SendEmployeeAssistantFormModal } from "./SendEmployeeAssistantFormModal";
 import { RequestEmployeeAssistantDBSModal } from "./RequestEmployeeAssistantDBSModal";
+import { RecordEmployeeAssistantCertificateModal } from "./RecordEmployeeAssistantCertificateModal";
 import { AssistantFormPDF } from "./AssistantFormPDF";
 import { getDBSStatusConfig } from "@/lib/employeeHelpers";
 import {
@@ -63,6 +64,7 @@ export const EmployeeAssistantComplianceSection = ({
   const [addEditModalOpen, setAddEditModalOpen] = useState(false);
   const [sendFormModalOpen, setSendFormModalOpen] = useState(false);
   const [requestDBSModalOpen, setRequestDBSModalOpen] = useState(false);
+  const [recordCertificateModalOpen, setRecordCertificateModalOpen] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState<EmployeeAssistant | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assistantToDelete, setAssistantToDelete] = useState<EmployeeAssistant | null>(null);
@@ -145,6 +147,11 @@ export const EmployeeAssistantComplianceSection = ({
   const handleRequestDBS = (assistant: EmployeeAssistant) => {
     setSelectedAssistant(assistant);
     setRequestDBSModalOpen(true);
+  };
+
+  const handleRecordCertificate = (assistant: EmployeeAssistant) => {
+    setSelectedAssistant(assistant);
+    setRecordCertificateModalOpen(true);
   };
 
   const handleDownloadPDF = async (assistant: EmployeeAssistant) => {
@@ -367,9 +374,21 @@ export const EmployeeAssistantComplianceSection = ({
                       onClick={() => handleRequestDBS(assistant)}
                       className="rounded-lg"
                     >
-                      <FileText className="h-4 w-4 mr-2" />
-                      {assistant.dbs_status === 'not_requested' ? 'Request' : 'Update'} DBS
+                      <Send className="h-4 w-4 mr-2" />
+                      {assistant.dbs_status === 'not_requested' ? 'Request DBS' : 'Resend DBS Request'}
                     </Button>
+
+                    {assistant.dbs_status !== 'not_requested' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRecordCertificate(assistant)}
+                        className="rounded-lg"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Record Certificate
+                      </Button>
+                    )}
 
                     <Button
                       variant="outline"
@@ -420,6 +439,13 @@ export const EmployeeAssistantComplianceSection = ({
       <RequestEmployeeAssistantDBSModal
         open={requestDBSModalOpen}
         onOpenChange={setRequestDBSModalOpen}
+        assistant={selectedAssistant}
+        onSuccess={fetchAssistants}
+      />
+
+      <RecordEmployeeAssistantCertificateModal
+        open={recordCertificateModalOpen}
+        onOpenChange={setRecordCertificateModalOpen}
         assistant={selectedAssistant}
         onSuccess={fetchAssistants}
       />

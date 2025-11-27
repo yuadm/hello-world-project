@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EmployeeAssistant {
   id: string;
   first_name: string;
   last_name: string;
+  email: string | null;
   dbs_status: string;
   dbs_certificate_number: string | null;
   dbs_certificate_date: string | null;
@@ -31,43 +33,44 @@ export const RequestEmployeeAssistantDBSModal = ({
 }: RequestEmployeeAssistantDBSModalProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    dbs_status: "requested" as const,
-    dbs_certificate_number: "",
-    dbs_certificate_date: "",
-  });
+  const [email, setEmail] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Reset email when modal opens with new assistant
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen && assistant) {
+      setEmail(assistant.email || "");
+    }
+    onOpenChange(isOpen);
+  };
+
+  const handleSendRequest = async () => {
     if (!assistant) return;
+
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter an email address",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
 
     try {
-      const updateData: any = {
-        dbs_status: formData.dbs_status,
-        dbs_request_date: new Date().toISOString(),
-      };
-
-      if (formData.dbs_certificate_number) {
-        updateData.dbs_certificate_number = formData.dbs_certificate_number;
-      }
-
-      if (formData.dbs_certificate_date) {
-        updateData.dbs_certificate_date = formData.dbs_certificate_date;
-        updateData.dbs_status = "received";
-      }
-
-      const { error } = await supabase
-        .from('employee_assistants' as any)
-        .update(updateData)
-        .eq('id', assistant.id);
+      const { error } = await supabase.functions.invoke('send-dbs-request-email', {
+        body: {
+          memberId: assistant.id,
+          memberEmail: email,
+          isEmployeeAssistant: true,
+        }
+      });
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `DBS ${formData.dbs_certificate_date ? 'recorded' : 'requested'} for ${assistant.first_name} ${assistant.last_name}`,
+        description: `DBS request email sent to ${assistant.first_name} ${assistant.last_name}`,
       });
 
       onSuccess();
@@ -75,7 +78,7 @@ export const RequestEmployeeAssistantDBSModal = ({
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update DBS status",
+        description: error.message || "Failed to send DBS request",
         variant: "destructive",
       });
     } finally {
@@ -86,46 +89,46 @@ export const RequestEmployeeAssistantDBSModal = ({
   if (!assistant) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            {assistant.dbs_status === 'not_requested' ? 'Request' : 'Update'} DBS Check
+            Request DBS Check
           </DialogTitle>
           <DialogDescription>
-            Record DBS check details for {assistant.first_name} {assistant.last_name}
+            Send a DBS request email to {assistant.first_name} {assistant.last_name}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="dbs_certificate_number">DBS Certificate Number</Label>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Name:</span>
+              <p className="font-medium">{assistant.first_name} {assistant.last_name}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="assistant_email">Email Address</Label>
             <Input
-              id="dbs_certificate_number"
-              value={formData.dbs_certificate_number}
-              onChange={(e) => setFormData({ ...formData, dbs_certificate_number: e.target.value })}
-              placeholder="Optional"
+              id="assistant_email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email address"
               className="rounded-xl"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="dbs_certificate_date">DBS Certificate Date</Label>
-            <Input
-              id="dbs_certificate_date"
-              type="date"
-              value={formData.dbs_certificate_date}
-              onChange={(e) => setFormData({ ...formData, dbs_certificate_date: e.target.value })}
-              className="rounded-xl"
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave empty to mark as "Requested". Enter a date to mark as "Received".
-            </p>
-          </div>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              The assistant will receive an email with instructions to complete their DBS check.
+            </AlertDescription>
+          </Alert>
 
           <div className="flex gap-3 justify-end pt-4">
             <Button
-              type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
@@ -133,12 +136,16 @@ export const RequestEmployeeAssistantDBSModal = ({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="rounded-xl">
+            <Button 
+              onClick={handleSendRequest} 
+              disabled={loading || !email}
+              className="rounded-xl"
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {formData.dbs_certificate_date ? 'Record Certificate' : 'Request DBS'}
+              Send DBS Request
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
