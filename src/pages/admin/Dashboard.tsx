@@ -71,71 +71,48 @@ const AdminDashboard = () => {
 
   const metricCards = [
     {
-      title: "Total Applications",
-      value: metrics.totalApplications,
-      icon: FileText,
-      description: "All time applications",
-      gradient: "from-blue-500 to-blue-600",
-    },
-    {
-      title: "Pending Review",
+      title: "Pending",
       value: metrics.pendingApplications,
       icon: Clock,
-      description: "Awaiting review",
-      gradient: "from-amber-500 to-amber-600",
+      trend: "+12%",
     },
     {
       title: "Approved",
       value: metrics.approvedApplications,
       icon: CheckCircle,
-      description: "Approved applications",
-      gradient: "from-emerald-500 to-emerald-600",
+      trend: "+8%",
     },
     {
-      title: "Rejected",
-      value: metrics.rejectedApplications,
-      icon: XCircle,
-      description: "Rejected applications",
-      gradient: "from-rose-500 to-rose-600",
-    },
-    {
-      title: "Today's Applications",
+      title: "Today",
       value: metrics.todayApplications,
       icon: Users,
-      description: "Submitted today",
-      gradient: "from-purple-500 to-purple-600",
+      trend: "0%",
     },
   ];
 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="mb-8">
-          <div className="h-8 w-64 bg-muted rounded-xl animate-shimmer mb-2" />
-          <div className="h-5 w-96 bg-muted rounded-lg animate-shimmer" />
-        </div>
-
-        <div className="mb-8 space-y-4">
-          <div className="rounded-2xl border-0 bg-card shadow-apple-sm p-6">
-            <div className="flex items-center justify-center py-12">
-              <div className="w-40 h-40 rounded-full bg-muted animate-shimmer" />
-            </div>
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <div className="h-9 w-48 bg-muted rounded animate-shimmer" />
+            <div className="h-5 w-72 bg-muted rounded animate-shimmer" />
           </div>
-        </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="rounded-2xl border-0 bg-card shadow-apple-sm p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-4 w-32 bg-muted rounded-lg animate-shimmer" />
-                  <div className="w-12 h-12 rounded-xl bg-muted animate-shimmer" />
+          <div className="grid gap-4 md:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-card border rounded-lg p-6">
+                <div className="space-y-3">
+                  <div className="h-4 w-24 bg-muted rounded animate-shimmer" />
+                  <div className="h-8 w-16 bg-muted rounded animate-shimmer" />
                 </div>
-                <div className="h-10 w-24 bg-muted rounded-lg animate-shimmer" />
-                <div className="h-4 w-40 bg-muted rounded-lg animate-shimmer" />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="bg-card border rounded-lg p-6">
+            <div className="h-72 bg-muted rounded animate-shimmer" />
+          </div>
         </div>
       </AdminLayout>
     );
@@ -143,50 +120,40 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="mb-8">
-        <h2 className="text-3xl font-semibold tracking-tight mb-2">Welcome back, Admin</h2>
-        <p className="text-muted-foreground">
-          Here's an overview of childminder applications
-        </p>
-      </div>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-1">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor applications and compliance
+          </p>
+        </div>
 
-      {/* DBS Certificate Health */}
-      <div className="mb-8">
-        <DBSCertificateHealthCard />
-      </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {metricCards.map((metric) => (
+            <Card key={metric.title} className="border">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {metric.title}
+                    </p>
+                    <p className="text-3xl font-bold tracking-tight">
+                      {metric.value}
+                    </p>
+                  </div>
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <metric.icon className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Global DBS Compliance Dashboard */}
-      <div className="mb-8">
-        <GlobalComplianceDashboard />
-      </div>
-
-      {/* Application Statistics */}
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold tracking-tight mb-4">Application Statistics</h3>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {metricCards.map((metric) => (
-          <Card 
-            key={metric.title} 
-            className="group rounded-2xl border-0 bg-card shadow-apple-sm hover:shadow-apple-lg transition-all duration-300 hover:-translate-y-1"
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {metric.title}
-              </CardTitle>
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${metric.gradient} flex items-center justify-center shadow-apple-sm`}>
-                <metric.icon className="h-6 w-6 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-semibold tracking-tight">{metric.value}</div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {metric.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="space-y-4">
+          <DBSCertificateHealthCard />
+          <GlobalComplianceDashboard />
+        </div>
       </div>
     </AdminLayout>
   );
