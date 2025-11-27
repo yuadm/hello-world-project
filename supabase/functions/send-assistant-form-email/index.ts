@@ -60,8 +60,7 @@ serve(async (req) => {
 
     // Send email to assistant via Brevo
     const assistantEmailAddress = customEmail || assistant.email;
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://pnslbftwceqremqsfylk.lovable.app";
-    const formUrl = `${frontendUrl}/assistant-form?token=${formToken}`;
+    const formUrl = `https://childminderpro.vercel.app/assistant-form?token=${formToken}`;
 
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
