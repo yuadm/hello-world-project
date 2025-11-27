@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Send } from "lucide-react";
+import { Mail, Download, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SendAssistantFormModal } from "./SendAssistantFormModal";
+import { RequestAssistantDBSModal } from "./RequestAssistantDBSModal";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { AssistantFormPDF } from "./AssistantFormPDF";
 
 interface AssistantComplianceSectionProps {
   applicationId: string;
@@ -17,7 +20,9 @@ export const AssistantComplianceSection = ({ applicationId, applicantEmail, appl
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [showSendFormModal, setShowSendFormModal] = useState(false);
+  const [showDBSRequestModal, setShowDBSRequestModal] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState<any>(null);
+  const [assistantForms, setAssistantForms] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,6 +40,24 @@ export const AssistantComplianceSection = ({ applicationId, applicantEmail, appl
 
       if (error) throw error;
       setAssistants(data || []);
+
+      // Load submitted forms for assistants
+      if (data) {
+        const assistantIds = data.map(a => a.id);
+        const { data: forms } = await supabase
+          .from('assistant_forms')
+          .select('*')
+          .in('assistant_id', assistantIds)
+          .eq('status', 'submitted');
+
+        if (forms) {
+          const formsMap: Record<string, any> = {};
+          forms.forEach(form => {
+            formsMap[form.assistant_id] = form;
+          });
+          setAssistantForms(formsMap);
+        }
+      }
     } catch (error: any) {
       toast({ title: "Error", description: "Failed to load assistant data", variant: "destructive" });
     } finally {
@@ -74,6 +97,11 @@ export const AssistantComplianceSection = ({ applicationId, applicantEmail, appl
     setShowSendFormModal(true);
   };
 
+  const handleRequestDBS = (assistant: any) => {
+    setSelectedAssistant(assistant);
+    setShowDBSRequestModal(true);
+  };
+
   if (loading) return <div className="text-center py-8">Loading assistant data...</div>;
 
   return (
@@ -94,29 +122,64 @@ export const AssistantComplianceSection = ({ applicationId, applicantEmail, appl
         </div>
       ) : (
         <div className="space-y-4">
-          {assistants.map((assistant) => (
-            <div key={assistant.id} className="border rounded-lg p-4 bg-card">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-semibold">{assistant.first_name} {assistant.last_name}</h4>
-                  <p className="text-sm text-muted-foreground">{assistant.role}</p>
-                  <p className="text-sm text-muted-foreground">{assistant.email}</p>
-                  <div className="flex gap-2 mt-2">
-                    <Badge variant={assistant.form_status === 'submitted' ? 'default' : 'secondary'}>
-                      Form: {assistant.form_status}
-                    </Badge>
-                    <Badge variant={assistant.dbs_status === 'received' ? 'default' : 'secondary'}>
-                      DBS: {assistant.dbs_status}
-                    </Badge>
+          {assistants.map((assistant) => {
+            const hasSubmittedForm = assistantForms[assistant.id];
+            return (
+              <div key={assistant.id} className="border rounded-lg p-4 bg-card">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{assistant.first_name} {assistant.last_name}</h4>
+                    <p className="text-sm text-muted-foreground">{assistant.role}</p>
+                    <p className="text-sm text-muted-foreground">{assistant.email}</p>
+                    <div className="flex gap-2 mt-2">
+                      <Badge variant={assistant.form_status === 'submitted' ? 'default' : 'secondary'}>
+                        Form: {assistant.form_status}
+                      </Badge>
+                      <Badge variant={assistant.dbs_status === 'received' ? 'default' : 'secondary'}>
+                        DBS: {assistant.dbs_status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleSendForm(assistant)} size="sm" variant="outline">
+                      <Mail className="h-4 w-4 mr-2" />
+                      {assistant.form_status === 'sent' ? 'Resend Form' : 'Send Form'}
+                    </Button>
+                    
+                    {hasSubmittedForm && (
+                      <PDFDownloadLink
+                        document={
+                          <AssistantFormPDF
+                            formData={hasSubmittedForm}
+                            assistantName={`${assistant.first_name} ${assistant.last_name}`}
+                            assistantRole={assistant.role}
+                            applicantName={applicantName}
+                          />
+                        }
+                        fileName={`CMA-A1_${assistant.first_name}_${assistant.last_name}.pdf`}
+                      >
+                        {({ loading }) => (
+                          <Button size="sm" variant="outline" disabled={loading}>
+                            <Download className="h-4 w-4 mr-2" />
+                            {loading ? 'Generating...' : 'Download PDF'}
+                          </Button>
+                        )}
+                      </PDFDownloadLink>
+                    )}
+
+                    <Button 
+                      onClick={() => handleRequestDBS(assistant)} 
+                      size="sm"
+                      disabled={assistant.dbs_status === 'received'}
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                      Request DBS
+                    </Button>
                   </div>
                 </div>
-                <Button onClick={() => handleSendForm(assistant)} size="sm">
-                  <Mail className="h-4 w-4 mr-2" />
-                  {assistant.form_status === 'sent' ? 'Resend Form' : 'Send Form'}
-                </Button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -132,6 +195,22 @@ export const AssistantComplianceSection = ({ applicationId, applicantEmail, appl
           onSuccess={() => {
             loadAssistants();
             setShowSendFormModal(false);
+            setSelectedAssistant(null);
+          }}
+        />
+      )}
+
+      {showDBSRequestModal && selectedAssistant && (
+        <RequestAssistantDBSModal
+          open={showDBSRequestModal}
+          onOpenChange={setShowDBSRequestModal}
+          assistantId={selectedAssistant.id}
+          assistantName={`${selectedAssistant.first_name} ${selectedAssistant.last_name}`}
+          assistantEmail={selectedAssistant.email}
+          applicantEmail={applicantEmail}
+          onSuccess={() => {
+            loadAssistants();
+            setShowDBSRequestModal(false);
             setSelectedAssistant(null);
           }}
         />
