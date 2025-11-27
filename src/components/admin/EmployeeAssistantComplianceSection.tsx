@@ -169,9 +169,10 @@ export const EmployeeAssistantComplianceSection = ({
         return;
       }
 
-      // Transform address data for PDF component
+      // Transform address and employment data for PDF component
       const currentAddress = formData.current_address as any;
       const addressHistory = formData.address_history as any;
+      const employmentHistory = formData.employment_history as any;
       
       const transformedFormData = {
         ...formData,
@@ -182,11 +183,14 @@ export const EmployeeAssistantComplianceSection = ({
           postcode: currentAddress.postcode,
           moveIn: currentAddress.move_in_date,
         } : null,
-        address_history: addressHistory && Array.isArray(addressHistory)
-          ? addressHistory.map((addr: any) => ({
-              address: `${addr.address_line_1}${addr.address_line_2 ? ', ' + addr.address_line_2 : ''}, ${addr.town}, ${addr.postcode}`,
-              moveIn: addr.move_in_date,
-              moveOut: addr.move_out_date,
+        address_history: addressHistory && Array.isArray(addressHistory) ? addressHistory : [],
+        employment_history: employmentHistory && Array.isArray(employmentHistory)
+          ? employmentHistory.map((job: any) => ({
+              employer: job.employer,
+              position: job.title, // PDF expects 'position' but DB has 'title'
+              startDate: job.startDate,
+              endDate: job.endDate,
+              isCurrent: job.isCurrent,
             }))
           : [],
       };
