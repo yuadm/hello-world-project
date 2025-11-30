@@ -23,22 +23,22 @@ const statusConfig: Record<"compliant" | "pending" | "critical", { activeLight: 
 
 const TrafficLight = ({ activeLight }: { activeLight: "red" | "amber" | "green" }) => {
   return (
-    <div className="bg-gray-900 rounded-full p-0.5 flex flex-col gap-0.5 w-5">
+    <div className="bg-gray-900 rounded-full p-0.5 flex flex-col gap-0.5">
       <div
         className={cn(
-          "w-4 h-4 rounded-full transition-colors",
+          "w-2 h-2 rounded-full transition-colors",
           activeLight === "red" ? "bg-red-500" : "bg-gray-700"
         )}
       />
       <div
         className={cn(
-          "w-4 h-4 rounded-full transition-colors",
+          "w-2 h-2 rounded-full transition-colors",
           activeLight === "amber" ? "bg-amber-500" : "bg-gray-700"
         )}
       />
       <div
         className={cn(
-          "w-4 h-4 rounded-full transition-colors",
+          "w-2 h-2 rounded-full transition-colors",
           activeLight === "green" ? "bg-green-500" : "bg-gray-700"
         )}
       />
