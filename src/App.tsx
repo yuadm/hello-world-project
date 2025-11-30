@@ -13,7 +13,6 @@ import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminApplications from "./pages/admin/Applications";
 import AdminApplicationDetail from "./pages/admin/ApplicationDetailNew";
-import AdminApplicationCompliance from "./pages/admin/ApplicationCompliance";
 import AdminEmployees from "./pages/admin/Employees";
 import AdminEmployeeDetail from "./pages/admin/EmployeeDetail";
 
@@ -36,7 +35,6 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/applications" element={<AdminApplications />} />
           <Route path="/admin/applications/:id" element={<AdminApplicationDetail />} />
-          <Route path="/admin/applications/:id/compliance" element={<AdminApplicationCompliance />} />
           <Route path="/admin/employees" element={<AdminEmployees />} />
           <Route path="/admin/employees/:id" element={<AdminEmployeeDetail />} />
           {/* Placeholder routes for navigation links */}
