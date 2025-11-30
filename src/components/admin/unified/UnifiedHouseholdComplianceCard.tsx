@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Download, FileCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { TrafficLightIndicator } from "@/components/admin/application-detail/TrafficLightIndicator";
+import { DualTrafficLightIndicator } from "@/components/admin/application-detail/DualTrafficLightIndicator";
 import { UnifiedSendHouseholdFormModal } from "./UnifiedSendHouseholdFormModal";
 import { UnifiedRequestDBSModal } from "./UnifiedRequestDBSModal";
 import { UnifiedRecordCertificateModal } from "./UnifiedRecordCertificateModal";
@@ -143,10 +143,17 @@ export const UnifiedHouseholdComplianceCard = ({
     }
   };
 
-  const getTrafficLightStatus = (member: HouseholdMember): "compliant" | "pending" | "critical" | "not_applicable" => {
+  const getFormStatus = (member: HouseholdMember, hasForm: boolean): "compliant" | "pending" | "critical" => {
+    if (hasForm) return "compliant";
+    if (member.form_token) return "pending";
+    return "critical";
+  };
+
+  const getDBSStatus = (member: HouseholdMember): "compliant" | "pending" | "critical" => {
     const age = differenceInYears(new Date(), new Date(member.date_of_birth));
 
-    if (age < 16) return "not_applicable";
+    // Under 16 - DBS not required, show as pending (N/A)
+    if (age < 16) return "pending";
 
     if (member.dbs_status === "received" && member.dbs_certificate_expiry_date) {
       const daysUntilExpiry = differenceInDays(new Date(member.dbs_certificate_expiry_date), new Date());
@@ -158,6 +165,16 @@ export const UnifiedHouseholdComplianceCard = ({
     if (member.dbs_status === "requested") return "pending";
 
     return "critical";
+  };
+
+  const getOverallStatus = (member: HouseholdMember): "compliant" | "pending" | "critical" | "not_applicable" => {
+    const age = differenceInYears(new Date(), new Date(member.date_of_birth));
+    if (age < 16) return "not_applicable";
+    
+    const dbsStatus = getDBSStatus(member);
+    if (dbsStatus === "critical") return "critical";
+    if (dbsStatus === "pending") return "pending";
+    return "compliant";
   };
 
   const getStatusBadge = (status: string) => {
@@ -204,7 +221,7 @@ export const UnifiedHouseholdComplianceCard = ({
     let critical = 0;
 
     members.forEach((member) => {
-      const status = getTrafficLightStatus(member);
+      const status = getOverallStatus(member);
       if (status === "compliant") compliant++;
       else if (status === "pending") pending++;
       else if (status === "critical") critical++;
@@ -267,37 +284,43 @@ export const UnifiedHouseholdComplianceCard = ({
           ) : (
             members.map((member) => {
               const age = differenceInYears(new Date(), new Date(member.date_of_birth));
-              const status = getTrafficLightStatus(member);
+              const status = getOverallStatus(member);
               const hasForm = forms.has(member.id);
+              const formStatus = getFormStatus(member, hasForm);
+              const dbsStatus = getDBSStatus(member);
 
               return (
                 <div key={member.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <TrafficLightIndicator status={status} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium">{member.full_name}</span>
-                          <span className="text-sm text-muted-foreground">
-                            ({member.relationship || member.member_type}, {age})
-                          </span>
-                          {getStatusBadge(status)}
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-0.5">
-                          {status === "not_applicable" && (
-                            <>Under 16 - Turns 16: {format(addYears(new Date(member.date_of_birth), 16), "dd MMM yyyy")}</>
-                          )}
-                          {status === "compliant" && member.dbs_certificate_number && (
-                            <>DBS: Valid until {format(new Date(member.dbs_certificate_expiry_date!), "dd MMM yyyy")} • {member.dbs_certificate_number}</>
-                          )}
-                          {status === "pending" && member.dbs_status === "requested" && (
-                            <>DBS: Requested - Awaiting response</>
-                          )}
-                          {status === "critical" && age >= 16 && member.dbs_status === "not_requested" && (
-                            <>DBS: Not requested - Action required</>
-                          )}
-                        </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{member.full_name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({member.relationship || member.member_type}, {age})
+                        </span>
+                        {getStatusBadge(status)}
                       </div>
+                      <div className="text-sm text-muted-foreground mt-0.5">
+                        {status === "not_applicable" && (
+                          <>Under 16 - Turns 16: {format(addYears(new Date(member.date_of_birth), 16), "dd MMM yyyy")}</>
+                        )}
+                        {status === "compliant" && member.dbs_certificate_number && (
+                          <>DBS: Valid until {format(new Date(member.dbs_certificate_expiry_date!), "dd MMM yyyy")} • {member.dbs_certificate_number}</>
+                        )}
+                        {status === "pending" && member.dbs_status === "requested" && (
+                          <>DBS: Requested - Awaiting response</>
+                        )}
+                        {status === "critical" && age >= 16 && member.dbs_status === "not_requested" && (
+                          <>DBS: Not requested - Action required</>
+                        )}
+                      </div>
+                      {age >= 16 && (
+                        <DualTrafficLightIndicator 
+                          formStatus={formStatus}
+                          dbsStatus={dbsStatus}
+                          className="mt-2"
+                        />
+                      )}
                     </div>
                   </div>
 
