@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { AppleCard } from "@/components/admin/AppleCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Download, FileCheck, ChevronDown, ChevronUp, MoreVertical } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Mail, Download, FileCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TrafficLightIndicator } from "@/components/admin/application-detail/TrafficLightIndicator";
@@ -89,7 +88,6 @@ export const UnifiedAssistantComplianceCard = ({
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [forms, setForms] = useState<Map<string, AssistantFormData>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [expandedAssistant, setExpandedAssistant] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Modal states
@@ -271,16 +269,12 @@ export const UnifiedAssistantComplianceCard = ({
           ) : (
             assistants.map((assistant) => {
               const status = getTrafficLightStatus(assistant);
-              const isExpanded = expandedAssistant === assistant.id;
               const hasForm = forms.has(assistant.id);
 
               return (
                 <div key={assistant.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <div className="flex items-start justify-between gap-4">
-                    <button
-                      onClick={() => setExpandedAssistant(isExpanded ? null : assistant.id)}
-                      className="flex items-center gap-3 flex-1 text-left"
-                    >
+                    <div className="flex items-center gap-3 flex-1">
                       <TrafficLightIndicator status={status} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -301,86 +295,87 @@ export const UnifiedAssistantComplianceCard = ({
                           )}
                         </div>
                       </div>
-                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </button>
+                    </div>
                   </div>
 
-                  {isExpanded && (
-                    <div className="pt-3 border-t border-border space-y-2 text-sm">
-                      <div className="grid grid-cols-1 gap-2">
-                        <div>
-                          <span className="text-muted-foreground">Email:</span> {assistant.email || "Not provided"}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Phone:</span> {assistant.phone || "Not provided"}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">DOB:</span> {format(new Date(assistant.date_of_birth), "dd/MM/yyyy")}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">DBS Status:</span> {assistant.dbs_status.replace("_", " ")}
-                        </div>
-                        {assistant.dbs_certificate_number && (
-                          <div>
-                            <span className="text-muted-foreground">Certificate:</span> {assistant.dbs_certificate_number}
-                          </div>
-                        )}
+                  <div className="pt-3 border-t border-border space-y-2 text-sm">
+                    <div className="grid grid-cols-1 gap-2">
+                      <div>
+                        <span className="text-muted-foreground">Email:</span> {assistant.email || "Not provided"}
                       </div>
-                      {assistant.notes && (
-                        <div className="mt-2 p-2 bg-muted rounded text-xs">
-                          <span className="font-medium">Notes:</span> {assistant.notes}
+                      <div>
+                        <span className="text-muted-foreground">Phone:</span> {assistant.phone || "Not provided"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">DOB:</span> {format(new Date(assistant.date_of_birth), "dd/MM/yyyy")}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">DBS Status:</span> {assistant.dbs_status.replace("_", " ")}
+                      </div>
+                      {assistant.dbs_certificate_number && (
+                        <div>
+                          <span className="text-muted-foreground">Certificate:</span> {assistant.dbs_certificate_number}
                         </div>
                       )}
                     </div>
-                  )}
+                    {assistant.notes && (
+                      <div className="mt-2 p-2 bg-muted rounded text-xs">
+                        <span className="font-medium">Notes:</span> {assistant.notes}
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <MoreVertical className="h-4 w-4" />
-                          Actions
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedAssistant(assistant);
-                            setShowSendFormModal(true);
-                          }}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Compliance Form
-                        </DropdownMenuItem>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        setSelectedAssistant(assistant);
+                        setShowSendFormModal(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      Send Form
+                    </Button>
 
-                        {hasForm && (
-                          <DropdownMenuItem onClick={() => handleDownloadPDF(assistant)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download Submitted Form
-                          </DropdownMenuItem>
-                        )}
+                    {hasForm && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleDownloadPDF(assistant)}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    )}
 
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedAssistant(assistant);
-                            setShowDBSModal(true);
-                          }}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Request DBS Check
-                        </DropdownMenuItem>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        setSelectedAssistant(assistant);
+                        setShowDBSModal(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      Request DBS
+                    </Button>
 
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedAssistant(assistant);
-                            setShowCertModal(true);
-                          }}
-                        >
-                          <FileCheck className="h-4 w-4 mr-2" />
-                          Record DBS Certificate
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        setSelectedAssistant(assistant);
+                        setShowCertModal(true);
+                      }}
+                    >
+                      <FileCheck className="h-4 w-4" />
+                      Record Certificate
+                    </Button>
                   </div>
                 </div>
               );

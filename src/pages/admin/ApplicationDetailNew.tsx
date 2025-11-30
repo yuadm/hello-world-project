@@ -244,22 +244,6 @@ const ApplicationDetailNew = () => {
           onViewEmployee={() => navigate(`/admin/employees/${existingEmployeeId}`)}
         />
 
-        {/* Compliance Management - Traffic Light Style */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UnifiedHouseholdComplianceCard
-            parentId={id!}
-            parentType="application"
-            parentEmail={dbApplication.email}
-            parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
-          />
-          <UnifiedAssistantComplianceCard
-            parentId={id!}
-            parentType="application"
-            parentEmail={dbApplication.email}
-            parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
-          />
-        </div>
-
         {/* Main Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Row 1 */}
@@ -328,6 +312,22 @@ const ApplicationDetailNew = () => {
             reference2Contact={references.reference2?.contact}
           />
 
+        </div>
+
+        {/* Compliance Management - Traffic Light Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <UnifiedHouseholdComplianceCard
+            parentId={id!}
+            parentType="application"
+            parentEmail={dbApplication.email}
+            parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+          />
+          <UnifiedAssistantComplianceCard
+            parentId={id!}
+            parentType="application"
+            parentEmail={dbApplication.email}
+            parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+          />
         </div>
       </div>
     </AdminLayout>

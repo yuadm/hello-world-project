@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { AppleCard } from "@/components/admin/AppleCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Download, FileCheck, ChevronDown, ChevronUp, MoreVertical } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Mail, Download, FileCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TrafficLightIndicator } from "@/components/admin/application-detail/TrafficLightIndicator";
@@ -84,7 +83,6 @@ export const UnifiedHouseholdComplianceCard = ({
   const [members, setMembers] = useState<HouseholdMember[]>([]);
   const [forms, setForms] = useState<Map<string, HouseholdFormData>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [expandedMember, setExpandedMember] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Modal states
@@ -270,16 +268,12 @@ export const UnifiedHouseholdComplianceCard = ({
             members.map((member) => {
               const age = differenceInYears(new Date(), new Date(member.date_of_birth));
               const status = getTrafficLightStatus(member);
-              const isExpanded = expandedMember === member.id;
               const hasForm = forms.has(member.id);
 
               return (
                 <div key={member.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <div className="flex items-start justify-between gap-4">
-                    <button
-                      onClick={() => setExpandedMember(isExpanded ? null : member.id)}
-                      className="flex items-center gap-3 flex-1 text-left"
-                    >
+                    <div className="flex items-center gap-3 flex-1">
                       <TrafficLightIndicator status={status} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -304,87 +298,88 @@ export const UnifiedHouseholdComplianceCard = ({
                           )}
                         </div>
                       </div>
-                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </button>
+                    </div>
                   </div>
 
-                  {isExpanded && (
-                    <div className="pt-3 border-t border-border space-y-2 text-sm">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <span className="text-muted-foreground">Email:</span> {member.email || "Not provided"}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">DOB:</span> {format(new Date(member.date_of_birth), "dd/MM/yyyy")}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">DBS Status:</span> {member.dbs_status.replace("_", " ")}
-                        </div>
-                        {member.dbs_certificate_number && (
-                          <div>
-                            <span className="text-muted-foreground">Certificate:</span> {member.dbs_certificate_number}
-                          </div>
-                        )}
+                  <div className="pt-3 border-t border-border space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-muted-foreground">Email:</span> {member.email || "Not provided"}
                       </div>
-                      {member.notes && (
-                        <div className="mt-2 p-2 bg-muted rounded text-xs">
-                          <span className="font-medium">Notes:</span> {member.notes}
+                      <div>
+                        <span className="text-muted-foreground">DOB:</span> {format(new Date(member.date_of_birth), "dd/MM/yyyy")}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">DBS Status:</span> {member.dbs_status.replace("_", " ")}
+                      </div>
+                      {member.dbs_certificate_number && (
+                        <div>
+                          <span className="text-muted-foreground">Certificate:</span> {member.dbs_certificate_number}
                         </div>
                       )}
                     </div>
-                  )}
+                    {member.notes && (
+                      <div className="mt-2 p-2 bg-muted rounded text-xs">
+                        <span className="font-medium">Notes:</span> {member.notes}
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <MoreVertical className="h-4 w-4" />
-                          Actions
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56">
-                        <DropdownMenuItem
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setShowSendFormModal(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      Send Form
+                    </Button>
+
+                    {hasForm && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleDownloadPDF(member)}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    )}
+
+                    {age >= 16 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
                           onClick={() => {
                             setSelectedMember(member);
-                            setShowSendFormModal(true);
+                            setShowDBSModal(true);
                           }}
                         >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Compliance Form
-                        </DropdownMenuItem>
+                          <Mail className="h-4 w-4" />
+                          Request DBS
+                        </Button>
 
-                        {hasForm && (
-                          <DropdownMenuItem onClick={() => handleDownloadPDF(member)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download Submitted Form
-                          </DropdownMenuItem>
-                        )}
-
-                        {age >= 16 && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setShowDBSModal(true);
-                              }}
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Request DBS Check
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setShowCertModal(true);
-                              }}
-                            >
-                              <FileCheck className="h-4 w-4 mr-2" />
-                              Record DBS Certificate
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setShowCertModal(true);
+                          }}
+                        >
+                          <FileCheck className="h-4 w-4" />
+                          Record Certificate
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               );
