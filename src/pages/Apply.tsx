@@ -304,8 +304,7 @@ const Apply = () => {
               date_of_birth: adult.dob,
               relationship: adult.relationship,
               member_type: 'adult',
-              dbs_status: 'not_requested' as const,
-              form_status: 'not_sent' as const
+              dbs_status: 'not_requested' as const
             });
           }
         }
@@ -320,8 +319,7 @@ const Apply = () => {
               date_of_birth: child.dob,
               relationship: 'Child',
               member_type: age >= 16 ? 'adult' : 'child',
-              dbs_status: age >= 16 ? ('not_requested' as const) : null,
-              form_status: age >= 16 ? ('not_sent' as const) : null
+              dbs_status: age >= 16 ? ('not_requested' as const) : ('not_requested' as const)
             });
           }
         }
