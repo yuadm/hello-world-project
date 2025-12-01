@@ -130,11 +130,17 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // If this is an assistant DBS request (application stage)
+    // If this is an assistant DBS request (application or employee stage)
     if (isAssistant) {
+      console.log("Processing assistant DBS request for:", memberId);
+      
       const { data: assistantData, error: assistantError } = await supabase
-        .from("assistant_dbs_tracking")
-        .select("*, childminder_applications!inner(first_name, last_name, email)")
+        .from("compliance_assistants")
+        .select(`
+          *,
+          childminder_applications!compliance_assistants_application_id_fkey(first_name, last_name, email),
+          employees!compliance_assistants_employee_id_fkey(first_name, last_name, email)
+        `)
         .eq("id", memberId)
         .single();
 
@@ -142,6 +148,36 @@ const handler = async (req: Request): Promise<Response> => {
         console.error("Assistant not found:", assistantError);
         throw new Error("Assistant not found");
       }
+
+      // Update assistant tracking - mark DBS as requested
+      const { error: updateError } = await supabase
+        .from("compliance_assistants")
+        .update({
+          dbs_status: "requested",
+          dbs_request_date: new Date().toISOString(),
+          email: memberEmail,
+          reminder_count: (assistantData.reminder_count || 0) + 1,
+          last_reminder_date: new Date().toISOString(),
+          last_contact_date: new Date().toISOString(),
+          reminder_history: [
+            ...(assistantData.reminder_history || []),
+            {
+              date: new Date().toISOString(),
+              type: "dbs_request",
+              sent_to: memberEmail,
+            },
+          ],
+        })
+        .eq("id", memberId);
+
+      if (updateError) {
+        console.error("Error updating assistant tracking:", updateError);
+        throw updateError;
+      }
+
+      // Determine parent details (application or employee)
+      const parentDetails = assistantData.childminder_applications || assistantData.employees;
+      const parentType = assistantData.application_id ? "application" : "employee";
 
       const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
@@ -159,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
           htmlContent: `
             <h1>DBS Check Required</h1>
             <p>Dear ${assistantData.first_name} ${assistantData.last_name},</p>
-            <p>You have been listed as an assistant for ${assistantData.childminder_applications.first_name} ${assistantData.childminder_applications.last_name}, who is applying for childminder registration.</p>
+            <p>You have been listed as an assistant for ${parentDetails.first_name} ${parentDetails.last_name}, who is ${parentType === "application" ? "applying for" : "a registered"} childminder.</p>
             <p>As part of this process, we need you to complete an Enhanced DBS (Disclosure and Barring Service) check.</p>
             
             <p><strong>What you need to do:</strong></p>
@@ -180,9 +216,12 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (!emailResponse.ok) {
-        console.error("Failed to send assistant DBS request email");
+        const errorText = await emailResponse.text();
+        console.error("Failed to send assistant DBS request email:", errorText);
         throw new Error("Failed to send email");
       }
+
+      console.log("Assistant DBS request email sent successfully");
 
       return new Response(JSON.stringify({ 
         success: true,
