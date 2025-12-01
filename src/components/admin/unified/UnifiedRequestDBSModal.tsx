@@ -58,11 +58,10 @@ export function UnifiedRequestDBSModal({
         {
           body: {
             memberId,
-            memberName,
             memberEmail,
-            parentId,
-            parentType,
-            parentName,
+            isEmployee: parentType === 'employee',
+            employeeName: parentType === 'employee' ? parentName : undefined,
+            applicantName: parentType === 'application' ? parentName : undefined,
           },
         }
       );

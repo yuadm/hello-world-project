@@ -244,8 +244,8 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Determine which table to use for household members
-    const tableName = isEmployee ? "employee_household_members" : "household_member_dbs_tracking";
+    // Use unified compliance_household_members table for household members
+    const tableName = "compliance_household_members";
     const contextName = isEmployee ? employeeName : applicantName;
 
     // Get member details
