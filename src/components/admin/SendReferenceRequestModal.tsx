@@ -56,6 +56,7 @@ export const SendReferenceRequestModal = ({
           refereeEmail: email,
           isChildcareReference,
           applicantName,
+          siteUrl: window.location.origin,
         },
       });
 
