@@ -1,14 +1,41 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-interface EmployeeAssistant {
+const assistantSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required").max(100, "First name must be less than 100 characters"),
+  last_name: z.string().trim().min(1, "Last name is required").max(100, "Last name must be less than 100 characters"),
+  email: z.string().email("Invalid email format").max(255).optional().or(z.literal('')),
+  phone: z.string().max(20).optional().or(z.literal('')),
+  role: z.string().trim().min(1, "Role is required").max(100, "Role must be less than 100 characters"),
+  date_of_birth: z.string().refine((date) => {
+    const dob = new Date(date);
+    const now = new Date();
+    const minDate = new Date('1900-01-01');
+    return dob <= now && dob >= minDate;
+  }, "Invalid date - must be between 1900 and today"),
+});
+
+type AssistantFormData = z.infer<typeof assistantSchema>;
+
+interface Assistant {
   id: string;
+  employee_id?: string;
+  application_id?: string;
   first_name: string;
   last_name: string;
   email: string | null;
@@ -20,36 +47,38 @@ interface EmployeeAssistant {
 interface AddEditEmployeeAssistantModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  employeeId: string;
-  employeeEmail: string;
-  employeeName: string;
-  assistant: EmployeeAssistant | null;
-  onSuccess: () => void;
+  assistant: Assistant | null;
+  parentId: string;
+  parentType: 'application' | 'employee';
+  onSave: () => void;
 }
 
 export const AddEditEmployeeAssistantModal = ({
   open,
   onOpenChange,
-  employeeId,
-  employeeEmail,
-  employeeName,
   assistant,
-  onSuccess,
+  parentId,
+  parentType,
+  onSave,
 }: AddEditEmployeeAssistantModalProps) => {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    role: "",
-    date_of_birth: "",
+  const [saving, setSaving] = useState(false);
+
+  const form = useForm<AssistantFormData>({
+    resolver: zodResolver(assistantSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      role: "",
+      date_of_birth: "",
+    },
   });
 
   useEffect(() => {
     if (assistant) {
-      setFormData({
+      form.reset({
         first_name: assistant.first_name,
         last_name: assistant.last_name,
         email: assistant.email || "",
@@ -58,7 +87,7 @@ export const AddEditEmployeeAssistantModal = ({
         date_of_birth: assistant.date_of_birth,
       });
     } else {
-      setFormData({
+      form.reset({
         first_name: "",
         last_name: "",
         email: "",
@@ -67,181 +96,176 @@ export const AddEditEmployeeAssistantModal = ({
         date_of_birth: "",
       });
     }
-  }, [assistant, open]);
+  }, [assistant, form, open]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleSubmit = async (data: AssistantFormData) => {
+    setSaving(true);
     try {
+      const assistantData = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email || null,
+        phone: data.phone || null,
+        role: data.role,
+        date_of_birth: data.date_of_birth,
+      };
+
       if (assistant) {
         // Update existing assistant
         const { error } = await supabase
-          .from('employee_assistants' as any)
-          .update(formData)
+          .from('compliance_assistants')
+          .update(assistantData)
           .eq('id', assistant.id);
 
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Assistant updated successfully",
+          title: "Assistant Updated",
+          description: `${data.first_name} ${data.last_name} has been updated successfully.`,
         });
       } else {
-        // Add new assistant
-        const { data: newAssistant, error: insertError } = await supabase
-          .from('employee_assistants' as any)
+        // Add new assistant with polymorphic reference
+        const { error } = await supabase
+          .from('compliance_assistants')
           .insert({
-            ...formData,
-            employee_id: employeeId,
-          })
-          .select()
-          .single();
+            ...assistantData,
+            [parentType === 'application' ? 'application_id' : 'employee_id']: parentId,
+          });
 
-        if (insertError) throw insertError;
+        if (error) throw error;
 
-        const assistantData = newAssistant as any;
-
-        // Automatically send form email
-        const { error: emailError } = await supabase.functions.invoke('send-assistant-form-email', {
-          body: {
-            assistantId: assistantData.id,
-            employeeEmail: employeeEmail,
-            employeeName: employeeName,
-            isEmployee: true,
-          }
+        toast({
+          title: "Assistant Added",
+          description: `${data.first_name} ${data.last_name} has been added successfully.`,
         });
-
-        if (emailError) {
-          console.error('Failed to send form email:', emailError);
-          toast({
-            title: "Assistant Added",
-            description: "Assistant added but failed to send form email. You can resend it manually.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Assistant added and form email sent successfully",
-          });
-        }
       }
 
-      onSuccess();
+      onSave();
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to save assistant",
+        title: "Failed to Save",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl max-w-2xl">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {assistant ? "Edit Assistant" : "Add Assistant"}
-          </DialogTitle>
+          <DialogTitle>{assistant ? 'Edit' : 'Add'} Assistant</DialogTitle>
           <DialogDescription>
-            {assistant 
-              ? "Update assistant information" 
-              : "Add a new assistant and automatically send them the CMA-A1 form"}
+            {assistant ? `Update details for ${assistant.first_name} ${assistant.last_name}` : 'Add a new assistant or co-childminder'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="first_name">First Name *</Label>
-              <Input
-                id="first_name"
-                value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                required
-                className="rounded-xl"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="first_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter first name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter last name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="last_name">Last Name *</Label>
-              <Input
-                id="last_name"
-                value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                required
-                className="rounded-xl"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              className="rounded-xl"
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="email@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="rounded-xl"
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="Enter phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
-            <Input
-              id="role"
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              required
-              placeholder="e.g., Assistant Childminder, Co-childminder"
-              className="rounded-xl"
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Assistant, Co-childminder" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="date_of_birth">Date of Birth *</Label>
-            <Input
-              id="date_of_birth"
-              type="date"
-              value={formData.date_of_birth}
-              onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-              required
-              className="rounded-xl"
+            <FormField
+              control={form.control}
+              name="date_of_birth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Birth *</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex gap-3 justify-end pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-              className="rounded-xl"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading} className="rounded-xl">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {assistant ? "Update" : "Add & Send Form"}
-            </Button>
-          </div>
-        </form>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Saving...' : `${assistant ? 'Update' : 'Add'} Assistant`}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
