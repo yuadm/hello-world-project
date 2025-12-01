@@ -434,33 +434,33 @@ export const UnifiedHouseholdComplianceCard = ({
                       </>
                     )}
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setShowSendFormModal(true);
-                      }}
-                    >
-                      <Mail className="h-4 w-4" />
-                      Send Form
-                    </Button>
-
-                    {hasForm && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => handleDownloadPDF(member)}
-                      >
-                        <Download className="h-4 w-4" />
-                        Download PDF
-                      </Button>
-                    )}
-
                     {age >= 16 && (
                       <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setShowSendFormModal(true);
+                          }}
+                        >
+                          <Mail className="h-4 w-4" />
+                          Send Form
+                        </Button>
+
+                        {hasForm && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => handleDownloadPDF(member)}
+                          >
+                            <Download className="h-4 w-4" />
+                            Download PDF
+                          </Button>
+                        )}
+
                         <Button
                           variant="outline"
                           size="sm"
