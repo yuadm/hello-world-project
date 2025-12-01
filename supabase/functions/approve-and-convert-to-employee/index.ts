@@ -183,6 +183,37 @@ Deno.serve(async (req) => {
       console.log('[approve-and-convert] Assistant forms transferred:', assistantForms?.length || 0);
     }
 
+    // 5. Transfer reference requests from application to employee
+    const { data: referenceRequests, error: updateRefsError } = await supabase
+      .from('reference_requests')
+      .update({
+        employee_id: employee.id,
+        application_id: null,
+      })
+      .eq('application_id', applicationId)
+      .select('id, referee_name, request_status');
+
+    if (updateRefsError) {
+      console.error('[approve-and-convert] Failed to transfer reference requests:', updateRefsError.message);
+      // Don't throw - references are optional
+    } else {
+      console.log('[approve-and-convert] Reference requests transferred:', referenceRequests?.length || 0);
+    }
+
+    // 6. Copy applicant_references to employee record
+    const { error: updateRefsDataError } = await supabase
+      .from('employees')
+      .update({
+        applicant_references: application.applicant_references,
+      })
+      .eq('id', employee.id);
+
+    if (updateRefsDataError) {
+      console.error('[approve-and-convert] Failed to copy applicant_references:', updateRefsDataError.message);
+    } else {
+      console.log('[approve-and-convert] Applicant references data copied to employee');
+    }
+
     // Update application status to approved
     const { error: updateError } = await supabase
       .from('childminder_applications')
@@ -201,6 +232,7 @@ Deno.serve(async (req) => {
         employeeId: employee.id,
         householdMembersCount: householdMembers?.length || 0,
         assistantsCount: assistants?.length || 0,
+        referenceRequestsCount: referenceRequests?.length || 0,
         message: 'Application approved and all compliance data transferred to employee record'
       }),
       {

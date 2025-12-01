@@ -819,6 +819,7 @@ export type Database = {
           address_line_1: string | null
           address_line_2: string | null
           age_groups_cared_for: Json | null
+          applicant_references: Json | null
           application_id: string | null
           compliance_status: string | null
           county: string | null
@@ -869,6 +870,7 @@ export type Database = {
           address_line_1?: string | null
           address_line_2?: string | null
           age_groups_cared_for?: Json | null
+          applicant_references?: Json | null
           application_id?: string | null
           compliance_status?: string | null
           county?: string | null
@@ -919,6 +921,7 @@ export type Database = {
           address_line_1?: string | null
           address_line_2?: string | null
           age_groups_cared_for?: Json | null
+          applicant_references?: Json | null
           application_id?: string | null
           compliance_status?: string | null
           county?: string | null

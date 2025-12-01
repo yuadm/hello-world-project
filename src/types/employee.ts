@@ -2,6 +2,21 @@ export type EmploymentStatus = 'active' | 'on_leave' | 'terminated';
 export type MemberType = 'adult' | 'child';
 export type DBSStatus = 'not_requested' | 'requested' | 'received' | 'expired';
 
+export interface ApplicantReferences {
+  reference1?: {
+    name?: string;
+    relationship?: string;
+    contact?: string;
+    childcare?: boolean;
+  };
+  reference2?: {
+    name?: string;
+    relationship?: string;
+    contact?: string;
+    childcare?: boolean;
+  };
+}
+
 export interface Employee {
   id: string;
   application_id: string | null;
@@ -38,6 +53,7 @@ export interface Employee {
   dbs_certificate_date: string | null;
   dbs_certificate_expiry_date: string | null;
   dbs_status: DBSStatus;
+  applicant_references: ApplicantReferences | null;
   created_at: string;
   updated_at: string;
 }

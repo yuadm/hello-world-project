@@ -11,10 +11,12 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { Employee } from "@/types/employee";
 import { UnifiedHouseholdComplianceCard } from "@/components/admin/unified/UnifiedHouseholdComplianceCard";
 import { UnifiedAssistantComplianceCard } from "@/components/admin/unified/UnifiedAssistantComplianceCard";
+import { ReferencesCard } from "@/components/admin/application-detail/ReferencesCard";
 import { 
   getEmploymentStatusConfig,
 } from "@/lib/employeeHelpers";
 import { Badge } from "@/components/ui/badge";
+import { ApplicantReferences } from "@/types/employee";
 
 const AdminEmployeeDetail = () => {
   const { id } = useParams();
@@ -184,6 +186,18 @@ const AdminEmployeeDetail = () => {
             parentType="employee"
             parentEmail={employee.email}
             parentName={`${employee.first_name} ${employee.last_name}`}
+          />
+          <ReferencesCard
+            employeeId={id!}
+            applicantName={`${employee.first_name} ${employee.last_name}`}
+            reference1Name={(employee.applicant_references as ApplicantReferences)?.reference1?.name || ""}
+            reference1Relationship={(employee.applicant_references as ApplicantReferences)?.reference1?.relationship || ""}
+            reference1Contact={(employee.applicant_references as ApplicantReferences)?.reference1?.contact || ""}
+            reference1Childcare={(employee.applicant_references as ApplicantReferences)?.reference1?.childcare ? "Yes" : "No"}
+            reference2Name={(employee.applicant_references as ApplicantReferences)?.reference2?.name || ""}
+            reference2Relationship={(employee.applicant_references as ApplicantReferences)?.reference2?.relationship || ""}
+            reference2Contact={(employee.applicant_references as ApplicantReferences)?.reference2?.contact || ""}
+            reference2Childcare={(employee.applicant_references as ApplicantReferences)?.reference2?.childcare ? "Yes" : "No"}
           />
         </div>
       </div>
