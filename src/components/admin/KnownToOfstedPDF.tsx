@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderBottomWidth: 2,
     borderBottomColor: '#000',
-    borderBottomStyle: 'solid',
     paddingBottom: 10,
   },
   title: {
@@ -47,7 +46,6 @@ const styles = StyleSheet.create({
   addressBox: {
     borderWidth: 1,
     borderColor: '#000',
-    borderStyle: 'solid',
     padding: 10,
     marginBottom: 10,
   },
@@ -61,16 +59,19 @@ const styles = StyleSheet.create({
     height: 12,
     borderWidth: 1,
     borderColor: '#000',
-    borderStyle: 'solid',
     marginRight: 8,
   },
   checkboxChecked: {
+    width: 12,
+    height: 12,
+    borderWidth: 1,
+    borderColor: '#000',
+    marginRight: 8,
     backgroundColor: '#000',
   },
   emptySection: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderStyle: 'solid',
     padding: 20,
     marginTop: 10,
     backgroundColor: '#fafafa',
@@ -86,7 +87,6 @@ const styles = StyleSheet.create({
     color: '#666',
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    borderTopStyle: 'solid',
     paddingTop: 10,
   },
 });
@@ -130,7 +130,7 @@ export const KnownToOfstedPDF = ({
   agencyName = 'Childminder Agency',
   ofstedEmail = 'childminder.agencies@ofsted.gov.uk',
 }: KnownToOfstedPDFProps) => {
-  const roleLabels = {
+  const roleLabels: Record<string, string> = {
     childminder: 'Childminder/Sole Proprietor',
     household_member: 'Household Member over 16',
     assistant: 'Assistant',
@@ -141,23 +141,21 @@ export const KnownToOfstedPDF = ({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Ofsted</Text>
           <Text style={styles.subtitle}>Raising standards, improving lives</Text>
         </View>
 
         <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 20 }}>
-          'Known to Ofsted' Application Form
+          Known to Ofsted Application Form
         </Text>
 
-        {/* Section A: Applicant's Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Section A: Applicant's Details (To be completed by agency)</Text>
+          <Text style={styles.sectionTitle}>Section A: Applicant Details (To be completed by agency)</Text>
 
           <View style={styles.row}>
-            <Text style={styles.label}>Applicant's full name:</Text>
-            <Text style={styles.value}>{applicantName}</Text>
+            <Text style={styles.label}>Applicant full name:</Text>
+            <Text style={styles.value}>{applicantName || 'N/A'}</Text>
           </View>
 
           {previousNames && previousNames.length > 0 ? (
@@ -173,17 +171,17 @@ export const KnownToOfstedPDF = ({
 
           <View style={styles.row}>
             <Text style={styles.label}>Date of birth:</Text>
-            <Text style={styles.value}>{dateOfBirth}</Text>
+            <Text style={styles.value}>{dateOfBirth || 'N/A'}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Current address:</Text>
-          <View style={styles.addressBox}>
-              <Text>{currentAddress.line1 || ''}</Text>
-              {currentAddress.line2 ? <Text>{currentAddress.line2}</Text> : null}
-              <Text>{currentAddress.town || ''}</Text>
-              <Text>{currentAddress.postcode || ''}</Text>
-              <Text style={{ marginTop: 5, fontSize: 9 }}>Date from: {currentAddress.moveInDate || 'N/A'}</Text>
+            <View style={styles.addressBox}>
+              <Text>{currentAddress?.line1 || 'Not provided'}</Text>
+              {currentAddress?.line2 ? <Text>{currentAddress.line2}</Text> : null}
+              <Text>{currentAddress?.town || 'Not provided'}</Text>
+              <Text>{currentAddress?.postcode || 'Not provided'}</Text>
+              <Text style={{ marginTop: 5, fontSize: 9 }}>Date from: {currentAddress?.moveInDate || 'N/A'}</Text>
             </View>
           </View>
 
@@ -205,14 +203,14 @@ export const KnownToOfstedPDF = ({
 
           <View style={styles.row}>
             <Text style={styles.label}>Date of request to Ofsted:</Text>
-            <Text style={styles.value}>{requestDate}</Text>
+            <Text style={styles.value}>{requestDate || 'N/A'}</Text>
           </View>
 
           <View style={{ marginTop: 15, marginBottom: 10 }}>
-            <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Applicant's role (please tick):</Text>
+            <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Applicant role (please tick):</Text>
             {Object.entries(roleLabels).map(([key, label]) => (
               <View key={key} style={styles.checkboxRow}>
-                <View style={role === key ? [styles.checkbox, styles.checkboxChecked] : styles.checkbox} />
+                <View style={role === key ? styles.checkboxChecked : styles.checkbox} />
                 <Text>{label}</Text>
               </View>
             ))}
@@ -223,32 +221,31 @@ export const KnownToOfstedPDF = ({
               Is information required on the number and ages of children involved in any past Ofsted judgement?
             </Text>
             <View style={styles.checkboxRow}>
-              <View style={requireChildInfo ? [styles.checkbox, styles.checkboxChecked] : styles.checkbox} />
+              <View style={requireChildInfo ? styles.checkboxChecked : styles.checkbox} />
               <Text>Yes</Text>
             </View>
             <View style={styles.checkboxRow}>
-              <View style={!requireChildInfo ? [styles.checkbox, styles.checkboxChecked] : styles.checkbox} />
+              <View style={!requireChildInfo ? styles.checkboxChecked : styles.checkbox} />
               <Text>No</Text>
             </View>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Name of requester:</Text>
-            <Text style={styles.value}>{requesterName}</Text>
+            <Text style={styles.value}>{requesterName || 'N/A'}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Role at childminder agency:</Text>
-            <Text style={styles.value}>{requesterRole}</Text>
+            <Text style={styles.value}>{requesterRole || 'N/A'}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Agency name:</Text>
-            <Text style={styles.value}>{agencyName}</Text>
+            <Text style={styles.value}>{agencyName || 'N/A'}</Text>
           </View>
         </View>
 
-        {/* Section B: For Ofsted to complete */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Section B: For Ofsted to Complete</Text>
           <View style={styles.emptySection}>
@@ -258,7 +255,6 @@ export const KnownToOfstedPDF = ({
           </View>
         </View>
 
-        {/* Section C: Additional Information */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Section C: Additional Information (If applicable)</Text>
           <View style={styles.emptySection}>
@@ -268,7 +264,6 @@ export const KnownToOfstedPDF = ({
           </View>
         </View>
 
-        {/* Section D: Data Protection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Section D: Data Protection Statement</Text>
           <View style={styles.emptySection}>
@@ -278,12 +273,11 @@ export const KnownToOfstedPDF = ({
           </View>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <Text>Generated: {new Date().toLocaleDateString('en-GB')}</Text>
           <Text>Form version: May 2022</Text>
           <Text style={{ marginTop: 5 }}>
-            This form should be sent to: {ofstedEmail}
+            This form should be sent to: {ofstedEmail || 'childminder.agencies@ofsted.gov.uk'}
           </Text>
         </View>
       </Page>
