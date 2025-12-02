@@ -12,6 +12,8 @@ import { Employee } from "@/types/employee";
 import { UnifiedHouseholdComplianceCard } from "@/components/admin/unified/UnifiedHouseholdComplianceCard";
 import { UnifiedAssistantComplianceCard } from "@/components/admin/unified/UnifiedAssistantComplianceCard";
 import { ReferencesCard } from "@/components/admin/application-detail/ReferencesCard";
+import { EmployeeDBSCard } from "@/components/admin/employee-detail/EmployeeDBSCard";
+import { RequestEmployeeDBSModal } from "@/components/admin/RequestEmployeeDBSModal";
 import { 
   getEmploymentStatusConfig,
 } from "@/lib/employeeHelpers";
@@ -24,6 +26,7 @@ const AdminEmployeeDetail = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [dbsModalOpen, setDbsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEmployeeData();
@@ -174,7 +177,14 @@ const AdminEmployeeDetail = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <EmployeeDBSCard
+            dbsStatus={employee.dbs_status || "not_requested"}
+            dbsCertificateNumber={employee.dbs_certificate_number}
+            dbsCertificateDate={employee.dbs_certificate_date}
+            dbsCertificateExpiryDate={employee.dbs_certificate_expiry_date}
+            onRequestDBS={() => setDbsModalOpen(true)}
+          />
           <UnifiedHouseholdComplianceCard
             parentId={id!}
             parentType="employee"
@@ -200,6 +210,15 @@ const AdminEmployeeDetail = () => {
             reference2Childcare={(employee.applicant_references as ApplicantReferences)?.reference2?.childcare ? "Yes" : "No"}
           />
         </div>
+
+        <RequestEmployeeDBSModal
+          open={dbsModalOpen}
+          onOpenChange={setDbsModalOpen}
+          employeeId={id!}
+          employeeName={`${employee.first_name} ${employee.last_name}`}
+          employeeEmail={employee.email}
+          onSuccess={fetchEmployeeData}
+        />
       </div>
     </AdminLayout>
   );

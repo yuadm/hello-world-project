@@ -100,6 +100,9 @@ Deno.serve(async (req) => {
         level_2_completion_date: application.level_2_completion_date,
         employment_status: 'active',
         employment_start_date: new Date().toISOString().split('T')[0],
+        // Transfer DBS data from application
+        dbs_certificate_number: application.dbs_number || null,
+        dbs_status: application.has_dbs === 'Yes' && application.dbs_number ? 'received' : 'not_requested',
       })
       .select()
       .single();

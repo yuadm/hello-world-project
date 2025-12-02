@@ -232,6 +232,99 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // If this is a direct employee DBS request
+    if (isEmployee && !isApplicant && employeeId) {
+      console.log("Processing direct employee DBS request for:", employeeId);
+      
+      // Get current reminder count
+      const { data: empData, error: fetchError } = await supabase
+        .from("employees")
+        .select("reminder_count, reminder_history")
+        .eq("id", employeeId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching employee data:", fetchError);
+        throw fetchError;
+      }
+      
+      // Update employee tracking - mark DBS as requested
+      const { error: updateError } = await supabase
+        .from("employees")
+        .update({
+          dbs_status: "requested",
+          dbs_request_date: new Date().toISOString(),
+          last_contact_date: new Date().toISOString(),
+          reminder_count: (empData?.reminder_count || 0) + 1,
+          last_reminder_date: new Date().toISOString(),
+          reminder_history: [
+            ...(empData?.reminder_history || []),
+            {
+              date: new Date().toISOString(),
+              type: "dbs_request",
+              sent_to: memberEmail,
+            },
+          ],
+        })
+        .eq("id", employeeId);
+
+      if (updateError) {
+        console.error("Error updating employee DBS tracking:", updateError);
+        throw updateError;
+      }
+
+      const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": brevoApiKey!,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { 
+            name: "Childminder Registration", 
+            email: "yuadm3@gmail.com"
+          },
+          to: [{ email: memberEmail, name: employeeName }],
+          subject: "DBS Check Required - Action Needed",
+          htmlContent: `
+            <h1>DBS Check Required</h1>
+            <p>Dear ${employeeName},</p>
+            <p>As a registered childminder, we need you to complete an Enhanced DBS (Disclosure and Barring Service) check.</p>
+            
+            <p><strong>What you need to do:</strong></p>
+            <ul>
+              <li>Please contact the registration team to arrange your DBS check</li>
+              <li>You will need to provide identification documents</li>
+              <li>The process typically takes 2-4 weeks</li>
+            </ul>
+
+            <p><strong>Important:</strong> Your registration status requires an up-to-date DBS certificate.</p>
+
+            <p>If you have any questions or need to schedule your DBS check, please contact:</p>
+            <p>Email: yuadm3@gmail.com</p>
+
+            <p>Best regards,<br>Childminder Registration Team</p>
+          `,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        console.error("Failed to send employee DBS request email:", errorText);
+        throw new Error("Failed to send email");
+      }
+
+      console.log("Employee DBS request email sent successfully");
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        message: "Employee DBS request sent successfully"
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     // If this is an applicant DBS request, skip member lookup and just send email
     if (isApplicant) {
       const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
