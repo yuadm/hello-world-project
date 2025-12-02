@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileCheck } from "lucide-react";
+import { ArrowLeft, FileCheck, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pdf } from '@react-pdf/renderer';
 import { ApplicationPDF } from "@/components/admin/ApplicationPDF";
+import { GenerateOfstedFormModal } from "@/components/admin/GenerateOfstedFormModal";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { ApplicationHero } from "@/components/admin/application-detail/ApplicationHero";
 import { AdminApplicationEditForm } from "@/components/admin/AdminApplicationEditForm";
@@ -108,6 +109,7 @@ const ApplicationDetailNew = () => {
   const [dbApplication, setDbApplication] = useState<DBApplication | null>(null);
   const [existingEmployeeId, setExistingEmployeeId] = useState<string | null>(null);
   const [showDBSRequestModal, setShowDBSRequestModal] = useState(false);
+  const [showOfstedModal, setShowOfstedModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -278,17 +280,28 @@ const ApplicationDetailNew = () => {
         </Button>
 
         {/* Hero Section */}
-        <ApplicationHero
-          applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
-          email={dbApplication.email}
-          status={dbApplication.status}
-          updating={updating}
-          existingEmployeeId={existingEmployeeId}
-          onStatusChange={updateStatus}
-          onDownloadPDF={downloadPDF}
-          onViewEmployee={() => navigate(`/admin/employees/${existingEmployeeId}`)}
-          onEdit={() => setIsEditing(true)}
-        />
+        <div className="space-y-4">
+          <ApplicationHero
+            applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+            email={dbApplication.email}
+            status={dbApplication.status}
+            updating={updating}
+            existingEmployeeId={existingEmployeeId}
+            onStatusChange={updateStatus}
+            onDownloadPDF={downloadPDF}
+            onViewEmployee={() => navigate(`/admin/employees/${existingEmployeeId}`)}
+            onEdit={() => setIsEditing(true)}
+          />
+          
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => setShowOfstedModal(true)}
+          >
+            <FileText className="h-4 w-4" />
+            Generate Known to Ofsted Form
+          </Button>
+        </div>
 
         {/* Edit Mode or View Mode */}
         {isEditing ? (
@@ -462,6 +475,31 @@ const ApplicationDetailNew = () => {
           applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
           applicantEmail={dbApplication.email}
           onSuccess={fetchApplication}
+        />
+
+        <GenerateOfstedFormModal
+          open={showOfstedModal}
+          onOpenChange={setShowOfstedModal}
+          applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+          dateOfBirth={dbApplication.date_of_birth}
+          currentAddress={{
+            line1: dbApplication.current_address?.line1 || '',
+            line2: dbApplication.current_address?.line2,
+            town: dbApplication.current_address?.town || '',
+            postcode: dbApplication.current_address?.postcode || '',
+            moveInDate: dbApplication.home_move_in || '',
+          }}
+          previousAddresses={dbApplication.address_history?.map((addr: any) => ({
+            address: addr.address || '',
+            dateFrom: addr.moveIn || '',
+            dateTo: addr.moveOut || '',
+          }))}
+          previousNames={dbApplication.previous_names?.map((prev: any) => ({
+            name: prev.fullName || '',
+            dateFrom: prev.dateFrom || '',
+            dateTo: prev.dateTo || '',
+          }))}
+          role="childminder"
         />
       </div>
     </AdminLayout>

@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { AppleCard } from "@/components/admin/AppleCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Download, FileCheck, Plus, Trash2 } from "lucide-react";
+import { Mail, Download, FileCheck, Plus, Trash2, FileText } from "lucide-react";
 import { AddEditEmployeeAssistantModal } from "@/components/admin/AddEditEmployeeAssistantModal";
+import { GenerateOfstedFormModal } from "@/components/admin/GenerateOfstedFormModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -108,6 +109,7 @@ export const UnifiedAssistantComplianceCard = ({
   const [showCertModal, setShowCertModal] = useState(false);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showOfstedModal, setShowOfstedModal] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant | null>(null);
 
   useEffect(() => {
@@ -472,6 +474,21 @@ export const UnifiedAssistantComplianceCard = ({
                       <FileCheck className="h-4 w-4" />
                       Record Certificate
                     </Button>
+
+                    {hasForm && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          setSelectedAssistant(assistant);
+                          setShowOfstedModal(true);
+                        }}
+                      >
+                        <FileText className="h-4 w-4" />
+                        Ofsted Check
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
@@ -563,6 +580,41 @@ export const UnifiedAssistantComplianceCard = ({
           onSuccess={loadAssistants}
         />
       )}
+
+      {showOfstedModal && selectedAssistant && (() => {
+        const form = forms.get(selectedAssistant.id);
+        if (!form) return null;
+        
+        return (
+          <GenerateOfstedFormModal
+            open={showOfstedModal}
+            onOpenChange={(open) => {
+              setShowOfstedModal(open);
+              if (!open) setSelectedAssistant(null);
+            }}
+            applicantName={`${selectedAssistant.first_name} ${selectedAssistant.last_name}`}
+            dateOfBirth={selectedAssistant.date_of_birth}
+            currentAddress={{
+              line1: form.current_address?.line1 || '',
+              line2: form.current_address?.line2,
+              town: form.current_address?.town || '',
+              postcode: form.current_address?.postcode || '',
+              moveInDate: form.current_address?.moveInDate || '',
+            }}
+            previousAddresses={form.address_history?.map((addr: any) => ({
+              address: addr.address || '',
+              dateFrom: addr.moveIn || '',
+              dateTo: addr.moveOut || '',
+            }))}
+            previousNames={form.previous_names?.map((prev: any) => ({
+              name: prev.fullName || '',
+              dateFrom: prev.dateFrom || '',
+              dateTo: prev.dateTo || '',
+            }))}
+            role="assistant"
+          />
+        );
+      })()}
     </>
   );
 };
