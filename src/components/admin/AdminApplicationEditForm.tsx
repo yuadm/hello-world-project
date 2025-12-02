@@ -66,6 +66,98 @@ export const AdminApplicationEditForm = ({
     }
   };
 
+  const syncComplianceTables = async (data: Partial<ChildminderApplication>) => {
+    // Sync assistants from assistants array
+    const assistants = data.assistants || [];
+    for (const assistant of assistants) {
+      if (!assistant.firstName || !assistant.lastName) continue;
+      
+      // Try to find existing assistant by matching name
+      const { data: existingAssistants } = await supabase
+        .from("compliance_assistants")
+        .select("id, first_name, last_name, date_of_birth")
+        .eq("application_id", applicationId);
+
+      // Find matching assistant by original or similar name
+      const matchingAssistant = existingAssistants?.find(
+        (a) => 
+          (a.first_name?.toLowerCase() === assistant.firstName?.toLowerCase() ||
+           a.last_name?.toLowerCase() === assistant.lastName?.toLowerCase())
+      );
+
+      if (matchingAssistant) {
+        await supabase
+          .from("compliance_assistants")
+          .update({
+            first_name: assistant.firstName,
+            last_name: assistant.lastName,
+            date_of_birth: assistant.dob || matchingAssistant.date_of_birth,
+            role: assistant.role || "Assistant",
+            email: assistant.email,
+            phone: assistant.phone,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", matchingAssistant.id);
+      }
+    }
+
+    // Sync household members from adults and children arrays
+    const adults = data.adults || [];
+    const children = data.children || [];
+    
+    for (const adult of adults) {
+      if (!adult.fullName) continue;
+
+      const { data: existingMembers } = await supabase
+        .from("compliance_household_members")
+        .select("id, full_name, date_of_birth")
+        .eq("application_id", applicationId)
+        .eq("member_type", "adult");
+
+      // Find matching member by name
+      const matchingMember = existingMembers?.find(
+        (m) => m.full_name?.toLowerCase().includes(adult.fullName?.toLowerCase().split(' ')[0] || '')
+      );
+
+      if (matchingMember) {
+        await supabase
+          .from("compliance_household_members")
+          .update({
+            full_name: adult.fullName,
+            relationship: adult.relationship,
+            date_of_birth: adult.dob || matchingMember.date_of_birth,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", matchingMember.id);
+      }
+    }
+
+    for (const child of children) {
+      if (!child.fullName) continue;
+
+      const { data: existingMembers } = await supabase
+        .from("compliance_household_members")
+        .select("id, full_name, date_of_birth")
+        .eq("application_id", applicationId)
+        .eq("member_type", "child");
+
+      const matchingMember = existingMembers?.find(
+        (m) => m.full_name?.toLowerCase().includes(child.fullName?.toLowerCase().split(' ')[0] || '')
+      );
+
+      if (matchingMember) {
+        await supabase
+          .from("compliance_household_members")
+          .update({
+            full_name: child.fullName,
+            date_of_birth: child.dob || matchingMember.date_of_birth,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", matchingMember.id);
+      }
+    }
+  };
+
   const handleSave = async () => {
     const data = form.getValues();
 
@@ -96,6 +188,9 @@ export const AdminApplicationEditForm = ({
         .eq("id", applicationId);
 
       if (error) throw error;
+
+      // Sync compliance tables with updated data
+      await syncComplianceTables(data);
 
       toast.success("Application updated successfully");
       onSaveSuccess();
