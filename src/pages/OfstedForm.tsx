@@ -345,13 +345,27 @@ const OfstedForm = () => {
                   </div>
 
                   {/* Previous Addresses */}
-                  {previousAddresses.length > 0 && previousAddresses.map((addr, idx) => (
-                    <div key={idx} className="text-sm border-t border-gray-200 pt-3">
-                      <p className="font-medium text-gray-700 mb-1">Previous Address {idx + 1}:</p>
-                      <p>{addr.address}</p>
-                      <p className="text-gray-500 mt-1">From: {formatDisplayDate(addr.dateFrom)} To: {formatDisplayDate(addr.dateTo)}</p>
-                    </div>
-                  ))}
+                  {previousAddresses.length > 0 && previousAddresses.map((addr, idx) => {
+                    // Handle address that might be a string or an object
+                    const addressDisplay = typeof addr.address === 'string' 
+                      ? addr.address 
+                      : typeof addr.address === 'object' && addr.address !== null
+                        ? [
+                            (addr.address as any).line1,
+                            (addr.address as any).line2,
+                            (addr.address as any).town,
+                            (addr.address as any).postcode
+                          ].filter(Boolean).join(', ')
+                        : '';
+                    
+                    return (
+                      <div key={idx} className="text-sm border-t border-gray-200 pt-3">
+                        <p className="font-medium text-gray-700 mb-1">Previous Address {idx + 1}:</p>
+                        <p>{addressDisplay}</p>
+                        <p className="text-gray-500 mt-1">From: {formatDisplayDate(addr.dateFrom)} To: {formatDisplayDate(addr.dateTo)}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
