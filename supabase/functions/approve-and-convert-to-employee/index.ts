@@ -217,6 +217,40 @@ Deno.serve(async (req) => {
       console.log('[approve-and-convert] Applicant references data copied to employee');
     }
 
+    // 7. Transfer Ofsted form submissions from application to employee
+    const { data: ofstedForms, error: updateOfstedFormsError } = await supabase
+      .from('ofsted_form_submissions')
+      .update({
+        employee_id: employee.id,
+        application_id: null,
+      })
+      .eq('application_id', applicationId)
+      .select('id, reference_id, status');
+
+    if (updateOfstedFormsError) {
+      console.error('[approve-and-convert] Failed to transfer Ofsted forms:', updateOfstedFormsError.message);
+      // Don't throw - Ofsted forms are optional
+    } else {
+      console.log('[approve-and-convert] Ofsted forms transferred:', ofstedForms?.length || 0);
+    }
+
+    // 8. Transfer LA form submissions from application to employee
+    const { data: laForms, error: updateLaFormsError } = await supabase
+      .from('la_form_submissions')
+      .update({
+        employee_id: employee.id,
+        application_id: null,
+      })
+      .eq('application_id', applicationId)
+      .select('id, reference_id, status');
+
+    if (updateLaFormsError) {
+      console.error('[approve-and-convert] Failed to transfer LA forms:', updateLaFormsError.message);
+      // Don't throw - LA forms are optional
+    } else {
+      console.log('[approve-and-convert] LA forms transferred:', laForms?.length || 0);
+    }
+
     // Update application status to approved
     const { error: updateError } = await supabase
       .from('childminder_applications')
@@ -236,6 +270,8 @@ Deno.serve(async (req) => {
         householdMembersCount: householdMembers?.length || 0,
         assistantsCount: assistants?.length || 0,
         referenceRequestsCount: referenceRequests?.length || 0,
+        ofstedFormsCount: ofstedForms?.length || 0,
+        laFormsCount: laForms?.length || 0,
         message: 'Application approved and all compliance data transferred to employee record'
       }),
       {
