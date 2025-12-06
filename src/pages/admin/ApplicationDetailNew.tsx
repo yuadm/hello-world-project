@@ -216,11 +216,14 @@ const ApplicationDetailNew = () => {
     if (!dbApplication) return;
     
     try {
+      // Convert DB format to form format for PDF
+      const mappedApplication = dbToFormData(dbApplication as any);
+      
       const blob = await pdf(
         <ApplicationPDF 
-          application={dbApplication as any} 
+          application={mappedApplication} 
           applicationId={dbApplication.id}
-          submittedDate={new Date().toISOString()}
+          submittedDate={(dbApplication as any).created_at || new Date().toISOString()}
           status={dbApplication.status}
         />
       ).toBlob();
