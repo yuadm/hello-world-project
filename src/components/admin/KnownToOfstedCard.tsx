@@ -57,6 +57,30 @@ interface ResponseData {
   } | null;
 }
 
+interface RequestData {
+  currentAddress?: {
+    line1: string;
+    line2?: string;
+    town: string;
+    postcode: string;
+    moveInDate: string;
+  };
+  previousAddresses?: Array<{
+    address: string;
+    dateFrom: string;
+    dateTo: string;
+  }>;
+  previousNames?: Array<{
+    name: string;
+    dateFrom: string;
+    dateTo: string;
+  }>;
+  agencyName?: string;
+  requesterName?: string;
+  requesterRole?: string;
+  role?: string;
+}
+
 interface OfstedSubmission {
   id: string;
   reference_id: string;
@@ -68,6 +92,7 @@ interface OfstedSubmission {
   role: string;
   response_data: ResponseData | null;
   date_of_birth: string | null;
+  request_data: RequestData | null;
 }
 
 interface KnownToOfstedCardProps {
@@ -148,6 +173,7 @@ export const KnownToOfstedCard = ({
           sentAt={submission.sent_at}
           completedAt={submission.completed_at}
           responseData={submission.response_data}
+          requestData={submission.request_data || undefined}
         />
       ).toBlob();
       

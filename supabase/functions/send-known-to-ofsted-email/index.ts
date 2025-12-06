@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
     formUrl.searchParams.set("childInfo", data.requireChildInfo ? "yes" : "no");
     formUrl.searchParams.set("agency", data.agencyName);
 
-    // Save to database
+    // Save to database with request_data
     const submissionData: Record<string, unknown> = {
       form_token: formToken,
       reference_id: referenceId,
@@ -103,6 +103,16 @@ const handler = async (req: Request): Promise<Response> => {
       require_child_info: data.requireChildInfo,
       status: 'pending',
       sent_at: new Date().toISOString(),
+      // Store request data for PDF generation
+      request_data: {
+        currentAddress: data.currentAddress,
+        previousAddresses: data.previousAddresses || [],
+        previousNames: data.previousNames || [],
+        agencyName: data.agencyName,
+        requesterName: data.requesterName,
+        requesterRole: data.requesterRole,
+        role: data.role,
+      },
     };
 
     if (data.parentType === 'application' && data.parentId) {
