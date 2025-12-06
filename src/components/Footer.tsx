@@ -8,8 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold font-poppins text-primary mb-4">
-              Ready<span className="text-secondary">Kids</span>
+            <h3 className="text-xl font-bold font-poppins text-logo mb-4">
+              ReadyKids
             </h3>
             <p className="text-muted-foreground text-sm">
               Empowering families and childminders across England with safe, flexible and educational childcare solutions.

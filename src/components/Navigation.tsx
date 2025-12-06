@@ -14,8 +14,8 @@ const Navigation = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <NavLink to="/" className="text-2xl font-bold font-poppins text-primary">
-            Ready<span className="text-secondary">Kids</span>
+          <NavLink to="/" className="text-2xl font-bold font-poppins text-logo">
+            ReadyKids
           </NavLink>
 
           {/* Desktop Navigation */}

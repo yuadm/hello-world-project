@@ -79,8 +79,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       {/* Floating Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-card/80 backdrop-blur-xl border shadow-lg rounded-full px-2 py-2">
         <div className="flex items-center gap-1">
-          <NavLink to="/admin/dashboard" className="px-4 py-2 font-bold text-sm text-primary hover:opacity-80 transition-opacity">
-            Ready<span className="text-secondary">Kids</span>
+          <NavLink to="/admin/dashboard" className="px-4 py-2 font-bold text-sm text-logo hover:opacity-80 transition-opacity">
+            ReadyKids
           </NavLink>
           <div className="w-px h-6 bg-border mx-2" />
           {navItems.map((item) => (
