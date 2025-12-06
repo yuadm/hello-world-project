@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.send-known-to-ofsted-email]
 verify_jwt = false
+
+[functions.send-la-check-email]
+verify_jwt = false

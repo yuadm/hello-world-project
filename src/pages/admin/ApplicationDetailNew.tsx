@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pdf } from '@react-pdf/renderer';
 import { ApplicationPDF } from "@/components/admin/ApplicationPDF";
 import { KnownToOfstedCard } from "@/components/admin/KnownToOfstedCard";
+import { LocalAuthorityCheckCard } from "@/components/admin/LocalAuthorityCheckCard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { ApplicationHero } from "@/components/admin/application-detail/ApplicationHero";
 import { AdminApplicationEditForm } from "@/components/admin/AdminApplicationEditForm";
@@ -456,31 +457,57 @@ const ApplicationDetailNew = () => {
           </div>
         )}
 
-        {/* Known to Ofsted Bento Card */}
-        <KnownToOfstedCard
-          parentId={id!}
-          parentType="application"
-          applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
-          dateOfBirth={dbApplication.date_of_birth}
-          currentAddress={{
-            line1: dbApplication.current_address?.line1 || '',
-            line2: dbApplication.current_address?.line2,
-            town: dbApplication.current_address?.town || '',
-            postcode: dbApplication.current_address?.postcode || '',
-            moveInDate: dbApplication.home_move_in || '',
-          }}
-          previousAddresses={dbApplication.address_history?.map((addr: any) => ({
-            address: addr.address || '',
-            dateFrom: addr.moveIn || '',
-            dateTo: addr.moveOut || '',
-          }))}
-          previousNames={dbApplication.previous_names?.map((prev: any) => ({
-            name: prev.fullName || '',
-            dateFrom: prev.dateFrom || '',
-            dateTo: prev.dateTo || '',
-          }))}
-          role="childminder"
-        />
+        {/* External Checks - Ofsted & Local Authority */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <KnownToOfstedCard
+            parentId={id!}
+            parentType="application"
+            applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+            dateOfBirth={dbApplication.date_of_birth}
+            currentAddress={{
+              line1: dbApplication.current_address?.line1 || '',
+              line2: dbApplication.current_address?.line2,
+              town: dbApplication.current_address?.town || '',
+              postcode: dbApplication.current_address?.postcode || '',
+              moveInDate: dbApplication.home_move_in || '',
+            }}
+            previousAddresses={dbApplication.address_history?.map((addr: any) => ({
+              address: addr.address || '',
+              dateFrom: addr.moveIn || '',
+              dateTo: addr.moveOut || '',
+            }))}
+            previousNames={dbApplication.previous_names?.map((prev: any) => ({
+              name: prev.fullName || '',
+              dateFrom: prev.dateFrom || '',
+              dateTo: prev.dateTo || '',
+            }))}
+            role="childminder"
+          />
+          <LocalAuthorityCheckCard
+            parentId={id!}
+            parentType="application"
+            applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+            dateOfBirth={dbApplication.date_of_birth}
+            currentAddress={{
+              line1: dbApplication.current_address?.line1 || '',
+              line2: dbApplication.current_address?.line2,
+              town: dbApplication.current_address?.town || '',
+              postcode: dbApplication.current_address?.postcode || '',
+              moveInDate: dbApplication.home_move_in || '',
+            }}
+            previousAddresses={dbApplication.address_history?.map((addr: any) => ({
+              address: addr.address || '',
+              dateFrom: addr.moveIn || '',
+              dateTo: addr.moveOut || '',
+            }))}
+            previousNames={dbApplication.previous_names?.map((prev: any) => ({
+              name: prev.fullName || '',
+              dateFrom: prev.dateFrom || '',
+              dateTo: prev.dateTo || '',
+            }))}
+            localAuthority={dbApplication.service_local_authority}
+          />
+        </div>
         </>
         )}
 

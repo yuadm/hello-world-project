@@ -22,6 +22,7 @@ import AdminApplicationDetail from "./pages/admin/ApplicationDetailNew";
 import AdminEmployees from "./pages/admin/Employees";
 import AdminEmployeeDetail from "./pages/admin/EmployeeDetail";
 import OfstedForm from "./pages/OfstedForm";
+import LAForm from "./pages/LAForm";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/assistant-form" element={<AssistantForm />} />
           <Route path="/reference-form" element={<ReferenceForm />} />
           <Route path="/ofsted-form" element={<OfstedForm />} />
+          <Route path="/la-form" element={<LAForm />} />
           {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
