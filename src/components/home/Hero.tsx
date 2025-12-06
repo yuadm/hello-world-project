@@ -24,7 +24,7 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img src={heroImage} alt="Children playing" className="w-full h-full object-cover" />
+        <img src={heroImage} alt="Children playing" className="w-full h-full object-cover object-top" />
         <div className="absolute inset-0 bg-foreground/50" />
       </div>
       
