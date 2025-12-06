@@ -59,7 +59,7 @@ export const SendOfstedFormModal = ({
 }: SendOfstedFormModalProps) => {
   const { toast } = useToast();
   const [sending, setSending] = useState(false);
-  const [ofstedEmail, setOfstedEmail] = useState("childminder.agencies@ofsted.gov.uk");
+  const [ofstedEmail, setOfstedEmail] = useState("");
   const [requesterName, setRequesterName] = useState("");
   const [requesterRole, setRequesterRole] = useState("");
   const [requireChildInfo, setRequireChildInfo] = useState(false);
@@ -114,7 +114,7 @@ export const SendOfstedFormModal = ({
       setRequesterName("");
       setRequesterRole("");
       setRequireChildInfo(false);
-      setOfstedEmail("childminder.agencies@ofsted.gov.uk");
+      setOfstedEmail("");
       onSuccess?.();
     } catch (error) {
       console.error('Error sending email:', error);
@@ -138,51 +138,40 @@ export const SendOfstedFormModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
             Send Known to Ofsted Form
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-2">
           {/* Preview Section */}
-          <div className="rounded-lg border border-border p-4 bg-muted/30 space-y-2">
-            <h3 className="font-semibold text-sm">Applicant Details</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-muted-foreground">Name:</span> {applicantName || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">DOB:</span> {dateOfBirth || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Role:</span> {roleLabels[role] || role}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Postcode:</span> {currentAddress?.postcode || 'N/A'}
-              </div>
+          <div className="rounded-lg border border-border p-3 bg-muted/30">
+            <h3 className="font-semibold text-sm mb-2">Applicant Details</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><span className="text-muted-foreground">Name:</span> {applicantName || 'N/A'}</div>
+              <div><span className="text-muted-foreground">DOB:</span> {dateOfBirth || 'N/A'}</div>
+              <div><span className="text-muted-foreground">Role:</span> {roleLabels[role] || role}</div>
+              <div><span className="text-muted-foreground">Postcode:</span> {currentAddress?.postcode || 'N/A'}</div>
             </div>
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
               <Label htmlFor="ofstedEmail">Ofsted Email Address *</Label>
               <Input
                 id="ofstedEmail"
                 type="email"
                 value={ofstedEmail}
                 onChange={(e) => setOfstedEmail(e.target.value)}
-                placeholder="childminder.agencies@ofsted.gov.uk"
+                placeholder="Enter Ofsted email address"
               />
-              <p className="text-xs text-muted-foreground">
-                The email address where the form link will be sent
-              </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="requesterName">Your Name *</Label>
               <Input
                 id="requesterName"
@@ -192,23 +181,23 @@ export const SendOfstedFormModal = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="requesterRole">Your Role at Agency *</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="requesterRole">Your Role *</Label>
               <Input
                 id="requesterRole"
                 value={requesterRole}
                 onChange={(e) => setRequesterRole(e.target.value)}
-                placeholder="e.g., Compliance Manager, Director"
+                placeholder="e.g., Compliance Manager"
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between rounded-lg border border-border p-3">
               <div className="space-y-0.5">
-                <Label htmlFor="childInfo" className="text-base">
+                <Label htmlFor="childInfo" className="text-sm font-medium">
                   Require child age information?
                 </Label>
-                <p className="text-sm text-muted-foreground">
-                  Request details about number and ages of children in past Ofsted judgements
+                <p className="text-xs text-muted-foreground">
+                  Request child age details from Ofsted
                 </p>
               </div>
               <Switch
@@ -220,21 +209,20 @@ export const SendOfstedFormModal = ({
           </div>
 
           {/* Instructions */}
-          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-4 text-sm">
-            <p className="font-semibold mb-2 flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-3 text-xs">
+            <p className="font-semibold mb-1.5 flex items-center gap-1.5">
+              <ExternalLink className="h-3.5 w-3.5" />
               How it works:
             </p>
-            <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>An email will be sent to Ofsted with a secure link</li>
-              <li>Section A (applicant details) will be pre-filled</li>
-              <li>Ofsted completes Sections B, C, D as applicable</li>
-              <li>Response is submitted back to the agency</li>
+            <ol className="list-decimal list-inside space-y-0.5 text-muted-foreground">
+              <li>Email sent to Ofsted with secure link</li>
+              <li>Applicant details pre-filled in form</li>
+              <li>Ofsted completes and submits response</li>
             </ol>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

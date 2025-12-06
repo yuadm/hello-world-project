@@ -146,65 +146,54 @@ export const SendLAFormModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Send Local Authority Check Request
+            Send LA Check Request
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-2">
           {/* Preview Section */}
-          <div className="rounded-lg border border-border p-4 bg-muted/30 space-y-2">
-            <h3 className="font-semibold text-sm">Applicant Details</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-muted-foreground">Name:</span> {applicantName || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">DOB:</span> {dateOfBirth || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Role:</span> {roleLabels[role] || role}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Postcode:</span> {currentAddress?.postcode || 'N/A'}
-              </div>
+          <div className="rounded-lg border border-border p-3 bg-muted/30">
+            <h3 className="font-semibold text-sm mb-2">Applicant Details</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><span className="text-muted-foreground">Name:</span> {applicantName || 'N/A'}</div>
+              <div><span className="text-muted-foreground">DOB:</span> {dateOfBirth || 'N/A'}</div>
+              <div><span className="text-muted-foreground">Role:</span> {roleLabels[role] || role}</div>
+              <div><span className="text-muted-foreground">Postcode:</span> {currentAddress?.postcode || 'N/A'}</div>
             </div>
           </div>
 
           {/* Local Authority Info */}
-          <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-3">
+            <div className="flex items-center gap-2 mb-1">
               <Building2 className="h-4 w-4 text-primary" />
               <span className="font-semibold text-sm">Local Authority</span>
             </div>
-            <p className="text-lg font-medium">{localAuthority || 'Not set'}</p>
+            <p className="text-base font-medium">{localAuthority || 'Not set'}</p>
             {!localAuthority && (
-              <p className="text-sm text-destructive mt-1">
-                Please set the Local Authority in the application details before sending this request.
+              <p className="text-xs text-destructive mt-1">
+                Please set the Local Authority in the application first.
               </p>
             )}
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="laEmail">Local Authority Email Address *</Label>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="laEmail">LA Email Address *</Label>
               <Input
                 id="laEmail"
                 type="email"
                 value={laEmail}
                 onChange={(e) => setLaEmail(e.target.value)}
-                placeholder="childrens.services@localauthority.gov.uk"
+                placeholder="childrens.services@council.gov.uk"
               />
-              <p className="text-xs text-muted-foreground">
-                The secure email address for the LA Children's Services team
-              </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="requesterName">Your Name *</Label>
               <Input
                 id="requesterName"
@@ -214,33 +203,32 @@ export const SendLAFormModal = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="requesterRole">Your Role at Agency *</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="requesterRole">Your Role *</Label>
               <Input
                 id="requesterRole"
                 value={requesterRole}
                 onChange={(e) => setRequesterRole(e.target.value)}
-                placeholder="e.g., Safeguarding and Compliance Lead"
+                placeholder="e.g., Safeguarding Lead"
               />
             </div>
           </div>
 
           {/* Instructions */}
-          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
-            <p className="font-semibold mb-2 flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-xs">
+            <p className="font-semibold mb-1.5 flex items-center gap-1.5">
+              <ExternalLink className="h-3.5 w-3.5" />
               How it works:
             </p>
-            <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>A formal letter with applicant details will be emailed to the LA</li>
-              <li>The LA clicks the link to access the response form</li>
-              <li>LA selects one of four response options (known/not known/relevant info)</li>
-              <li>Response is submitted back to your agency dashboard</li>
+            <ol className="list-decimal list-inside space-y-0.5 text-muted-foreground">
+              <li>Formal letter emailed to LA with secure link</li>
+              <li>LA selects response option (known/not known)</li>
+              <li>Response submitted to your dashboard</li>
             </ol>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -250,7 +238,7 @@ export const SendLAFormModal = ({
             className="gap-2"
           >
             <Mail className="h-4 w-4" />
-            {sending ? "Sending..." : "Send to Local Authority"}
+            {sending ? "Sending..." : "Send to LA"}
           </Button>
         </DialogFooter>
       </DialogContent>
