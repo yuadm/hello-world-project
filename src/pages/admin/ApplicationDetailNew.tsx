@@ -471,11 +471,20 @@ const ApplicationDetailNew = () => {
                   postcode: dbApplication.current_address?.postcode || '',
                   moveInDate: dbApplication.home_move_in || '',
                 }}
-                previousAddresses={dbApplication.address_history?.map((addr: any) => ({
-                  address: addr.address || '',
-                  dateFrom: addr.moveIn || '',
-                  dateTo: addr.moveOut || '',
-                }))}
+                previousAddresses={dbApplication.address_history?.map((addr: any) => {
+                  const addressData = addr.address;
+                  let formattedAddress = '';
+                  if (typeof addressData === 'object' && addressData !== null) {
+                    formattedAddress = [addressData.line1, addressData.line2, addressData.town, addressData.postcode].filter(Boolean).join(', ');
+                  } else {
+                    formattedAddress = addressData || '';
+                  }
+                  return {
+                    address: formattedAddress,
+                    dateFrom: addr.moveIn || '',
+                    dateTo: addr.moveOut || '',
+                  };
+                })}
                 previousNames={dbApplication.previous_names?.map((prev: any) => ({
                   name: prev.fullName || '',
                   dateFrom: prev.dateFrom || '',
@@ -495,11 +504,20 @@ const ApplicationDetailNew = () => {
                   postcode: dbApplication.current_address?.postcode || '',
                   moveInDate: dbApplication.home_move_in || '',
                 }}
-                previousAddresses={dbApplication.address_history?.map((addr: any) => ({
-                  address: addr.address || '',
-                  dateFrom: addr.moveIn || '',
-                  dateTo: addr.moveOut || '',
-                }))}
+                previousAddresses={dbApplication.address_history?.map((addr: any) => {
+                  const addressData = addr.address;
+                  let formattedAddress = '';
+                  if (typeof addressData === 'object' && addressData !== null) {
+                    formattedAddress = [addressData.line1, addressData.line2, addressData.town, addressData.postcode].filter(Boolean).join(', ');
+                  } else {
+                    formattedAddress = addressData || '';
+                  }
+                  return {
+                    address: formattedAddress,
+                    dateFrom: addr.moveIn || '',
+                    dateTo: addr.moveOut || '',
+                  };
+                })}
                 previousNames={dbApplication.previous_names?.map((prev: any) => ({
                   name: prev.fullName || '',
                   dateFrom: prev.dateFrom || '',
