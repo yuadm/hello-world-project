@@ -17,6 +17,7 @@ import { Section8Suitability } from "@/components/apply/Section8Suitability";
 import { Section9Declaration } from "@/components/apply/Section9Declaration";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getValidatorForSection } from "@/lib/formValidation";
+import Navigation from "@/components/Navigation";
 
 const Apply = () => {
   const [currentSection, setCurrentSection] = useState(1);
@@ -400,27 +401,9 @@ const Apply = () => {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))]">
-      {/* GOV.UK Header */}
-      <header className="bg-[hsl(var(--govuk-black))] text-white border-b-[10px] border-white">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center">
-            <span className="text-2xl font-bold mr-4">Ready Kids</span>
-            <span className="text-lg border-l pl-4 border-white/30">
-              Childminder Registration Service
-            </span>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-sm">
-          <a href="/" className="underline text-primary hover:text-primary/80">
-            Back to dashboard
-          </a>
-        </p>
-      </div>
-
-      <main className="container mx-auto px-4 md:px-8 pb-16">
+      <main className="container mx-auto px-4 md:px-8 py-8 pt-24 pb-16">
         <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 shadow-lg">
           <h1 className="text-4xl font-extrabold mb-6 leading-tight text-foreground">
             Apply to register as a childminder
