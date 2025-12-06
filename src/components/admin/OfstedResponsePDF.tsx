@@ -416,6 +416,13 @@ const styles = StyleSheet.create({
   },
 });
 
+interface PreviousAddressObject {
+  line1: string;
+  line2?: string;
+  town: string;
+  postcode: string;
+}
+
 interface RequestData {
   currentAddress?: {
     line1: string;
@@ -425,7 +432,7 @@ interface RequestData {
     moveInDate: string;
   };
   previousAddresses?: Array<{
-    address: string;
+    address: string | PreviousAddressObject;
     dateFrom: string;
     dateTo: string;
   }>;
@@ -439,6 +446,20 @@ interface RequestData {
   requesterRole?: string;
   role?: string;
 }
+
+// Helper to format previous address (handles both string and object formats)
+const formatPreviousAddress = (address: string | PreviousAddressObject): string => {
+  if (typeof address === 'string') {
+    return address;
+  }
+  const parts = [
+    address.line1,
+    address.line2,
+    address.town,
+    address.postcode
+  ].filter(Boolean);
+  return parts.join(', ');
+};
 
 interface ResponseData {
   recordsStatus: string[];
@@ -661,7 +682,7 @@ export const OfstedResponsePDF = ({
                 <Text style={styles.subsectionTitle}>Previous Addresses (Last 5 Years)</Text>
                 {requestData.previousAddresses.map((addr, idx) => (
                   <View key={idx} style={styles.card}>
-                    <Text style={styles.cardTitle}>{addr.address}</Text>
+                    <Text style={styles.cardTitle}>{formatPreviousAddress(addr.address)}</Text>
                     <Text style={styles.cardSubtext}>
                       {formatShortDate(addr.dateFrom)} — {formatShortDate(addr.dateTo)}
                     </Text>
