@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Download, FileCheck, Plus, Trash2, FileText } from "lucide-react";
 import { AddEditEmployeeAssistantModal } from "@/components/admin/AddEditEmployeeAssistantModal";
-import { GenerateOfstedFormModal } from "@/components/admin/GenerateOfstedFormModal";
+import { SendOfstedFormModal } from "@/components/admin/SendOfstedFormModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -586,7 +586,7 @@ export const UnifiedAssistantComplianceCard = ({
         if (!form) return null;
         
         return (
-          <GenerateOfstedFormModal
+          <SendOfstedFormModal
             open={showOfstedModal}
             onOpenChange={(open) => {
               setShowOfstedModal(open);
@@ -612,6 +612,8 @@ export const UnifiedAssistantComplianceCard = ({
               dateTo: prev.dateTo || '',
             }))}
             role="assistant"
+            parentId={parentId}
+            parentType={parentType}
           />
         );
       })()}

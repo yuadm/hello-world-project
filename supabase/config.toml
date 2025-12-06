@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.submit-reference-form]
 verify_jwt = false
+
+[functions.send-known-to-ofsted-email]
+verify_jwt = false

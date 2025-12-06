@@ -11,10 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { fillOfstedForm } from "@/lib/ofstedPdfFiller";
+import { supabase } from "@/integrations/supabase/client";
+import { Mail, ExternalLink } from "lucide-react";
 
-interface GenerateOfstedFormModalProps {
+interface SendOfstedFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   applicantName: string;
@@ -38,9 +38,12 @@ interface GenerateOfstedFormModalProps {
   }>;
   role: 'childminder' | 'household_member' | 'assistant' | 'manager' | 'nominated_individual';
   agencyName?: string;
+  parentId?: string;
+  parentType?: 'application' | 'employee';
+  onSuccess?: () => void;
 }
 
-export const GenerateOfstedFormModal = ({
+export const SendOfstedFormModal = ({
   open,
   onOpenChange,
   applicantName,
@@ -49,27 +52,19 @@ export const GenerateOfstedFormModal = ({
   previousAddresses,
   previousNames,
   role,
-  agencyName = 'Childminder Agency',
-}: GenerateOfstedFormModalProps) => {
+  agencyName = 'ReadyKids Childminder Agency',
+  parentId,
+  parentType,
+  onSuccess,
+}: SendOfstedFormModalProps) => {
   const { toast } = useToast();
-  const [generating, setGenerating] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [ofstedEmail, setOfstedEmail] = useState("childminder.agencies@ofsted.gov.uk");
   const [requesterName, setRequesterName] = useState("");
   const [requesterRole, setRequesterRole] = useState("");
   const [requireChildInfo, setRequireChildInfo] = useState(false);
-  const [ofstedEmail, setOfstedEmail] = useState("childminder.agencies@ofsted.gov.uk");
 
-  const formatDateSafe = (date: string | undefined): string => {
-    if (!date) return 'N/A';
-    try {
-      const parsed = new Date(date);
-      if (isNaN(parsed.getTime())) return 'N/A';
-      return format(parsed, "dd/MM/yyyy");
-    } catch {
-      return 'N/A';
-    }
-  };
-
-  const handleGenerate = async () => {
+  const handleSend = async () => {
     if (!requesterName.trim() || !requesterRole.trim()) {
       toast({
         title: "Missing Information",
@@ -79,40 +74,40 @@ export const GenerateOfstedFormModal = ({
       return;
     }
 
-    setGenerating(true);
-    try {
-      const safeCurrentAddress = {
-        line1: currentAddress?.line1 || 'Not provided',
-        line2: currentAddress?.line2 || undefined,
-        town: currentAddress?.town || 'Not provided',
-        postcode: currentAddress?.postcode || 'Not provided',
-        moveInDate: currentAddress?.moveInDate || '',
-      };
+    if (!ofstedEmail.trim()) {
+      toast({
+        title: "Missing Email",
+        description: "Please provide the Ofsted email address",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      // Use pdf-lib to fill the official Ofsted form template
-      const blob = await fillOfstedForm({
-        applicantName: applicantName || 'Unknown',
-        previousNames,
-        dateOfBirth: dateOfBirth || '',
-        currentAddress: safeCurrentAddress,
-        previousAddresses,
-        role,
-        requesterName,
-        requesterRole,
-        requireChildInfo,
-        agencyName,
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-known-to-ofsted-email', {
+        body: {
+          ofstedEmail,
+          applicantName,
+          dateOfBirth,
+          currentAddress,
+          previousAddresses,
+          previousNames,
+          role,
+          requesterName,
+          requesterRole,
+          requireChildInfo,
+          agencyName,
+          parentId,
+          parentType,
+        },
       });
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `known-to-ofsted-${applicantName.replace(/\s+/g, "-")}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
+      if (error) throw error;
 
       toast({
-        title: "Form Generated",
-        description: "Known to Ofsted form has been downloaded successfully",
+        title: "Email Sent",
+        description: `Known to Ofsted form link sent to ${ofstedEmail}`,
       });
 
       onOpenChange(false);
@@ -120,47 +115,73 @@ export const GenerateOfstedFormModal = ({
       setRequesterRole("");
       setRequireChildInfo(false);
       setOfstedEmail("childminder.agencies@ofsted.gov.uk");
+      onSuccess?.();
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error('Error sending email:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate PDF",
+        description: error instanceof Error ? error.message : "Failed to send email",
         variant: "destructive",
       });
     } finally {
-      setGenerating(false);
+      setSending(false);
     }
+  };
+
+  const roleLabels: Record<string, string> = {
+    childminder: 'Childminder',
+    household_member: 'Household Member',
+    assistant: 'Assistant',
+    manager: 'Manager',
+    nominated_individual: 'Nominated Individual',
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Generate Known to Ofsted Form</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Send Known to Ofsted Form
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Preview Section */}
           <div className="rounded-lg border border-border p-4 bg-muted/30 space-y-2">
-            <h3 className="font-semibold text-sm">Form Preview</h3>
+            <h3 className="font-semibold text-sm">Applicant Details</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-muted-foreground">Applicant:</span> {applicantName || 'N/A'}
+                <span className="text-muted-foreground">Name:</span> {applicantName || 'N/A'}
               </div>
               <div>
-                <span className="text-muted-foreground">DOB:</span> {formatDateSafe(dateOfBirth)}
+                <span className="text-muted-foreground">DOB:</span> {dateOfBirth || 'N/A'}
               </div>
               <div>
-                <span className="text-muted-foreground">Role:</span> {role?.replace("_", " ") || 'N/A'}
+                <span className="text-muted-foreground">Role:</span> {roleLabels[role] || role}
               </div>
               <div>
-                <span className="text-muted-foreground">Address:</span> {currentAddress?.postcode || 'N/A'}
+                <span className="text-muted-foreground">Postcode:</span> {currentAddress?.postcode || 'N/A'}
               </div>
             </div>
           </div>
 
-          {/* Requester Details */}
+          {/* Form Fields */}
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="ofstedEmail">Ofsted Email Address *</Label>
+              <Input
+                id="ofstedEmail"
+                type="email"
+                value={ofstedEmail}
+                onChange={(e) => setOfstedEmail(e.target.value)}
+                placeholder="childminder.agencies@ofsted.gov.uk"
+              />
+              <p className="text-xs text-muted-foreground">
+                The email address where the form link will be sent
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="requesterName">Your Name *</Label>
               <Input
@@ -179,20 +200,6 @@ export const GenerateOfstedFormModal = ({
                 onChange={(e) => setRequesterRole(e.target.value)}
                 placeholder="e.g., Compliance Manager, Director"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ofstedEmail">Ofsted Email Address</Label>
-              <Input
-                id="ofstedEmail"
-                type="email"
-                value={ofstedEmail}
-                onChange={(e) => setOfstedEmail(e.target.value)}
-                placeholder="childminder.agencies@ofsted.gov.uk"
-              />
-              <p className="text-xs text-muted-foreground">
-                Default: childminder.agencies@ofsted.gov.uk
-              </p>
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-border p-4">
@@ -214,12 +221,15 @@ export const GenerateOfstedFormModal = ({
 
           {/* Instructions */}
           <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-4 text-sm">
-            <p className="font-semibold mb-2">📋 Next Steps:</p>
+            <p className="font-semibold mb-2 flex items-center gap-2">
+              <ExternalLink className="h-4 w-4" />
+              How it works:
+            </p>
             <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>Review the form preview above</li>
-              <li>Click "Generate PDF" to download</li>
-              <li>Send the form to: {ofstedEmail}</li>
-              <li>Await Ofsted's response (typically 5-10 working days)</li>
+              <li>An email will be sent to Ofsted with a secure link</li>
+              <li>Section A (applicant details) will be pre-filled</li>
+              <li>Ofsted completes Sections B, C, D as applicable</li>
+              <li>Response is submitted back to the agency</li>
             </ol>
           </div>
         </div>
@@ -228,8 +238,9 @@ export const GenerateOfstedFormModal = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleGenerate} disabled={generating}>
-            {generating ? "Generating..." : "Generate PDF"}
+          <Button onClick={handleSend} disabled={sending} className="gap-2">
+            <Mail className="h-4 w-4" />
+            {sending ? "Sending..." : "Send to Ofsted"}
           </Button>
         </DialogFooter>
       </DialogContent>

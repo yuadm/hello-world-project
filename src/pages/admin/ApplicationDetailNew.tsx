@@ -6,7 +6,7 @@ import { ArrowLeft, FileCheck, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pdf } from '@react-pdf/renderer';
 import { ApplicationPDF } from "@/components/admin/ApplicationPDF";
-import { GenerateOfstedFormModal } from "@/components/admin/GenerateOfstedFormModal";
+import { SendOfstedFormModal } from "@/components/admin/SendOfstedFormModal";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { ApplicationHero } from "@/components/admin/application-detail/ApplicationHero";
 import { AdminApplicationEditForm } from "@/components/admin/AdminApplicationEditForm";
@@ -299,7 +299,7 @@ const ApplicationDetailNew = () => {
             onClick={() => setShowOfstedModal(true)}
           >
             <FileText className="h-4 w-4" />
-            Generate Known to Ofsted Form
+            Send Known to Ofsted Form
           </Button>
         </div>
 
@@ -477,7 +477,7 @@ const ApplicationDetailNew = () => {
           onSuccess={fetchApplication}
         />
 
-        <GenerateOfstedFormModal
+        <SendOfstedFormModal
           open={showOfstedModal}
           onOpenChange={setShowOfstedModal}
           applicantName={`${dbApplication.first_name} ${dbApplication.last_name}`}
@@ -500,6 +500,8 @@ const ApplicationDetailNew = () => {
             dateTo: prev.dateTo || '',
           }))}
           role="childminder"
+          parentId={id}
+          parentType="application"
         />
       </div>
     </AdminLayout>

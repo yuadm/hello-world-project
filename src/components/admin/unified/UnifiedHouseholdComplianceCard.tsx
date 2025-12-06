@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Download, FileCheck, Plus, Trash2, FileText } from "lucide-react";
 import { AddEditHouseholdMemberModal } from "@/components/admin/AddEditHouseholdMemberModal";
-import { GenerateOfstedFormModal } from "@/components/admin/GenerateOfstedFormModal";
+import { SendOfstedFormModal } from "@/components/admin/SendOfstedFormModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -588,7 +588,7 @@ export const UnifiedHouseholdComplianceCard = ({
             if (!form) return null;
             
             return (
-              <GenerateOfstedFormModal
+              <SendOfstedFormModal
                 open={showOfstedModal}
                 onOpenChange={(open) => {
                   setShowOfstedModal(open);
@@ -614,6 +614,8 @@ export const UnifiedHouseholdComplianceCard = ({
                   dateTo: prev.dateTo || '',
                 }))}
                 role="household_member"
+                parentId={parentId}
+                parentType={parentType}
               />
             );
           })()}
