@@ -278,12 +278,13 @@ const LAForm = () => {
 
               <div>
                 <Label className="text-sm text-gray-600">Current Address</Label>
-                <Textarea 
-                  value={`${currentAddress.line1 || ""}\n${currentAddress.line2 || ""}\n${currentAddress.town || ""}\n${currentAddress.postcode || ""}\nFrom: ${formatMonthYear(currentAddress.moveInDate)}`}
-                  readOnly 
-                  className="bg-gray-50 mt-1" 
-                  rows={4}
-                />
+                <div className="bg-gray-50 mt-1 p-3 rounded-md border border-input text-sm">
+                  {currentAddress.line1 && <p>{currentAddress.line1}</p>}
+                  {currentAddress.line2 && <p>{currentAddress.line2}</p>}
+                  {currentAddress.town && <p>{currentAddress.town}</p>}
+                  {currentAddress.postcode && <p>{currentAddress.postcode}</p>}
+                  <p className="text-gray-500 mt-1">From: {formatMonthYear(currentAddress.moveInDate)}</p>
+                </div>
               </div>
 
               {previousAddresses.length > 0 && (
