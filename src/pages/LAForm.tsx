@@ -427,17 +427,6 @@ const LAForm = () => {
                 </div>
               )}
 
-              {/* Check Completed Date */}
-              <div>
-                <Label htmlFor="checkDate">Date this check was completed <span className="text-red-500">*</span></Label>
-                <Input
-                  id="checkDate"
-                  type="date"
-                  value={checkCompletedDate}
-                  onChange={(e) => setCheckCompletedDate(e.target.value)}
-                  className="mt-1 max-w-xs"
-                />
-              </div>
             </div>
           </div>
 
@@ -495,6 +484,16 @@ const LAForm = () => {
                     className="mt-1"
                   />
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="checkDate">Date this check was completed <span className="text-red-500">*</span></Label>
+                <Input
+                  id="checkDate"
+                  type="date"
+                  value={checkCompletedDate}
+                  onChange={(e) => setCheckCompletedDate(e.target.value)}
+                  className="mt-1 max-w-xs"
+                />
               </div>
             </div>
           </div>
