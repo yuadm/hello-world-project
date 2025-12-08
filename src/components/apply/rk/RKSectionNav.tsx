@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 interface RKSectionNavProps {
   sections: Array<{ id: number; label: string }>;
@@ -9,8 +10,12 @@ interface RKSectionNavProps {
 
 export const RKSectionNav = ({ sections, currentSection, onSectionClick, className }: RKSectionNavProps) => {
   return (
-    <div className={cn("bg-white rounded-2xl p-4 shadow-sm", className)}>
-      <div className="flex items-center justify-start gap-2 md:gap-3 overflow-x-auto pb-1">
+    <nav className={cn(
+      "bg-white rounded-2xl p-4 shadow-[0_4px_12px_rgba(15,23,42,0.08)]",
+      className
+    )}>
+      {/* Desktop: Vertical list with labels */}
+      <div className="hidden lg:flex flex-col gap-1">
         {sections.map((section) => {
           const isActive = section.id === currentSection;
           const isCompleted = section.id < currentSection;
@@ -20,20 +25,66 @@ export const RKSectionNav = ({ sections, currentSection, onSectionClick, classNa
               key={section.id}
               onClick={() => onSectionClick(section.id)}
               className={cn(
-                "flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center text-sm font-semibold transition-all duration-200 border-2",
+                "flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-150 border-2 border-transparent text-left",
                 isActive
-                  ? "bg-rk-primary text-white border-rk-primary shadow-sm"
+                  ? "bg-[#E8F5F0] border-[hsl(163,50%,38%)]"
                   : isCompleted
-                    ? "bg-rk-primary-light text-rk-primary border-rk-primary-light hover:border-rk-primary"
-                    : "bg-white text-rk-text-light border-rk-gray-200 hover:border-rk-gray-400"
+                    ? "bg-[#D1FAE5]"
+                    : "hover:bg-rk-gray-100"
               )}
-              title={section.label}
             >
-              {section.id}
+              <div
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all",
+                  isActive
+                    ? "bg-[hsl(163,50%,38%)] text-white shadow-[0_2px_8px_rgba(12,124,89,0.3)]"
+                    : isCompleted
+                      ? "bg-[#059669] text-white"
+                      : "bg-rk-gray-300 text-white"
+                )}
+              >
+                {isCompleted ? <Check className="h-3.5 w-3.5" /> : section.id}
+              </div>
+              <span
+                className={cn(
+                  "text-sm font-medium",
+                  isActive
+                    ? "text-[hsl(163,50%,32%)] font-semibold"
+                    : "text-rk-gray-700"
+                )}
+              >
+                {section.label}
+              </span>
             </button>
           );
         })}
       </div>
-    </div>
+
+      {/* Mobile: Horizontal scroll with numbers only */}
+      <div className="flex lg:hidden items-center justify-start gap-2 overflow-x-auto pb-1 -webkit-overflow-scrolling-touch">
+        {sections.map((section) => {
+          const isActive = section.id === currentSection;
+          const isCompleted = section.id < currentSection;
+          
+          return (
+            <button
+              key={section.id}
+              onClick={() => onSectionClick(section.id)}
+              className={cn(
+                "flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200",
+                isActive
+                  ? "bg-[hsl(163,50%,38%)] text-white shadow-[0_2px_8px_rgba(12,124,89,0.3)]"
+                  : isCompleted
+                    ? "bg-[#059669] text-white"
+                    : "bg-rk-gray-300 text-white"
+              )}
+              title={section.label}
+            >
+              {isCompleted ? <Check className="h-3.5 w-3.5" /> : section.id}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 };

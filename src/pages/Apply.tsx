@@ -390,115 +390,120 @@ const Apply = () => {
   };
 
   return (
-    <div className="min-h-screen bg-rk-bg rk-apply flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-[#F1F5F9] to-[#E8F5F0] rk-apply flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-rk-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-rk-primary-light flex items-center justify-center">
-              <Heart className="h-6 w-6 text-rk-primary" fill="currentColor" />
+            <div className="w-11 h-11 rounded-[10px] bg-gradient-to-br from-[hsl(163,50%,38%)] to-[hsl(163,50%,32%)] flex items-center justify-center shadow-[0_4px_12px_rgba(12,124,89,0.25)]">
+              <Heart className="h-6 w-6 text-white" fill="currentColor" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-rk-primary font-fraunces">ReadyKids</h1>
-              <p className="text-xs text-rk-text-light font-dm-sans">Childminder Registration</p>
+              <h1 className="text-2xl font-bold text-rk-primary font-fraunces leading-tight">ReadyKids</h1>
+              <p className="text-sm text-rk-text-light font-dm-sans">Childminder Registration</p>
             </div>
           </Link>
           <Link 
             to="/" 
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-rk-text bg-white border-2 border-rk-gray-300 rounded-xl hover:bg-rk-gray-100 hover:border-rk-gray-400 transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-rk-gray-700 bg-white border border-rk-gray-300 rounded-md hover:bg-rk-gray-100 transition-all"
           >
-            <LogOut className="h-4 w-4" />
             Save & Exit
           </Link>
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
-        {/* Progress Card */}
-        <div className="mb-6">
+      {/* Main 2-Column Layout */}
+      <div className="max-w-[1200px] mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 flex-1">
+        {/* Sidebar */}
+        <aside className="lg:sticky lg:top-[100px] lg:h-fit">
+          {/* Progress Card */}
           <RKProgressCard 
             currentSection={currentSection} 
             totalSections={totalSections} 
+            className="mb-6"
           />
-        </div>
 
-        {/* Section Navigation */}
-        <div className="mb-8">
+          {/* Section Navigation */}
           <RKSectionNav 
             sections={SECTIONS} 
             currentSection={currentSection} 
             onSectionClick={goToSection}
           />
-        </div>
+        </aside>
 
-        {/* Error Summary */}
-        {errors.length > 0 && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-l-rk-error rounded-r-xl">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-rk-error flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-rk-error mb-2">Please fix the following errors:</h3>
-                <ul className="text-sm text-rk-text space-y-1">
-                  {errors.map((error, index) => (
-                    <li key={index}>• {error}</li>
-                  ))}
-                </ul>
+        {/* Main Form Area */}
+        <main>
+          {/* Error Summary */}
+          {errors.length > 0 && (
+            <div className="mb-6 p-5 bg-[#FEE2E2] border-2 border-[#DC2626] rounded-2xl">
+              <div className="flex items-start gap-4">
+                <AlertCircle className="h-6 w-6 text-[#DC2626] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[#DC2626] text-lg mb-2">There is a problem</h3>
+                  <ul className="text-sm text-rk-text space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
+          )}
+
+          {/* Form Container */}
+          <div className="bg-white rounded-[20px] shadow-lg overflow-hidden">
+            <RKFormHeader 
+              title="Apply to register as a childminder"
+              subtitle="Complete this application to register with ReadyKids Childminder Agency."
+            />
+
+            <div className="p-6 md:p-10 bg-[#F8FAFC]">
+              <form onSubmit={onSubmit} noValidate>
+                {renderSection()}
+
+                {/* Navigation Buttons */}
+                <div className="flex flex-col-reverse sm:flex-row gap-3 mt-10 pt-6 border-t border-rk-border">
+                  {currentSection > 1 && (
+                    <RKButton
+                      type="button"
+                      variant="secondary"
+                      onClick={prevSection}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                      Back
+                    </RKButton>
+                  )}
+
+                  <div className="flex-1" />
+
+                  {currentSection < totalSections ? (
+                    <RKButton
+                      type="button"
+                      variant="primary"
+                      size="lg"
+                      onClick={nextSection}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      Continue
+                      <ArrowRight className="h-5 w-5" />
+                    </RKButton>
+                  ) : (
+                    <RKButton
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      Submit Application
+                    </RKButton>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
-        )}
-
-        {/* Form Container */}
-        <div className="rk-form-container">
-          <RKFormHeader 
-            title="Apply to register as a childminder"
-            subtitle="Complete this application to register with ReadyKids Childminder Agency."
-          />
-
-          <div className="rk-form-body">
-            <form onSubmit={onSubmit} noValidate>
-              {renderSection()}
-
-              {/* Navigation Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row gap-3 mt-10 pt-6 border-t border-rk-border">
-                {currentSection > 1 && (
-                  <RKButton
-                    type="button"
-                    variant="secondary"
-                    onClick={prevSection}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Previous
-                  </RKButton>
-                )}
-
-                <div className="flex-1" />
-
-                {currentSection < totalSections ? (
-                  <RKButton
-                    type="button"
-                    variant="primary"
-                    onClick={nextSection}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    Continue
-                    <ArrowRight className="h-4 w-4" />
-                  </RKButton>
-                ) : (
-                  <RKButton
-                    type="submit"
-                    variant="primary"
-                    className="flex items-center justify-center gap-2"
-                  >
-                    Submit Application
-                  </RKButton>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Footer */}
       <RKApplyFooter />

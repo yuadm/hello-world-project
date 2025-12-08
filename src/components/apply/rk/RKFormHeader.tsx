@@ -8,12 +8,15 @@ interface RKFormHeaderProps {
 
 export const RKFormHeader = ({ title, subtitle, className }: RKFormHeaderProps) => {
   return (
-    <div className={cn("rk-form-header", className)}>
-      <h1 className="text-2xl md:text-3xl font-bold text-white font-fraunces mb-2 opacity-95">
+    <div className={cn(
+      "bg-gradient-to-br from-[hsl(163,50%,38%)] to-[hsl(163,50%,32%)] px-6 py-8 md:px-10 md:py-8",
+      className
+    )}>
+      <h1 className="text-2xl md:text-[2rem] font-bold text-white font-fraunces mb-2">
         {title}
       </h1>
       {subtitle && (
-        <p className="text-base text-white/85">{subtitle}</p>
+        <p className="text-base text-white/90">{subtitle}</p>
       )}
     </div>
   );

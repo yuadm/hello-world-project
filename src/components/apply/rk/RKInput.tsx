@@ -14,25 +14,25 @@ export const RKInput = forwardRef<HTMLInputElement, RKInputProps>(
     const widthClasses = {
       full: "w-full",
       half: "w-full md:w-1/2",
-      10: "w-full max-w-[12rem]",
-      20: "w-full max-w-[20rem]",
+      10: "w-full max-w-[180px]",
+      20: "w-full max-w-[280px]",
     };
 
     return (
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-rk-text">
+      <div className="space-y-2">
+        <label className="block text-[0.9375rem] font-semibold text-[#334155]">
           {label}
-          {required && <span className="text-rk-error ml-1">*</span>}
+          {required && <span className="text-[#DC2626] ml-0.5">*</span>}
         </label>
         {hint && (
-          <span className="block text-sm text-rk-text-light">{hint}</span>
+          <span className="block text-sm text-[#64748B] leading-normal">{hint}</span>
         )}
         <input
           ref={ref}
           className={cn(
-            "px-4 py-3 bg-white border-2 border-rk-gray-300 rounded-xl text-base text-rk-text placeholder:text-rk-text-light transition-all duration-200",
-            "hover:border-rk-gray-400 focus:outline-none focus:border-rk-primary focus:shadow-[0_0_0_3px_hsl(163_50%_38%/0.15)]",
-            error && "border-rk-error bg-red-50 focus:border-rk-error focus:shadow-[0_0_0_3px_hsl(0_72%_55%/0.15)]",
+            "px-4 py-3 bg-white border-2 border-[#E2E8F0] rounded-[10px] text-base text-[#334155] placeholder:text-[#94A3B8] transition-all duration-150",
+            "hover:border-[#CBD5E1] focus:outline-none focus:border-[hsl(163,50%,38%)] focus:shadow-[0_0_0_4px_rgba(12,124,89,0.12)]",
+            error && "border-[#DC2626] bg-[#FEE2E2] focus:border-[#DC2626] focus:shadow-[0_0_0_4px_rgba(220,38,38,0.12)]",
             widthClasses[widthClass],
             className
           )}
@@ -40,7 +40,7 @@ export const RKInput = forwardRef<HTMLInputElement, RKInputProps>(
           {...props}
         />
         {error && (
-          <p className="text-sm text-rk-error mt-1">{error}</p>
+          <p className="text-sm text-[#DC2626] mt-1">{error}</p>
         )}
       </div>
     );

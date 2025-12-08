@@ -11,10 +11,10 @@ export const RKSectionTitle = ({ title, subtitle, description, className }: RKSe
   const descText = description || subtitle;
   
   return (
-    <div className={cn("mb-6", className)}>
-      <h2 className="text-2xl font-bold text-rk-secondary font-fraunces">{title}</h2>
+    <div className={cn("mb-8", className)}>
+      <h2 className="text-[1.75rem] font-bold text-[#0F172A] font-fraunces mb-2">{title}</h2>
       {descText && (
-        <p className="text-base text-rk-text-light mt-2">{descText}</p>
+        <p className="text-base text-[#64748B] leading-relaxed max-w-[600px]">{descText}</p>
       )}
     </div>
   );
