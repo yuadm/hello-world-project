@@ -3,9 +3,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ChildminderApplication } from "@/types/childminder";
-import { ProgressBar } from "@/components/apply/ProgressBar";
-import { ErrorSummary } from "@/components/apply/ErrorSummary";
-import { GovUKButton } from "@/components/apply/GovUKButton";
+import { RKProgressCard } from "@/components/apply/rk/RKProgressCard";
+import { RKSectionNav } from "@/components/apply/rk/RKSectionNav";
+import { RKFormHeader } from "@/components/apply/rk/RKFormHeader";
+import { RKButton } from "@/components/apply/rk/RKButton";
 import { Section1PersonalDetails } from "@/components/apply/Section1PersonalDetails";
 import { Section2AddressHistory } from "@/components/apply/Section2AddressHistory";
 import { Section3Premises } from "@/components/apply/Section3Premises";
@@ -15,7 +16,7 @@ import { Section6Employment } from "@/components/apply/Section6Employment";
 import { Section7People } from "@/components/apply/Section7People";
 import { Section8Suitability } from "@/components/apply/Section8Suitability";
 import { Section9Declaration } from "@/components/apply/Section9Declaration";
-import { ArrowLeft, ArrowRight, Save, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, X, AlertCircle } from "lucide-react";
 import { getValidatorForSection } from "@/lib/formValidation";
 import { formToDbData } from "@/lib/applicationDataMapper";
 
@@ -25,6 +26,18 @@ interface AdminApplicationEditFormProps {
   onCancel: () => void;
   onSaveSuccess: () => void;
 }
+
+const sections = [
+  { id: 1, label: "Personal Details" },
+  { id: 2, label: "Address History" },
+  { id: 3, label: "Premises" },
+  { id: 4, label: "Service Details" },
+  { id: 5, label: "Qualifications" },
+  { id: 6, label: "Employment" },
+  { id: 7, label: "People" },
+  { id: 8, label: "Suitability" },
+  { id: 9, label: "Declaration" },
+];
 
 export const AdminApplicationEditForm = ({
   applicationId,
@@ -64,6 +77,12 @@ export const AdminApplicationEditForm = ({
       setCurrentSection(currentSection - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const goToSection = (sectionNumber: number) => {
+    setErrors([]);
+    setCurrentSection(sectionNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const syncComplianceTables = async (data: Partial<ChildminderApplication>) => {
@@ -227,67 +246,118 @@ export const AdminApplicationEditForm = ({
     }
   };
 
+  const currentSectionTitle = sections.find(s => s.id === currentSection)?.label || "";
+
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-[#F1F5F9] to-[#E8F5F0]">
       {/* Header with Save/Cancel */}
-      <div className="flex items-center justify-between pb-4 border-b">
-        <h2 className="text-2xl font-semibold">Editing Application</h2>
-        <div className="flex gap-3">
-          <GovUKButton
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            disabled={saving}
-            className="flex items-center gap-2"
-          >
-            <X className="h-4 w-4" />
-            Cancel
-          </GovUKButton>
-          <GovUKButton
-            type="button"
-            variant="primary"
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save Changes"}
-          </GovUKButton>
+      <div className="bg-white border-b border-border/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">Editing Application</h1>
+              <p className="text-sm text-muted-foreground">Make changes to the application details</p>
+            </div>
+            <div className="flex gap-3">
+              <RKButton
+                type="button"
+                variant="secondary"
+                onClick={onCancel}
+                disabled={saving}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </RKButton>
+              <RKButton
+                type="button"
+                variant="primary"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? "Saving..." : "Save Changes"}
+              </RKButton>
+            </div>
+          </div>
         </div>
       </div>
 
-      <ErrorSummary errors={errors} onClose={() => setErrors([])} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Summary */}
+        {errors.length > 0 && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-medium text-red-800 mb-2">Please fix the following errors:</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {errors.map((error, index) => (
+                    <li key={index} className="text-sm text-red-700">{error}</li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                onClick={() => setErrors([])}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
-      <ProgressBar currentSection={currentSection} totalSections={totalSections} />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            <RKProgressCard
+              currentSection={currentSection}
+              totalSections={totalSections}
+            />
+            <RKSectionNav
+              sections={sections}
+              currentSection={currentSection}
+              onSectionClick={goToSection}
+            />
+          </div>
 
-      <div className="bg-white p-6 rounded-xl border">
-        {renderSection()}
+          {/* Main Content */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-[20px] shadow-lg overflow-hidden">
+              <RKFormHeader
+                title={`Section ${currentSection}: ${currentSectionTitle}`}
+              />
+              
+              <div className="p-6 sm:p-8">
+                {renderSection()}
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-4 mt-8 pt-6 border-t border-border">
-          {currentSection > 1 && (
-            <GovUKButton
-              type="button"
-              variant="secondary"
-              onClick={prevSection}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </GovUKButton>
-          )}
+                {/* Navigation Buttons */}
+                <div className="flex gap-4 mt-8 pt-6 border-t border-border/50">
+                  {currentSection > 1 && (
+                    <RKButton
+                      type="button"
+                      variant="secondary"
+                      onClick={prevSection}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Previous
+                    </RKButton>
+                  )}
 
-          {currentSection < totalSections && (
-            <GovUKButton
-              type="button"
-              variant="primary"
-              onClick={nextSection}
-              className="flex items-center gap-2 ml-auto"
-            >
-              Next
-              <ArrowRight className="h-4 w-4" />
-            </GovUKButton>
-          )}
+                  {currentSection < totalSections && (
+                    <RKButton
+                      type="button"
+                      variant="primary"
+                      onClick={nextSection}
+                      className="ml-auto"
+                    >
+                      Next
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </RKButton>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
