@@ -2,7 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
 import { RKInput, RKRadio, RKButton, RKTextarea, RKSelect, RKSectionTitle, RKInfoBox } from "./rk";
 import { useState, useMemo } from "react";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2, Search, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { 
   calculateAddressHistoryCoverage, 
   formatDateRange, 
@@ -107,230 +107,253 @@ export const Section2AddressHistory = ({ form }: Props) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <RKSectionTitle 
         title="Address History"
-        description="We need your current and previous addresses for the last 5 years."
+        description="We need your complete address history for the past 5 years for background checks."
       />
 
-      <h3 className="text-xl font-bold text-rk-secondary font-fraunces">Current Home Address</h3>
-      <p className="text-sm text-rk-text-light">This is the address where you currently live.</p>
+      {/* Current Home Address Subsection */}
+      <div className="space-y-4">
+        <h3 className="rk-subsection-title">Current Home Address</h3>
 
-      <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <RKInput
+              label="Postcode"
+              required
+              widthClass="10"
+              placeholder="e.g. SW1A 1AA"
+              {...register("homePostcode")}
+            />
+            <div className="mt-3 flex gap-3 flex-wrap">
+              <RKButton
+                type="button"
+                variant="secondary"
+                onClick={handlePostcodeLookup}
+                disabled={isLookingUpPostcode || !homePostcode}
+                className="flex items-center gap-2"
+              >
+                <Search className="h-4 w-4" />
+                {isLookingUpPostcode ? "Looking up..." : "Find address"}
+              </RKButton>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManualAddress(!showManualAddress);
+                  setAddressList([]);
+                  setSelectedAddress("");
+                }}
+                className="underline text-rk-primary hover:text-rk-primary-dark text-sm"
+              >
+                {showManualAddress ? "Use postcode lookup" : "Enter address manually"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {addressList.length > 0 && !showManualAddress && (
+          <RKSelect
+            label="Select your address"
+            hint="Choose your address from the list"
+            options={[
+              { value: "", label: "Please select an address" },
+              ...addressList.map((addr, index) => ({
+                value: index.toString(),
+                label: addr.formatted,
+              })),
+            ]}
+            value={selectedAddress}
+            onChange={(e) => handleAddressSelect(e.target.value)}
+            required
+          />
+        )}
+
+        {(showManualAddress || selectedAddress) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <RKInput
+                label="Address line 1"
+                required
+                {...register("homeAddress.line1")}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <RKInput label="Address line 2" {...register("homeAddress.line2")} />
+            </div>
+            <RKInput
+              label="Town or city"
+              required
+              {...register("homeAddress.town")}
+            />
+            <RKInput
+              label="Postcode"
+              required
+              widthClass="10"
+              {...register("homeAddress.postcode")}
+            />
+          </div>
+        )}
+
         <RKInput
-          label="Postcode"
+          label="When did you move into this address?"
+          type="date"
           required
           widthClass="10"
-          placeholder="e.g. SW1A 1AA"
-          {...register("homePostcode")}
+          {...register("homeMoveIn")}
         />
-        <div className="mt-3 flex gap-3 flex-wrap">
-          <RKButton
-            type="button"
-            variant="secondary"
-            onClick={handlePostcodeLookup}
-            disabled={isLookingUpPostcode || !homePostcode}
-            className="flex items-center gap-2"
-          >
-            <Search className="h-4 w-4" />
-            {isLookingUpPostcode ? "Looking up..." : "Find address"}
-          </RKButton>
-          <button
-            type="button"
-            onClick={() => {
-              setShowManualAddress(!showManualAddress);
-              setAddressList([]);
-              setSelectedAddress("");
-            }}
-            className="underline text-rk-primary hover:text-rk-primary-dark text-sm"
-          >
-            {showManualAddress ? "Use postcode lookup" : "Enter address manually"}
-          </button>
-        </div>
       </div>
 
-      {addressList.length > 0 && !showManualAddress && (
-        <RKSelect
-          label="Select your address"
-          hint="Choose your address from the list"
-          options={[
-            { value: "", label: "Please select an address" },
-            ...addressList.map((addr, index) => ({
-              value: index.toString(),
-              label: addr.formatted,
-            })),
-          ]}
-          value={selectedAddress}
-          onChange={(e) => handleAddressSelect(e.target.value)}
-          required
-        />
-      )}
+      {/* 5-Year Address History Subsection */}
+      <div className="space-y-4">
+        <h3 className="rk-subsection-title">5-Year Address History</h3>
+        <p className="text-sm text-gray-600 -mt-2">
+          You must provide a complete history of all addresses where you have lived for the past 5 years.
+        </p>
 
-      {(showManualAddress || selectedAddress) && (
-        <div className="space-y-4">
-          <RKInput
-            label="Address line 1"
-            required
-            {...register("homeAddress.line1")}
-          />
-          <RKInput label="Address line 2" {...register("homeAddress.line2")} />
-          <RKInput
-            label="Town or city"
-            required
-            widthClass="20"
-            {...register("homeAddress.town")}
-          />
-          <RKInput
-            label="Postcode"
-            required
-            widthClass="10"
-            {...register("homeAddress.postcode")}
-          />
-        </div>
-      )}
-
-      <RKInput
-        label="When did you move into this address?"
-        type="date"
-        required
-        widthClass="10"
-        {...register("homeMoveIn")}
-      />
-
-      <div className="rk-divider" />
-
-      <h3 className="text-xl font-bold text-rk-secondary font-fraunces">5-Year Address History</h3>
-      <p className="text-sm text-rk-text-light mb-6">
-        You must provide a complete history of all addresses where you have lived for the past 5
-        years. This is required for background checks.
-      </p>
-
-      {/* Coverage Status Display */}
-      {coverage && (
-        <div className="mb-6">
-          {coverage.isCovered ? (
-            <RKInfoBox type="success" title="Your address history covers the last 5 years">
-              Coverage: {Math.round(coverage.coveragePercentage)}% ({coverage.totalDaysCovered} of {coverage.requiredDays} days)
-            </RKInfoBox>
-          ) : (
-            <div className="space-y-3">
-              <RKInfoBox type="error" title="Incomplete address history">
-                Coverage: {Math.round(coverage.coveragePercentage)}% ({coverage.totalDaysCovered} of {coverage.requiredDays} days)
-              </RKInfoBox>
-
-              {coverage.gaps.length > 0 && (
-                <RKInfoBox type="info" title="Gaps detected in your address history">
-                  <ul className="space-y-1 mt-2">
-                    {coverage.gaps.map((gap, index) => (
-                      <li key={index} className="text-sm">
-                        • {formatDateRange(gap.start, gap.end)} ({daysBetween(gap.start, gap.end)} days)
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-sm mt-3 font-semibold">
-                    You can either add previous addresses or explain them below.
-                  </p>
-                </RKInfoBox>
+        {/* Timeline Status Card */}
+        {coverage ? (
+          <div className={`flex items-start gap-3 p-4 rounded-lg border ${
+            coverage.isCovered 
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-amber-50 border-amber-200'
+          }`}>
+            <div className={`flex-shrink-0 ${coverage.isCovered ? 'text-green-600' : 'text-amber-600'}`}>
+              {coverage.isCovered ? (
+                <CheckCircle2 className="h-5 w-5" />
+              ) : (
+                <AlertTriangle className="h-5 w-5" />
               )}
             </div>
-          )}
-        </div>
-      )}
+            <div>
+              <span className={`font-semibold text-sm ${coverage.isCovered ? 'text-green-800' : 'text-amber-800'}`}>
+                {coverage.isCovered ? 'Address history complete' : 'Incomplete address history'}
+              </span>
+              <p className={`text-sm mt-1 ${coverage.isCovered ? 'text-green-700' : 'text-amber-700'}`}>
+                Coverage: {Math.round(coverage.coveragePercentage)}% ({coverage.totalDaysCovered} of {coverage.requiredDays} days)
+              </p>
+              {!coverage.isCovered && coverage.gaps.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-amber-800">Gaps detected:</p>
+                  <ul className="text-sm text-amber-700 mt-1 space-y-0.5">
+                    {coverage.gaps.map((gap, index) => (
+                      <li key={index}>• {formatDateRange(gap.start, gap.end)} ({daysBetween(gap.start, gap.end)} days)</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-3 p-4 rounded-lg border bg-gray-50 border-gray-200">
+            <AlertTriangle className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <div>
+              <span className="font-semibold text-sm text-gray-700">Address history status</span>
+              <p className="text-sm text-gray-600 mt-1">Enter your current address move-in date to calculate coverage.</p>
+            </div>
+          </div>
+        )}
 
-      {!homeMoveIn && (
-        <RKInfoBox type="info">
-          Please enter your current address move-in date above to calculate address history coverage.
-        </RKInfoBox>
-      )}
-
-      {addressHistory.map((_, index) => (
-        <div
-          key={index}
-          className="mb-6 p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-4"
-        >
-          <div className="flex justify-between items-center">
-            <h4 className="font-semibold text-rk-text">Previous Address {index + 1}</h4>
-            <button
-              type="button"
-              onClick={() => removeAddressHistory(index)}
-              className="text-rk-error hover:text-rk-error/80 flex items-center gap-1 text-sm"
+        {/* Previous Addresses */}
+        <div className="space-y-4">
+          {addressHistory.map((_, index) => (
+            <div
+              key={index}
+              className="p-5 bg-gray-50 border border-gray-200 rounded-xl space-y-4"
             >
-              <Trash2 className="h-4 w-4" />
-              Remove
-            </button>
-          </div>
-          <RKInput
-            label="Address line 1"
-            {...register(`addressHistory.${index}.address.line1`)}
-          />
-          <RKInput label="Address line 2" {...register(`addressHistory.${index}.address.line2`)} />
-          <RKInput label="Town or city" {...register(`addressHistory.${index}.address.town`)} />
-          <RKInput label="Postcode" widthClass="10" {...register(`addressHistory.${index}.address.postcode`)} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <RKInput label="Moved in" type="date" {...register(`addressHistory.${index}.moveIn`)} />
-            <RKInput label="Moved out" type="date" {...register(`addressHistory.${index}.moveOut`)} />
-          </div>
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold text-gray-900">Previous Address {index + 1}</h4>
+                <button
+                  type="button"
+                  onClick={() => removeAddressHistory(index)}
+                  className="text-red-600 hover:text-red-700 flex items-center gap-1 text-sm"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <RKInput
+                    label="Address line 1"
+                    required
+                    {...register(`addressHistory.${index}.address.line1`)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <RKInput label="Address line 2" {...register(`addressHistory.${index}.address.line2`)} />
+                </div>
+                <RKInput label="Town or city" required {...register(`addressHistory.${index}.address.town`)} />
+                <RKInput label="Postcode" required widthClass="10" {...register(`addressHistory.${index}.address.postcode`)} />
+                <RKInput label="Moved in" type="date" required {...register(`addressHistory.${index}.moveIn`)} />
+                <RKInput label="Moved out" type="date" required {...register(`addressHistory.${index}.moveOut`)} />
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
 
-      <RKButton
-        type="button"
-        variant="secondary"
-        onClick={addAddressHistory}
-        className="flex items-center gap-2"
-        disabled={coverage?.isCovered}
-      >
-        <Plus className="h-4 w-4" />
-        {coverage?.isCovered ? "Address history complete" : "Add previous address"}
-      </RKButton>
+        <button
+          type="button"
+          onClick={addAddressHistory}
+          disabled={coverage?.isCovered}
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-rk-primary border-2 border-dashed border-gray-300 rounded-lg hover:border-rk-primary hover:bg-rk-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Plus className="h-4 w-4" />
+          {coverage?.isCovered ? "Address history complete" : "Add previous address"}
+        </button>
 
-      <RKTextarea
-        label="Explain any gaps in address history"
-        hint="If there are gaps in your address history, please explain periods of travel, temporary accommodation, or other circumstances."
-        rows={4}
-        {...register("addressGaps")}
-      />
+        {(!coverage?.isCovered || coverage?.gaps.length > 0) && (
+          <RKTextarea
+            label="Explain any gaps in your address history"
+            hint="Please explain periods of travel, temporary accommodation, or other circumstances."
+            rows={4}
+            {...register("addressGaps")}
+          />
+        )}
+      </div>
 
-      <div className="rk-divider" />
+      {/* Overseas & Military History Subsection */}
+      <div className="space-y-4">
+        <h3 className="rk-subsection-title">Overseas & Military History</h3>
 
-      <RKRadio
-        legend="Have you lived outside the UK in the last 5 years?"
-        required
-        name="livedOutsideUK"
-        options={[
-          { value: "Yes", label: "Yes" },
-          { value: "No", label: "No" },
-        ]}
-        value={livedOutsideUK || ""}
-        onChange={(value) => setValue("livedOutsideUK", value as "Yes" | "No")}
-      />
+        <RKRadio
+          legend="Have you lived outside the UK in the last 5 years?"
+          required
+          name="livedOutsideUK"
+          options={[
+            { value: "Yes", label: "Yes" },
+            { value: "No", label: "No" },
+          ]}
+          value={livedOutsideUK || ""}
+          onChange={(value) => setValue("livedOutsideUK", value as "Yes" | "No")}
+        />
 
-      {livedOutsideUK === "Yes" && (
-        <RKInfoBox type="info">
-          If you have lived outside the UK, you must obtain a police check or 'Certificate of
-          Good Conduct' from the relevant countries. You will need to provide these documents to
-          Ready Kids.
-        </RKInfoBox>
-      )}
+        {livedOutsideUK === "Yes" && (
+          <RKInfoBox type="info">
+            If you have lived outside the UK, you must obtain a police check or 'Certificate of
+            Good Conduct' from the relevant countries.
+          </RKInfoBox>
+        )}
 
-      <RKRadio
-        legend="Have you lived or worked on a British military base abroad in the last 5 years?"
-        required
-        name="militaryBase"
-        options={[
-          { value: "Yes", label: "Yes" },
-          { value: "No", label: "No" },
-        ]}
-        value={militaryBase || ""}
-        onChange={(value) => setValue("militaryBase", value as "Yes" | "No")}
-      />
+        <RKRadio
+          legend="Have you lived or worked on a British military base abroad in the last 5 years?"
+          required
+          name="militaryBase"
+          options={[
+            { value: "Yes", label: "Yes" },
+            { value: "No", label: "No" },
+          ]}
+          value={militaryBase || ""}
+          onChange={(value) => setValue("militaryBase", value as "Yes" | "No")}
+        />
 
-      {militaryBase === "Yes" && (
-        <RKInfoBox type="info">
-          We will arrange Ministry of Defence (MoD) checks on your behalf. You may need to
-          complete additional forms.
-        </RKInfoBox>
-      )}
+        {militaryBase === "Yes" && (
+          <RKInfoBox type="info">
+            We will arrange Ministry of Defence (MoD) checks on your behalf. You may need to
+            complete additional forms.
+          </RKInfoBox>
+        )}
+      </div>
     </div>
   );
 };
