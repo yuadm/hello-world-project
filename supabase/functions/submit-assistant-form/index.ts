@@ -21,6 +21,18 @@ serve(async (req) => {
 
     console.log(`[submit-assistant-form] Processing submission for token: ${token}`);
 
+    // Check if form is already submitted (duplicate submission prevention)
+    const { data: existingForm } = await supabase
+      .from("compliance_assistant_forms")
+      .select("status, submitted_at")
+      .eq("form_token", token)
+      .maybeSingle();
+
+    if (existingForm?.status === "submitted") {
+      console.log("[submit-assistant-form] Form already submitted, rejecting duplicate");
+      throw new Error("This form has already been submitted");
+    }
+
     // Get assistant data from unified table using form token
     const { data: assistant, error: assistantError } = await supabase
       .from("compliance_assistants")

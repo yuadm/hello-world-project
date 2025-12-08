@@ -27,6 +27,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check if form is already submitted (duplicate submission prevention)
+    const { data: existingForm } = await supabase
+      .from("compliance_household_forms")
+      .select("status, submitted_at")
+      .eq("form_token", token)
+      .maybeSingle();
+
+    if (existingForm?.status === "submitted") {
+      console.log("Form already submitted, rejecting duplicate submission");
+      throw new Error("This form has already been submitted");
+    }
+
     // Get member data from unified table using form token
     const { data: memberData, error: memberError } = await supabase
       .from("compliance_household_members")

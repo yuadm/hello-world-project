@@ -43,6 +43,8 @@ export default function ReferenceForm() {
   const [submitting, setSubmitting] = useState(false);
   const [referenceRequest, setReferenceRequest] = useState<any>(null);
   const [applicantName, setApplicantName] = useState("");
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
 
   const form = useForm<Partial<ReferenceFormData>>({
     defaultValues: {
@@ -75,7 +77,8 @@ export default function ReferenceForm() {
       }
 
       if (request.request_status === "completed") {
-        toast.error("This reference has already been submitted");
+        setAlreadySubmitted(true);
+        setCompletedAt(request.response_received_date);
         setLoading(false);
         return;
       }
@@ -150,6 +153,28 @@ export default function ReferenceForm() {
     return (
       <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (alreadySubmitted) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Already Submitted</h1>
+          <p className="text-gray-600 mb-4">
+            This reference has already been submitted
+            {completedAt && ` on ${new Date(completedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}.
+          </p>
+          <p className="text-sm text-gray-500">
+            Thank you for providing the reference. No further action is required.
+          </p>
+        </div>
       </div>
     );
   }
