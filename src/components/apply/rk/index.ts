@@ -1,4 +1,5 @@
 export { RKInput } from "./RKInput";
+export { RKPostcodeLookup } from "./RKPostcodeLookup";
 export { RKSelect } from "./RKSelect";
 export { RKRadio } from "./RKRadio";
 export { RKCheckbox } from "./RKCheckbox";

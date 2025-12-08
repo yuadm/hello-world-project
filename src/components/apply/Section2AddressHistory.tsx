@@ -1,20 +1,13 @@
 import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
-import { RKInput, RKRadio, RKButton, RKTextarea, RKSelect, RKSectionTitle, RKInfoBox } from "./rk";
+import { RKInput, RKRadio, RKTextarea, RKSectionTitle, RKInfoBox, RKPostcodeLookup } from "./rk";
 import { useState, useMemo } from "react";
-import { Plus, Trash2, Search, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { 
   calculateAddressHistoryCoverage, 
   formatDateRange, 
   daysBetween 
 } from "@/lib/addressHistoryCalculator";
-import { 
-  lookupAddressesByPostcode, 
-  validatePostcode, 
-  formatPostcode,
-  type AddressListItem 
-} from "@/lib/postcodeService";
-import { toast } from "sonner";
 
 interface Props {
   form: UseFormReturn<Partial<ChildminderApplication>>;
@@ -23,14 +16,13 @@ interface Props {
 export const Section2AddressHistory = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   const [showManualAddress, setShowManualAddress] = useState(false);
-  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
-  const [addressList, setAddressList] = useState<AddressListItem[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [previousAddressManual, setPreviousAddressManual] = useState<Record<number, boolean>>({});
+  
   const addressHistory = watch("addressHistory") || [];
   const livedOutsideUK = watch("livedOutsideUK");
   const militaryBase = watch("militaryBase");
   const homeMoveIn = watch("homeMoveIn");
-  const homePostcode = watch("homePostcode");
+  const homePostcode = watch("homePostcode") || "";
 
   // Calculate address history coverage
   const coverage = useMemo(() => {
@@ -55,55 +47,26 @@ export const Section2AddressHistory = ({ form }: Props) => {
 
   const removeAddressHistory = (index: number) => {
     setValue("addressHistory", addressHistory.filter((_, i) => i !== index));
+    // Clean up manual state
+    const newManual = { ...previousAddressManual };
+    delete newManual[index];
+    setPreviousAddressManual(newManual);
   };
 
-  const handlePostcodeLookup = async () => {
-    if (!homePostcode) {
-      toast.error("Please enter a postcode first");
-      return;
-    }
-
-    if (!validatePostcode(homePostcode)) {
-      toast.error("Please enter a valid UK postcode");
-      return;
-    }
-
-    setIsLookingUpPostcode(true);
-    setAddressList([]);
-    setSelectedAddress("");
-
-    try {
-      const addresses = await lookupAddressesByPostcode(homePostcode);
-      
-      if (addresses.length > 0) {
-        setAddressList(addresses);
-        setValue("homePostcode", formatPostcode(homePostcode));
-        toast.success(`Found ${addresses.length} address${addresses.length > 1 ? 'es' : ''}. Please select yours.`);
-      } else {
-        toast.error("No addresses found for this postcode. Please enter manually.");
-        setShowManualAddress(true);
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to lookup addresses");
-      setShowManualAddress(true);
-    } finally {
-      setIsLookingUpPostcode(false);
-    }
+  const handleCurrentAddressSelect = (address: { line1: string; line2: string; town: string; postcode: string }) => {
+    setValue("homeAddress.line1", address.line1);
+    setValue("homeAddress.line2", address.line2);
+    setValue("homeAddress.town", address.town);
+    setValue("homeAddress.postcode", address.postcode);
+    setShowManualAddress(true);
   };
 
-  const handleAddressSelect = (value: string) => {
-    setSelectedAddress(value);
-    
-    if (value && value !== "") {
-      const address = addressList[parseInt(value)];
-      if (address) {
-        setValue("homeAddress.line1", address.line1);
-        setValue("homeAddress.line2", address.line2);
-        setValue("homeAddress.town", address.town);
-        setValue("homeAddress.postcode", formatPostcode(homePostcode));
-        toast.success("Address selected and filled in!");
-      }
-    }
+  const handlePreviousAddressSelect = (index: number, address: { line1: string; line2: string; town: string; postcode: string }) => {
+    setValue(`addressHistory.${index}.address.line1`, address.line1);
+    setValue(`addressHistory.${index}.address.line2`, address.line2);
+    setValue(`addressHistory.${index}.address.town`, address.town);
+    setValue(`addressHistory.${index}.address.postcode`, address.postcode);
+    setPreviousAddressManual(prev => ({ ...prev, [index]: true }));
   };
 
   return (
@@ -117,60 +80,17 @@ export const Section2AddressHistory = ({ form }: Props) => {
       <div className="space-y-4">
         <h3 className="rk-subsection-title">Current Home Address</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <RKInput
-              label="Postcode"
-              required
-              widthClass="10"
-              placeholder="e.g. SW1A 1AA"
-              {...register("homePostcode")}
-            />
-            <div className="mt-3 flex gap-3 flex-wrap">
-              <RKButton
-                type="button"
-                variant="secondary"
-                onClick={handlePostcodeLookup}
-                disabled={isLookingUpPostcode || !homePostcode}
-                className="flex items-center gap-2"
-              >
-                <Search className="h-4 w-4" />
-                {isLookingUpPostcode ? "Looking up..." : "Find address"}
-              </RKButton>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowManualAddress(!showManualAddress);
-                  setAddressList([]);
-                  setSelectedAddress("");
-                }}
-                className="underline text-rk-primary hover:text-rk-primary-dark text-sm"
-              >
-                {showManualAddress ? "Use postcode lookup" : "Enter address manually"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <RKPostcodeLookup
+          label="Postcode"
+          hint="Start typing your postcode to search for addresses"
+          required
+          value={homePostcode}
+          onChange={(postcode) => setValue("homePostcode", postcode)}
+          onAddressSelect={handleCurrentAddressSelect}
+        />
 
-        {addressList.length > 0 && !showManualAddress && (
-          <RKSelect
-            label="Select your address"
-            hint="Choose your address from the list"
-            options={[
-              { value: "", label: "Please select an address" },
-              ...addressList.map((addr, index) => ({
-                value: index.toString(),
-                label: addr.formatted,
-              })),
-            ]}
-            value={selectedAddress}
-            onChange={(e) => handleAddressSelect(e.target.value)}
-            required
-          />
-        )}
-
-        {(showManualAddress || selectedAddress) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {showManualAddress && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="md:col-span-2">
               <RKInput
                 label="Address line 1"
@@ -256,35 +176,49 @@ export const Section2AddressHistory = ({ form }: Props) => {
 
         {/* Previous Addresses */}
         <div className="space-y-4">
-          {addressHistory.map((_, index) => (
+          {addressHistory.map((entry, index) => (
             <div
               key={index}
-              className="p-5 bg-gray-50 border border-gray-200 rounded-xl space-y-4"
+              className="p-5 bg-white border border-gray-200 rounded-xl space-y-4"
             >
               <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-gray-900">Previous Address {index + 1}</h4>
                 <button
                   type="button"
                   onClick={() => removeAddressHistory(index)}
-                  className="text-red-600 hover:text-red-700 flex items-center gap-1 text-sm"
+                  className="text-red-600 hover:text-red-700 text-sm font-medium"
                 >
-                  <Trash2 className="h-4 w-4" />
                   Remove
                 </button>
               </div>
+
+              <RKPostcodeLookup
+                label="Postcode"
+                hint="Start typing the postcode to search"
+                required
+                value={entry.address?.postcode || ""}
+                onChange={(postcode) => setValue(`addressHistory.${index}.address.postcode`, postcode)}
+                onAddressSelect={(address) => handlePreviousAddressSelect(index, address)}
+              />
+
+              {previousAddressManual[index] && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <RKInput
+                      label="Address line 1"
+                      required
+                      {...register(`addressHistory.${index}.address.line1`)}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <RKInput label="Address line 2" {...register(`addressHistory.${index}.address.line2`)} />
+                  </div>
+                  <RKInput label="Town or city" required {...register(`addressHistory.${index}.address.town`)} />
+                  <RKInput label="Postcode" required widthClass="10" {...register(`addressHistory.${index}.address.postcode`)} />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <RKInput
-                    label="Address line 1"
-                    required
-                    {...register(`addressHistory.${index}.address.line1`)}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <RKInput label="Address line 2" {...register(`addressHistory.${index}.address.line2`)} />
-                </div>
-                <RKInput label="Town or city" required {...register(`addressHistory.${index}.address.town`)} />
-                <RKInput label="Postcode" required widthClass="10" {...register(`addressHistory.${index}.address.postcode`)} />
                 <RKInput label="Moved in" type="date" required {...register(`addressHistory.${index}.moveIn`)} />
                 <RKInput label="Moved out" type="date" required {...register(`addressHistory.${index}.moveOut`)} />
               </div>
