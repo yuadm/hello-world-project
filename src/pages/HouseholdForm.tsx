@@ -30,7 +30,15 @@ export interface HouseholdFormData {
   homeTown: string;
   homePostcode: string;
   homeMoveIn: string;
-  addressHistory: Array<{ address: string; moveIn: string; moveOut: string }>;
+  addressHistory: Array<{ 
+    line1?: string; 
+    line2?: string; 
+    town?: string; 
+    postcode?: string; 
+    moveIn: string; 
+    moveOut: string 
+  }>;
+  addressGaps?: string;
   livedOutsideUK: string;
   outsideUKDetails: string;
   
@@ -56,6 +64,7 @@ export interface HouseholdFormData {
   declarationTruth: boolean;
   declarationNotify: boolean;
   signatureFullName: string;
+  signaturePrintName?: string;
   signatureDate: string;
 }
 
@@ -85,13 +94,13 @@ export default function HouseholdForm() {
     otherNames: "No", previousNames: [],
     dob: "", birthTown: "", sex: "", niNumber: "",
     homeAddressLine1: "", homeAddressLine2: "", homeTown: "", homePostcode: "",
-    homeMoveIn: "", addressHistory: [], livedOutsideUK: "No", outsideUKDetails: "",
+    homeMoveIn: "", addressHistory: [], addressGaps: "", livedOutsideUK: "No", outsideUKDetails: "",
     prevReg: "No", prevRegInfo: "", hasDBS: "No", dbsNumber: "", dbsUpdate: "",
     offenceHistory: "No", offenceDetails: "", disqualified: "No",
     socialServices: "No", socialServicesInfo: "",
     healthCondition: "No", healthConditionDetails: "", smoker: "",
     consentChecks: false, declarationTruth: false, declarationNotify: false,
-    signatureFullName: "", signatureDate: new Date().toISOString().split('T')[0]
+    signatureFullName: "", signaturePrintName: "", signatureDate: new Date().toISOString().split('T')[0]
   });
 
   useEffect(() => {
@@ -166,6 +175,16 @@ export default function HouseholdForm() {
       }
 
       if (existingForm) {
+        // Map address history to new format
+        const mappedAddressHistory = ((existingForm.address_history as any[]) || []).map(addr => ({
+          line1: addr.line1 || addr.address?.line1 || "",
+          line2: addr.line2 || addr.address?.line2 || "",
+          town: addr.town || addr.address?.town || "",
+          postcode: addr.postcode || addr.address?.postcode || "",
+          moveIn: addr.moveIn || "",
+          moveOut: addr.moveOut || ""
+        }));
+
         setFormData({
           title: existingForm.title || "",
           firstName: existingForm.first_name || "",
@@ -182,7 +201,8 @@ export default function HouseholdForm() {
           homeTown: (existingForm.current_address as any)?.town || "",
           homePostcode: (existingForm.current_address as any)?.postcode || "",
           homeMoveIn: (existingForm.current_address as any)?.moveIn || "",
-          addressHistory: (existingForm.address_history as any[]) || [],
+          addressHistory: mappedAddressHistory,
+          addressGaps: "",
           livedOutsideUK: existingForm.lived_outside_uk || "No",
           outsideUKDetails: existingForm.outside_uk_details || "",
           prevReg: existingForm.previous_registration || "No",
@@ -202,6 +222,7 @@ export default function HouseholdForm() {
           declarationTruth: existingForm.declaration_truth || false,
           declarationNotify: existingForm.declaration_notify || false,
           signatureFullName: existingForm.signature_name || "",
+          signaturePrintName: "",
           signatureDate: existingForm.signature_date || new Date().toISOString().split('T')[0]
         });
         toast.success("Draft form loaded");
