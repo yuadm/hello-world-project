@@ -99,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Get current member data to track reminder history
     const { data: memberData } = await supabase
-      .from("household_member_dbs_tracking")
+      .from("compliance_household_members")
       .select("reminder_count, reminder_history")
       .eq("id", memberId)
       .single();
@@ -118,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Update notification sent flag and reminder tracking
     const { error: updateError } = await supabase
-      .from("household_member_dbs_tracking")
+      .from("compliance_household_members")
       .update({
         turning_16_notification_sent: true,
         last_contact_date: new Date().toISOString(),
