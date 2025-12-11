@@ -9,20 +9,71 @@ interface Props {
 export const Section8Suitability = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   
+  const prevRegOfsted = watch("prevRegOfsted");
+  const prevRegAgency = watch("prevRegAgency");
+  const prevRegOtherUK = watch("prevRegOtherUK");
+  const prevRegEU = watch("prevRegEU");
   const healthCondition = watch("healthCondition");
+  const smoker = watch("smoker");
   const disqualified = watch("disqualified");
   const socialServices = watch("socialServices");
   const otherCircumstances = watch("otherCircumstances");
   const hasDBS = watch("hasDBS");
+  const offenceHistory = watch("offenceHistory");
 
   return (
     <div className="space-y-8">
       <RKSectionTitle title="Suitability & Vetting" description="We need to check your suitability to work with children." />
 
+      <h3 className="rk-subsection-title">Previous Registration</h3>
+      
+      <p className="text-sm text-[#64748B] -mt-4 mb-6">
+        Have you ever been registered with or applied to register with any of the following?
+      </p>
+
+      <RKRadio 
+        legend="Ofsted" 
+        required 
+        name="prevRegOfsted" 
+        options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+        value={prevRegOfsted || ""} 
+        onChange={(value) => setValue("prevRegOfsted", value as "Yes" | "No")} 
+      />
+
+      <RKRadio 
+        legend="Another Childminder Agency" 
+        required 
+        name="prevRegAgency" 
+        options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+        value={prevRegAgency || ""} 
+        onChange={(value) => setValue("prevRegAgency", value as "Yes" | "No")} 
+      />
+
+      <RKRadio 
+        legend="Another regulatory authority in the UK (e.g., Scotland, Wales, Northern Ireland)" 
+        required 
+        name="prevRegOtherUK" 
+        options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+        value={prevRegOtherUK || ""} 
+        onChange={(value) => setValue("prevRegOtherUK", value as "Yes" | "No")} 
+      />
+
+      <RKRadio 
+        legend="A regulatory body in a European Union member state" 
+        required 
+        name="prevRegEU" 
+        options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+        value={prevRegEU || ""} 
+        onChange={(value) => setValue("prevRegEU", value as "Yes" | "No")} 
+      />
+
+      <div className="rk-divider" />
+
       <h3 className="rk-subsection-title">Health Declaration</h3>
 
       <RKRadio 
-        legend="Do you have any physical or mental health conditions that may impact your ability to care for children?" 
+        legend="Do you have any current or previous medical conditions (physical or mental) that may impact your ability to work as a childminder?" 
+        hint="This includes significant mental health conditions, neurological conditions, or physical impairments."
         required 
         name="healthCondition" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -42,10 +93,11 @@ export const Section8Suitability = ({ form }: Props) => {
 
       <RKRadio 
         legend="Is anyone who lives or works at the premises a smoker?" 
+        hint="It is a legal requirement that no one smokes in any part of a premises used for childminding, or in the presence of minded children."
         required 
         name="smoker" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
-        value={watch("smoker") || ""} 
+        value={smoker || ""} 
         onChange={(value) => setValue("smoker", value as "Yes" | "No")} 
       />
 
@@ -54,8 +106,8 @@ export const Section8Suitability = ({ form }: Props) => {
       <h3 className="rk-subsection-title">Suitability Declaration</h3>
 
       <RKRadio 
-        legend="Are you disqualified from registration under the Childcare Act 2006?" 
-        hint="This includes disqualification by association."
+        legend="Are you disqualified under the Childcare Act 2006?" 
+        hint="You are 'disqualified' if you have been barred from working with children, had a child removed from your care by court order, or had a registration cancelled in the past. Please review the official GOV.UK guidance if unsure."
         required 
         name="disqualified" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -71,6 +123,7 @@ export const Section8Suitability = ({ form }: Props) => {
 
       <RKRadio 
         legend="Have you ever been involved with social services in connection with your own children?" 
+        hint="You must declare any involvement, including referrals, assessments, or investigations, even if the case was closed with no action. Past involvement does not automatically disqualify you, but we must explore the circumstances."
         required 
         name="socialServices" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -110,7 +163,7 @@ export const Section8Suitability = ({ form }: Props) => {
       <h3 className="rk-subsection-title">DBS & Vetting</h3>
 
       <RKInfoBox type="info">
-        All childminders must have an Enhanced DBS check with barred lists. If you don't already have one, we will arrange this for you as part of the registration process.
+        An Enhanced DBS (Disclosure and Barring Service) check is mandatory for registration.
       </RKInfoBox>
 
       <RKRadio 
@@ -136,8 +189,31 @@ export const Section8Suitability = ({ form }: Props) => {
 
       {hasDBS === "No" && (
         <RKInfoBox type="info">
-          No problem - we will arrange your DBS check as part of the registration process. There may be an additional fee for this service.
+          You must obtain an Enhanced DBS check suitable for a home-based childcare role and subscribe to the Update Service before we can complete your registration. We can assist you with this process.
         </RKInfoBox>
+      )}
+
+      <div className="rk-divider" />
+
+      <h3 className="rk-subsection-title">Criminal History Declaration</h3>
+
+      <RKRadio 
+        legend="Have you ever received a reprimand or final warning, been given a caution for, or been convicted of, any criminal offences?" 
+        hint="You must declare everything, no matter how long ago it occurred. Due to the nature of working with children, the rules on 'spent' convictions (Rehabilitation of Offenders Act) do not apply. This information will be verified by your DBS check."
+        required 
+        name="offenceHistory" 
+        options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+        value={offenceHistory || ""} 
+        onChange={(value) => setValue("offenceHistory", value as "Yes" | "No")} 
+      />
+
+      {offenceHistory === "Yes" && (
+        <RKTextarea 
+          label="Please provide details" 
+          hint="Include dates, nature of offence(s), and any sentences or outcomes."
+          required 
+          rows={4} 
+        />
       )}
     </div>
   );
