@@ -1,8 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
-import { RKRadio, RKInput, RKSectionTitle, RKInfoBox, RKCheckbox, RKSelect } from "./rk";
+import { RKRadio, RKInput, RKButton, RKSectionTitle, RKInfoBox, RKCheckbox, RKSelect } from "./rk";
 import { useMemo, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   calculateCapacityRatios,
 } from "@/lib/capacityCalculator";
@@ -46,6 +46,12 @@ export const Section4Service = ({ form }: Props) => {
       setValue("numberOfAssistants", 0);
     }
   }, [workWithOthers, numberOfAssistants]);
+
+  const addAssistant = () => {
+    if (numberOfAssistants < 3) {
+      setValue("numberOfAssistants", numberOfAssistants + 1);
+    }
+  };
 
   const removeAssistant = (index: number) => {
     const newAssistants = assistants.filter((_, i) => i !== index);
@@ -236,6 +242,18 @@ export const Section4Service = ({ form }: Props) => {
               </div>
             </div>
           ))}
+          
+          {numberOfAssistants < 3 && (
+            <RKButton
+              type="button"
+              variant="secondary"
+              onClick={addAssistant}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add person
+            </RKButton>
+          )}
         </>
       )}
 
