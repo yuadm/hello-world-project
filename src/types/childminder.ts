@@ -22,6 +22,7 @@ export interface TrainingEntry {
   provider?: string;
   completionDate?: string;
   certificateNumber?: string;
+  courseTitle?: string;
 }
 
 export interface EmploymentEntry {

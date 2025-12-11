@@ -139,18 +139,13 @@ export const Section5Qualifications = ({ form }: Props) => {
                 required
                 {...register("firstAid.provider")}
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <RKInput
-                  label="Completion date"
-                  type="date"
-                  required
-                  {...register("firstAid.completionDate")}
-                />
-                <RKInput
-                  label="Certificate number"
-                  {...register("firstAid.certificateNumber")}
-                />
-              </div>
+              <RKInput
+                label="Completion date"
+                type="date"
+                required
+                widthClass="10"
+                {...register("firstAid.completionDate")}
+              />
 
               {isFirstAidExpired() && (
                 <RKInfoBox type="warning">
@@ -158,12 +153,6 @@ export const Section5Qualifications = ({ form }: Props) => {
                 </RKInfoBox>
               )}
             </div>
-          )}
-
-          {firstAidCompleted === "No" && (
-            <RKInfoBox type="error">
-              You must complete {requires0to5 ? "a 12-hour Paediatric First Aid course" : "an appropriate first aid qualification"} before your registration can be approved.
-            </RKInfoBox>
           )}
         </TrainingCard>
       )}
@@ -199,6 +188,7 @@ export const Section5Qualifications = ({ form }: Props) => {
         >
           {watch("eyfsChildminding.completed") === "Yes" && (
             <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+              <RKInput label="Course title" {...register("eyfsChildminding.courseTitle")} />
               <RKInput label="Training provider" {...register("eyfsChildminding.provider")} />
               <RKInput label="Completion date" type="date" widthClass="10" {...register("eyfsChildminding.completionDate")} />
             </div>
@@ -206,11 +196,11 @@ export const Section5Qualifications = ({ form }: Props) => {
         </TrainingCard>
       )}
 
-      {/* Level 2 Qualification */}
+      {/* Level 2 Qualification / Common Core Skills */}
       {requires8plus && (
         <TrainingCard
-          title="Level 2 Qualification"
-          question="Do you hold a Level 2 qualification in childcare or education?"
+          title="Level 2 Qualification / Common Core Skills"
+          question="Do you have a minimum level 2 qualification OR training in the common core skills?"
           required
           name="level2Qual.completed"
           value={watch("level2Qual.completed") || ""}
