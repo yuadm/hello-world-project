@@ -53,3 +53,12 @@ verify_jwt = false
 
 [functions.send-la-check-email]
 verify_jwt = false
+
+[functions.send-cochildminder-form-email]
+verify_jwt = false
+
+[functions.submit-cochildminder-form]
+verify_jwt = false
+
+[functions.check-compliance-status]
+verify_jwt = false

@@ -283,9 +283,7 @@ export function validateSection7(data: Partial<ChildminderApplication>): Validat
           }
         }
         
-        if (!asst.role || !asst.role.trim()) {
-          errors.push(`Assistant ${index + 1}: Role is required`);
-        }
+        // Role is now implicit (stored in assistants array = assistant role)
         
         if (!asst.email) {
           errors.push(`Assistant ${index + 1}: Email address is required`);

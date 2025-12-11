@@ -1,8 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
-import { RKRadio, RKInput, RKButton, RKSectionTitle, RKInfoBox, RKCheckbox, RKSelect } from "./rk";
+import { RKRadio, RKInput, RKButton, RKSectionTitle, RKInfoBox, RKCheckbox } from "./rk";
 import { useMemo, useEffect } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Users, UserCheck } from "lucide-react";
 import {
   calculateCapacityRatios,
 } from "@/lib/capacityCalculator";
@@ -14,9 +14,12 @@ interface Props {
 export const Section4Service = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   const ageGroups = watch("ageGroups") || [];
-  const workWithOthers = watch("workWithOthers");
+  const workWithAssistants = watch("workWithAssistants");
+  const workWithCochildminders = watch("workWithCochildminders");
   const numberOfAssistants = watch("numberOfAssistants") || 0;
+  const numberOfCochildminders = watch("numberOfCochildminders") || 0;
   const assistants = watch("assistants") || [];
+  const cochildminders = watch("cochildminders") || [];
 
   const toggleAgeGroup = (ageGroup: string) => {
     if (ageGroups.includes(ageGroup)) {
@@ -28,24 +31,41 @@ export const Section4Service = ({ form }: Props) => {
 
   // Auto-sync assistants array with numberOfAssistants
   useEffect(() => {
-    if (workWithOthers === "Yes" && numberOfAssistants > 0) {
+    if (workWithAssistants === "Yes" && numberOfAssistants > 0) {
       const currentLength = assistants.length;
       if (currentLength < numberOfAssistants) {
-        // Add empty assistant entries
         const newAssistants = [...assistants];
         for (let i = currentLength; i < numberOfAssistants; i++) {
-          newAssistants.push({ firstName: "", lastName: "", dob: "", role: "", email: "", phone: "" });
+          newAssistants.push({ firstName: "", lastName: "", dob: "", email: "", phone: "" });
         }
         setValue("assistants", newAssistants);
       } else if (currentLength > numberOfAssistants) {
-        // Remove excess entries
         setValue("assistants", assistants.slice(0, numberOfAssistants));
       }
-    } else if (workWithOthers === "No") {
+    } else if (workWithAssistants === "No") {
       setValue("assistants", []);
       setValue("numberOfAssistants", 0);
     }
-  }, [workWithOthers, numberOfAssistants]);
+  }, [workWithAssistants, numberOfAssistants]);
+
+  // Auto-sync cochildminders array with numberOfCochildminders
+  useEffect(() => {
+    if (workWithCochildminders === "Yes" && numberOfCochildminders > 0) {
+      const currentLength = cochildminders.length;
+      if (currentLength < numberOfCochildminders) {
+        const newCochildminders = [...cochildminders];
+        for (let i = currentLength; i < numberOfCochildminders; i++) {
+          newCochildminders.push({ firstName: "", lastName: "", dob: "", email: "", phone: "" });
+        }
+        setValue("cochildminders", newCochildminders);
+      } else if (currentLength > numberOfCochildminders) {
+        setValue("cochildminders", cochildminders.slice(0, numberOfCochildminders));
+      }
+    } else if (workWithCochildminders === "No") {
+      setValue("cochildminders", []);
+      setValue("numberOfCochildminders", 0);
+    }
+  }, [workWithCochildminders, numberOfCochildminders]);
 
   const addAssistant = () => {
     if (numberOfAssistants < 3) {
@@ -59,10 +79,23 @@ export const Section4Service = ({ form }: Props) => {
     setValue("numberOfAssistants", newAssistants.length);
   };
 
-  // Calculate capacity ratios
+  const addCochildminder = () => {
+    if (numberOfCochildminders < 2) {
+      setValue("numberOfCochildminders", numberOfCochildminders + 1);
+    }
+  };
+
+  const removeCochildminder = (index: number) => {
+    const newCochildminders = cochildminders.filter((_, i) => i !== index);
+    setValue("cochildminders", newCochildminders);
+    setValue("numberOfCochildminders", newCochildminders.length);
+  };
+
+  // Calculate capacity ratios (assistants increase capacity, co-childminders don't count for main applicant)
   const capacityRatios = useMemo(() => {
-    return calculateCapacityRatios(workWithOthers, numberOfAssistants);
-  }, [workWithOthers, numberOfAssistants]);
+    // Only assistants affect the main applicant's capacity
+    return calculateCapacityRatios(workWithAssistants, numberOfAssistants);
+  }, [workWithAssistants, numberOfAssistants]);
 
   return (
     <div className="space-y-8">
@@ -145,118 +178,223 @@ export const Section4Service = ({ form }: Props) => {
         We must ensure the suitability of everyone connected to your registration. This includes staff working with you and people living or working at the premises.
       </p>
 
-      <h4 className="font-semibold text-rk-text mb-2">Assistants and Co-childminders Details</h4>
-      <RKInfoBox type="info">
-        Anyone working with you must complete a full suitability check (Form CMA-A1). 
-        Please provide their basic details below so we can initiate their application.
-      </RKInfoBox>
+      {/* Assistants Section */}
+      <div className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-full bg-rk-primary/10 flex items-center justify-center">
+            <Users className="w-5 h-5 text-rk-primary" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-rk-text">Assistants</h4>
+            <p className="text-sm text-rk-text-light">People who work <strong>under your supervision</strong></p>
+          </div>
+        </div>
+        
+        <RKInfoBox type="info">
+          Assistants work under your direction and help with childcare duties. They must complete a CMA-A1 suitability check form and will increase your child capacity ratios.
+        </RKInfoBox>
 
-      <RKRadio
-        legend="Will you work with any assistants or co-childminders?"
-        required
-        name="workWithOthers"
-        options={[
-          { value: "Yes", label: "Yes" },
-          { value: "No", label: "No" },
-        ]}
-        value={workWithOthers || ""}
-        onChange={(value) => setValue("workWithOthers", value as "Yes" | "No")}
-      />
-
-      {workWithOthers === "Yes" && (
-        <RKInput
-          label="How many assistants/co-childminders?"
-          type="number"
+        <RKRadio
+          legend="Will you work with any assistants?"
           required
-          widthClass="10"
-          min={1}
-          max={3}
-          hint="Maximum 3 assistants"
-          {...register("numberOfAssistants", { valueAsNumber: true })}
+          name="workWithAssistants"
+          options={[
+            { value: "Yes", label: "Yes" },
+            { value: "No", label: "No" },
+          ]}
+          value={workWithAssistants || ""}
+          onChange={(value) => setValue("workWithAssistants", value as "Yes" | "No")}
         />
-      )}
 
-      {workWithOthers === "Yes" && numberOfAssistants > 0 && (
-        <>
-          
-          {assistants.map((_, index) => (
-            <div
-              key={index}
-              className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-4"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="font-semibold text-lg text-rk-text">Person {index + 1}</h4>
-                <button
-                  type="button"
-                  onClick={() => removeAssistant(index)}
-                  className="text-rk-error hover:text-rk-error/80 flex items-center gap-1 font-medium text-sm"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Remove
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <RKInput
-                  label="First name"
-                  required
-                  {...register(`assistants.${index}.firstName`)}
-                />
-                <RKInput
-                  label="Last name"
-                  required
-                  {...register(`assistants.${index}.lastName`)}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <RKInput
-                  label="Date of birth"
-                  type="date"
-                  hint="dd/mm/yyyy"
-                  required
-                  {...register(`assistants.${index}.dob`)}
-                />
-                <RKSelect
-                  label="Role"
-                  required
-                  options={[
-                    { value: "", label: "Select role" },
-                    { value: "Assistant", label: "Assistant" },
-                    { value: "Co-childminder", label: "Co-childminder" },
-                  ]}
-                  {...register(`assistants.${index}.role`)}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <RKInput
-                  label="Email address"
-                  type="email"
-                  required
-                  {...register(`assistants.${index}.email`)}
-                />
+        {workWithAssistants === "Yes" && (
+          <>
+            <RKInput
+              label="How many assistants?"
+              type="number"
+              required
+              widthClass="10"
+              min={1}
+              max={3}
+              hint="Maximum 3 assistants"
+              {...register("numberOfAssistants", { valueAsNumber: true })}
+            />
+
+            {numberOfAssistants > 0 && assistants.map((_, index) => (
+              <div
+                key={index}
+                className="p-4 bg-white border border-rk-border rounded-lg space-y-4"
+              >
+                <div className="flex justify-between items-center">
+                  <h5 className="font-medium text-rk-text">Assistant {index + 1}</h5>
+                  <button
+                    type="button"
+                    onClick={() => removeAssistant(index)}
+                    className="text-rk-error hover:text-rk-error/80 flex items-center gap-1 font-medium text-sm"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <RKInput
+                    label="First name"
+                    required
+                    {...register(`assistants.${index}.firstName`)}
+                  />
+                  <RKInput
+                    label="Last name"
+                    required
+                    {...register(`assistants.${index}.lastName`)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <RKInput
+                    label="Date of birth"
+                    type="date"
+                    hint="dd/mm/yyyy"
+                    required
+                    {...register(`assistants.${index}.dob`)}
+                  />
+                  <RKInput
+                    label="Email address"
+                    type="email"
+                    required
+                    {...register(`assistants.${index}.email`)}
+                  />
+                </div>
                 <RKInput
                   label="Mobile number"
                   type="tel"
+                  widthClass="20"
                   {...register(`assistants.${index}.phone`)}
                 />
               </div>
-            </div>
-          ))}
-          
-          {numberOfAssistants < 3 && (
-            <RKButton
-              type="button"
-              variant="secondary"
-              onClick={addAssistant}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add person
-            </RKButton>
-          )}
-        </>
-      )}
+            ))}
+            
+            {numberOfAssistants < 3 && (
+              <RKButton
+                type="button"
+                variant="secondary"
+                onClick={addAssistant}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add assistant
+              </RKButton>
+            )}
+          </>
+        )}
+      </div>
 
+      {/* Co-childminders Section */}
+      <div className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+            <UserCheck className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-rk-text">Co-childminders</h4>
+            <p className="text-sm text-rk-text-light">Independent childminders who <strong>share your premises</strong></p>
+          </div>
+        </div>
+        
+        <RKInfoBox type="warning">
+          Co-childminders are registered childminders in their own right. They share your premises but have their own registration and capacity. They will need to complete a full co-childminder application form (similar to your application).
+        </RKInfoBox>
+
+        <RKRadio
+          legend="Will any co-childminders work from your premises?"
+          required
+          name="workWithCochildminders"
+          options={[
+            { value: "Yes", label: "Yes" },
+            { value: "No", label: "No" },
+          ]}
+          value={workWithCochildminders || ""}
+          onChange={(value) => setValue("workWithCochildminders", value as "Yes" | "No")}
+        />
+
+        {workWithCochildminders === "Yes" && (
+          <>
+            <RKInput
+              label="How many co-childminders?"
+              type="number"
+              required
+              widthClass="10"
+              min={1}
+              max={2}
+              hint="Maximum 2 co-childminders"
+              {...register("numberOfCochildminders", { valueAsNumber: true })}
+            />
+
+            {numberOfCochildminders > 0 && cochildminders.map((_, index) => (
+              <div
+                key={index}
+                className="p-4 bg-white border border-amber-200 rounded-lg space-y-4"
+              >
+                <div className="flex justify-between items-center">
+                  <h5 className="font-medium text-rk-text">Co-childminder {index + 1}</h5>
+                  <button
+                    type="button"
+                    onClick={() => removeCochildminder(index)}
+                    className="text-rk-error hover:text-rk-error/80 flex items-center gap-1 font-medium text-sm"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <RKInput
+                    label="First name"
+                    required
+                    {...register(`cochildminders.${index}.firstName`)}
+                  />
+                  <RKInput
+                    label="Last name"
+                    required
+                    {...register(`cochildminders.${index}.lastName`)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <RKInput
+                    label="Date of birth"
+                    type="date"
+                    hint="dd/mm/yyyy"
+                    required
+                    {...register(`cochildminders.${index}.dob`)}
+                  />
+                  <RKInput
+                    label="Email address"
+                    type="email"
+                    required
+                    {...register(`cochildminders.${index}.email`)}
+                  />
+                </div>
+                <RKInput
+                  label="Mobile number"
+                  type="tel"
+                  widthClass="20"
+                  {...register(`cochildminders.${index}.phone`)}
+                />
+              </div>
+            ))}
+            
+            {numberOfCochildminders < 2 && (
+              <RKButton
+                type="button"
+                variant="secondary"
+                onClick={addCochildminder}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add co-childminder
+              </RKButton>
+            )}
+          </>
+        )}
+      </div>
 
       <div className="rk-divider" />
 
