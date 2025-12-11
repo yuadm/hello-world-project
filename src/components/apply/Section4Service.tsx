@@ -80,31 +80,6 @@ export const Section4Service = ({ form }: Props) => {
 
       <h3 className="rk-subsection-title">Capacity Calculator</h3>
 
-      <RKRadio
-        legend="Will you work with any assistants or co-childminders?"
-        required
-        name="workWithOthers"
-        options={[
-          { value: "Yes", label: "Yes" },
-          { value: "No", label: "No" },
-        ]}
-        value={workWithOthers || ""}
-        onChange={(value) => setValue("workWithOthers", value as "Yes" | "No")}
-      />
-
-      {workWithOthers === "Yes" && (
-        <RKInput
-          label="How many assistants/co-childminders?"
-          type="number"
-          required
-          widthClass="10"
-          min={1}
-          max={3}
-          hint="Maximum 3 assistants"
-          {...register("numberOfAssistants", { valueAsNumber: true })}
-        />
-      )}
-
       {/* Visual Capacity Calculator - Bento Style */}
       <div className="rk-capacity-wrapper">
         <div className="rk-capacity-header">
@@ -137,6 +112,31 @@ export const Section4Service = ({ form }: Props) => {
           </div>
         </div>
       </div>
+
+      <RKRadio
+        legend="Will you work with any assistants or co-childminders?"
+        required
+        name="workWithOthers"
+        options={[
+          { value: "Yes", label: "Yes" },
+          { value: "No", label: "No" },
+        ]}
+        value={workWithOthers || ""}
+        onChange={(value) => setValue("workWithOthers", value as "Yes" | "No")}
+      />
+
+      {workWithOthers === "Yes" && (
+        <RKInput
+          label="How many assistants/co-childminders?"
+          type="number"
+          required
+          widthClass="10"
+          min={1}
+          max={3}
+          hint="Maximum 3 assistants"
+          {...register("numberOfAssistants", { valueAsNumber: true })}
+        />
+      )}
 
       {workWithOthers === "Yes" && numberOfAssistants > 0 && (
         <>
