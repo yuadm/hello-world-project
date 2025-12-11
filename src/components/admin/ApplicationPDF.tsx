@@ -482,7 +482,7 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
                   <View style={styles.qualGrid}>
                     <View style={styles.qualGridItem}>
                       <Text style={styles.cardSubtitle}>Role</Text>
-                      <Text style={styles.cardText}>{person.role || "N/A"}</Text>
+                      <Text style={styles.cardText}>Assistant</Text>
                     </View>
                     <View style={styles.qualGridItem}>
                       <Text style={styles.cardSubtitle}>Date of Birth</Text>
