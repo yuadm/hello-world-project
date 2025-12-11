@@ -897,8 +897,7 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
                 <View key={index} style={styles.card}>
                   <Text style={styles.cardTitle}>Offence {index + 1}</Text>
                   <Text style={styles.cardText}>Date: {offence.date}</Text>
-                  <Text style={styles.cardText}>Description: {offence.description}</Text>
-                  <Text style={styles.cardText}>Outcome: {offence.outcome}</Text>
+                  <Text style={styles.cardText}>Details: {offence.details}</Text>
                 </View>
               ))}
             </View>

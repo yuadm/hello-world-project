@@ -1,5 +1,5 @@
 import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { ChildminderApplication, RegistrationEntry } from "@/types/childminder";
+import { ChildminderApplication, RegistrationEntry, OffenceEntry } from "@/types/childminder";
 import { RKInput, RKRadio, RKTextarea, RKSectionTitle, RKInfoBox, RKButton } from "./rk";
 import { Plus, X } from "lucide-react";
 
@@ -12,6 +12,11 @@ const emptyRegistration: RegistrationEntry = {
   registrationNumber: "",
   startDate: "",
   endDate: "",
+};
+
+const emptyOffence: OffenceEntry = {
+  date: "",
+  details: "",
 };
 
 interface RegistrationBlockProps {
@@ -105,6 +110,79 @@ const RegistrationBlock = ({ form, fieldName, addLabel }: RegistrationBlockProps
   );
 };
 
+interface OffenceBlockProps {
+  form: UseFormReturn<Partial<ChildminderApplication>>;
+}
+
+const OffenceBlock = ({ form }: OffenceBlockProps) => {
+  const { register, watch, setValue } = form;
+  const entries = watch("offenceDetails") as OffenceEntry[] || [{ ...emptyOffence }];
+
+  const addEntry = () => {
+    setValue("offenceDetails", [...entries, { ...emptyOffence }]);
+  };
+
+  const removeEntry = (index: number) => {
+    if (entries.length > 1) {
+      setValue("offenceDetails", entries.filter((_, i) => i !== index));
+    }
+  };
+
+  // Initialize with one empty entry if empty
+  if (entries.length === 0) {
+    setValue("offenceDetails", [{ ...emptyOffence }]);
+  }
+
+  return (
+    <div className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-6">
+      <h4 className="text-base font-semibold text-[#1E293B]">Details of Offences</h4>
+      
+      {entries.map((entry, index) => (
+        <div key={index} className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#334155]">Offence {index + 1}</span>
+            {entries.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeEntry(index)}
+                className="text-sm text-[#DC2626] hover:text-[#B91C1C] flex items-center gap-1"
+              >
+                <X className="w-4 h-4" />
+                Remove this offence
+              </button>
+            )}
+          </div>
+          
+          <RKInput
+            label="Date of offence/caution"
+            type="date"
+            required
+            {...register(`offenceDetails.${index}.date` as const)}
+          />
+          
+          <RKTextarea
+            label="Details of the offence and the outcome"
+            required
+            rows={4}
+            {...register(`offenceDetails.${index}.details` as const)}
+          />
+
+          {index < entries.length - 1 && <div className="rk-divider" />}
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={addEntry}
+        className="flex items-center gap-2 text-sm font-medium text-[hsl(163,50%,38%)] hover:text-[hsl(163,50%,30%)] transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        Add offence
+      </button>
+    </div>
+  );
+};
+
 export const Section8Suitability = ({ form }: Props) => {
   const { register, watch, setValue } = form;
   
@@ -118,6 +196,8 @@ export const Section8Suitability = ({ form }: Props) => {
   const socialServices = watch("socialServices");
   const otherCircumstances = watch("otherCircumstances");
   const hasDBS = watch("hasDBS");
+  const dbsEnhanced = watch("dbsEnhanced");
+  const dbsUpdate = watch("dbsUpdate");
   const offenceHistory = watch("offenceHistory");
 
   return (
@@ -222,9 +302,12 @@ export const Section8Suitability = ({ form }: Props) => {
         />
       )}
 
+      <RKInfoBox type="info">
+        It is a legal requirement that no one smokes in any part of a premises used for childminding, or in the presence of minded children.
+      </RKInfoBox>
+
       <RKRadio 
         legend="Is anyone who lives or works at the premises a smoker?" 
-        hint="It is a legal requirement that no one smokes in any part of a premises used for childminding, or in the presence of minded children."
         required 
         name="smoker" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -236,9 +319,12 @@ export const Section8Suitability = ({ form }: Props) => {
       
       <h3 className="rk-subsection-title">Suitability Declaration</h3>
 
+      <RKInfoBox type="info">
+        You are 'disqualified' if you have been barred from working with children, had a child removed from your care by court order, or had a registration cancelled in the past. Please review the official GOV.UK guidance if unsure.
+      </RKInfoBox>
+
       <RKRadio 
         legend="Are you disqualified under the Childcare Act 2006?" 
-        hint="You are 'disqualified' if you have been barred from working with children, had a child removed from your care by court order, or had a registration cancelled in the past. Please review the official GOV.UK guidance if unsure."
         required 
         name="disqualified" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -252,9 +338,12 @@ export const Section8Suitability = ({ form }: Props) => {
         </RKInfoBox>
       )}
 
+      <RKInfoBox type="info">
+        You must declare any involvement, including referrals, assessments, or investigations, even if the case was closed with no action. Past involvement does not automatically disqualify you, but we must explore the circumstances.
+      </RKInfoBox>
+
       <RKRadio 
         legend="Have you ever been involved with social services in connection with your own children?" 
-        hint="You must declare any involvement, including referrals, assessments, or investigations, even if the case was closed with no action. Past involvement does not automatically disqualify you, but we must explore the circumstances."
         required 
         name="socialServices" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -307,7 +396,7 @@ export const Section8Suitability = ({ form }: Props) => {
       />
 
       {hasDBS === "Yes" && (
-        <div className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-4">
+        <div className="p-5 bg-rk-bg-form border border-rk-border rounded-xl space-y-6">
           <RKInput 
             label="DBS certificate number" 
             hint="12-digit number found on your certificate"
@@ -315,6 +404,36 @@ export const Section8Suitability = ({ form }: Props) => {
             widthClass="20" 
             {...register("dbsNumber")} 
           />
+
+          <RKRadio 
+            legend="Is the certificate an Enhanced check with barred lists for a home-based role?" 
+            required 
+            name="dbsEnhanced" 
+            options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+            value={dbsEnhanced || ""} 
+            onChange={(value) => setValue("dbsEnhanced", value as "Yes" | "No")} 
+          />
+
+          {dbsEnhanced === "No" && (
+            <RKInfoBox type="error">
+              If your DBS check is not Enhanced, or does not include barred lists for a home-based role, you will need to apply for a new one.
+            </RKInfoBox>
+          )}
+
+          <RKRadio 
+            legend="Are you subscribed to the DBS Update Service?" 
+            required 
+            name="dbsUpdate" 
+            options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
+            value={dbsUpdate || ""} 
+            onChange={(value) => setValue("dbsUpdate", value as "Yes" | "No")} 
+          />
+
+          {dbsUpdate === "No" && (
+            <RKInfoBox type="error">
+              You must sign up for the DBS Update Service. Your application cannot be completed until you are subscribed.
+            </RKInfoBox>
+          )}
         </div>
       )}
 
@@ -328,9 +447,12 @@ export const Section8Suitability = ({ form }: Props) => {
 
       <h3 className="rk-subsection-title">Criminal History Declaration</h3>
 
+      <RKInfoBox type="info">
+        You must declare everything, no matter how long ago it occurred. Due to the nature of working with children, the rules on 'spent' convictions (Rehabilitation of Offenders Act) do not apply. This information will be verified by your DBS check.
+      </RKInfoBox>
+
       <RKRadio 
         legend="Have you ever received a reprimand or final warning, been given a caution for, or been convicted of, any criminal offences?" 
-        hint="You must declare everything, no matter how long ago it occurred. Due to the nature of working with children, the rules on 'spent' convictions (Rehabilitation of Offenders Act) do not apply. This information will be verified by your DBS check."
         required 
         name="offenceHistory" 
         options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]} 
@@ -339,12 +461,7 @@ export const Section8Suitability = ({ form }: Props) => {
       />
 
       {offenceHistory === "Yes" && (
-        <RKTextarea 
-          label="Please provide details" 
-          hint="Include dates, nature of offence(s), and any sentences or outcomes."
-          required 
-          rows={4} 
-        />
+        <OffenceBlock form={form} />
       )}
     </div>
   );

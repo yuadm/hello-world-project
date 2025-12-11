@@ -64,8 +64,7 @@ export interface RegistrationEntry {
 
 export interface OffenceEntry {
   date: string;
-  description: string;
-  outcome: string;
+  details: string;
 }
 
 export interface ChildminderApplication {
