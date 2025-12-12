@@ -14,8 +14,6 @@ interface QualificationsCardProps {
   safeguarding?: TrainingEntry;
   eyfsChildminding?: TrainingEntry;
   level2Qual?: TrainingEntry;
-  foodHygiene?: TrainingEntry;
-  otherTraining?: string;
 }
 
 export const QualificationsCard = ({
@@ -23,8 +21,6 @@ export const QualificationsCard = ({
   safeguarding,
   eyfsChildminding,
   level2Qual,
-  foodHygiene,
-  otherTraining,
 }: QualificationsCardProps) => {
   const QualItem = ({ title, qual }: { title: string; qual?: TrainingEntry }) => (
     <div className="rounded-lg bg-muted/30 p-4">
@@ -63,14 +59,6 @@ export const QualificationsCard = ({
         <QualItem title="Safeguarding" qual={safeguarding} />
         <QualItem title="EYFS Childminding" qual={eyfsChildminding} />
         <QualItem title="Level 2 Qualification" qual={level2Qual} />
-        <QualItem title="Food Hygiene" qual={foodHygiene} />
-        
-        {otherTraining && (
-          <div className="rounded-lg bg-muted/30 p-4">
-            <div className="text-sm font-medium mb-2">Other Training</div>
-            <div className="text-xs text-muted-foreground whitespace-pre-wrap">{otherTraining}</div>
-          </div>
-        )}
       </div>
     </AppleCard>
   );

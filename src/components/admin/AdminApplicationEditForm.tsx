@@ -111,7 +111,7 @@ export const AdminApplicationEditForm = ({
             first_name: assistant.firstName,
             last_name: assistant.lastName,
             date_of_birth: assistant.dob || matchingAssistant.date_of_birth,
-            role: "Assistant",
+            role: assistant.role || "Assistant",
             email: assistant.email,
             phone: assistant.phone,
             updated_at: new Date().toISOString(),

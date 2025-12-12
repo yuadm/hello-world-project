@@ -180,7 +180,7 @@ export const Section1PersonalDetails = ({ form }: Props) => {
         {...register("rightToWork")}
       />
 
-      {(rightToWork === "Visa" || rightToWork === "No") && (
+      {rightToWork === "No" && (
         <RKInfoBox type="info">
           We will need to verify your right to work status. If you do not have the right to work
           in the UK, we cannot proceed with your application.

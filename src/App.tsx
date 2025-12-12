@@ -10,7 +10,6 @@ import NotFound from "./pages/NotFound";
 import HouseholdForm from "./pages/HouseholdForm";
 import AssistantForm from "./pages/AssistantForm";
 import ReferenceForm from "./pages/ReferenceForm";
-import CochildminderForm from "./pages/CochildminderForm";
 import About from "./pages/About";
 import Parents from "./pages/Parents";
 import Childminders from "./pages/Childminders";
@@ -45,7 +44,6 @@ const App = () => (
           <Route path="/household-form" element={<HouseholdForm />} />
           <Route path="/assistant-form" element={<AssistantForm />} />
           <Route path="/reference-form" element={<ReferenceForm />} />
-          <Route path="/cochildminder-form" element={<CochildminderForm />} />
           <Route path="/ofsted-form" element={<OfstedForm />} />
           <Route path="/la-form" element={<LAForm />} />
           {/* Admin routes */}

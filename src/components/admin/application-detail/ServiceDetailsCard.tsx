@@ -2,14 +2,6 @@ import { AppleCard } from "@/components/admin/AppleCard";
 import { Badge } from "@/components/ui/badge";
 import { Baby, Users, MapPin, Building2 } from "lucide-react";
 
-interface CochildminderEntry {
-  firstName: string;
-  lastName: string;
-  dob: string;
-  email: string;
-  phone?: string;
-}
-
 interface ServiceDetailsCardProps {
   serviceType: string;
   ageGroups: string[];
@@ -22,9 +14,6 @@ interface ServiceDetailsCardProps {
   localAuthority: string;
   workWithOthers: string;
   numberOfAssistants?: number;
-  workWithCochildminders?: string;
-  numberOfCochildminders?: number;
-  cochildminders?: CochildminderEntry[];
   serviceHours?: string[];
   overnightCare?: string;
   ofstedRegistered?: string;
@@ -38,9 +27,6 @@ export const ServiceDetailsCard = ({
   localAuthority,
   workWithOthers,
   numberOfAssistants,
-  workWithCochildminders,
-  numberOfCochildminders,
-  cochildminders,
   serviceHours,
   overnightCare,
   ofstedRegistered,
@@ -112,24 +98,6 @@ export const ServiceDetailsCard = ({
               <Badge variant="outline" className="text-xs">
                 {numberOfAssistants || 0} Assistant{(numberOfAssistants || 0) !== 1 ? "s" : ""}
               </Badge>
-            </div>
-          )}
-
-          {workWithCochildminders === "Yes" && (
-            <div className="mt-4">
-              <Badge variant="outline" className="text-xs bg-amber-50 border-amber-200 text-amber-700">
-                {numberOfCochildminders || 0} Co-childminder{(numberOfCochildminders || 0) !== 1 ? "s" : ""}
-              </Badge>
-              {cochildminders && cochildminders.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  {cochildminders.map((cc, idx) => (
-                    <div key={idx} className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
-                      <div className="font-medium">{cc.firstName} {cc.lastName}</div>
-                      <div>{cc.email}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>

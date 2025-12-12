@@ -1,5 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
-import { RKTextarea, RKRadio, RKSectionTitle } from "@/components/apply/rk";
+import { GovUKTextarea } from "@/components/apply/GovUKTextarea";
+import { GovUKRadio } from "@/components/apply/GovUKRadio";
 
 interface ReferenceFormData {
   confirmedRelationship: string;
@@ -21,7 +22,6 @@ interface ReferenceFormData {
   additionalInformation?: string;
   declarationAccurate: boolean;
   signatureName: string;
-  signaturePrintName: string;
   signatureDate: string;
 }
 
@@ -36,12 +36,9 @@ export const ReferenceFormSection4 = ({ form }: Props) => {
 
   return (
     <div className="space-y-6">
-      <RKSectionTitle 
-        title="4. Professional Assessment" 
-        description="Your professional opinion on the applicant"
-      />
+      <h2 className="text-2xl font-bold text-foreground">4. Professional Assessment</h2>
 
-      <RKRadio
+      <GovUKRadio
         legend="Do you have any concerns about their honesty or integrity?"
         required
         name="integrityConcerns"
@@ -49,12 +46,12 @@ export const ReferenceFormSection4 = ({ form }: Props) => {
           { value: "Yes", label: "Yes" },
           { value: "No", label: "No" },
         ]}
-        value={integrityConcerns || ""}
+        value={integrityConcerns}
         onChange={(value) => setValue("integrityConcerns", value as "Yes" | "No")}
       />
 
       {integrityConcerns === "Yes" && (
-        <RKTextarea
+        <GovUKTextarea
           label="Please provide details of your concerns"
           required
           rows={4}
@@ -62,7 +59,7 @@ export const ReferenceFormSection4 = ({ form }: Props) => {
         />
       )}
 
-      <RKRadio
+      <GovUKRadio
         legend="Would you recommend this person for a role involving responsibility for children?"
         required
         name="wouldRecommend"
@@ -70,18 +67,18 @@ export const ReferenceFormSection4 = ({ form }: Props) => {
           { value: "Yes", label: "Yes" },
           { value: "No", label: "No" },
         ]}
-        value={wouldRecommend || ""}
+        value={wouldRecommend}
         onChange={(value) => setValue("wouldRecommend", value as "Yes" | "No")}
       />
 
-      <RKTextarea
+      <GovUKTextarea
         label="Please explain your recommendation"
         required
         rows={4}
         {...register("recommendationComments")}
       />
 
-      <RKTextarea
+      <GovUKTextarea
         label="Is there any additional information we should know?"
         hint="Include any other relevant information about the applicant's suitability"
         rows={4}

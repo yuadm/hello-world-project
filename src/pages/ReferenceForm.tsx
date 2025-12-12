@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { GovUKButton } from "@/components/apply/GovUKButton";
 import { ReferenceFormSection1 } from "@/components/reference-form/ReferenceFormSection1";
 import { ReferenceFormSection2 } from "@/components/reference-form/ReferenceFormSection2";
 import { ReferenceFormSection3 } from "@/components/reference-form/ReferenceFormSection3";
 import { ReferenceFormSection4 } from "@/components/reference-form/ReferenceFormSection4";
 import { ReferenceFormSection5 } from "@/components/reference-form/ReferenceFormSection5";
-import { RKProgressCard, RKSectionNav, RKFormHeader, RKApplyFooter, RKButton } from "@/components/apply/rk";
 import { toast } from "sonner";
-import { Loader2, AlertTriangle, ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface ReferenceFormData {
   confirmedRelationship: string;
@@ -31,17 +31,8 @@ interface ReferenceFormData {
   additionalInformation?: string;
   declarationAccurate: boolean;
   signatureName: string;
-  signaturePrintName: string;
   signatureDate: string;
 }
-
-const SECTION_LABELS = [
-  "Confirmation",
-  "Character Assessment",
-  "Childcare Suitability",
-  "Professional Assessment",
-  "Declaration"
-];
 
 export default function ReferenceForm() {
   const [searchParams] = useSearchParams();
@@ -54,27 +45,12 @@ export default function ReferenceForm() {
   const [applicantName, setApplicantName] = useState("");
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
-  const [currentSection, setCurrentSection] = useState(1);
 
   const form = useForm<Partial<ReferenceFormData>>({
     defaultValues: {
       declarationAccurate: false,
-      confirmedRelationship: "",
-      knownForYears: "",
-      characterDescription: "",
-      isReliable: "",
-      isPatient: "",
-      hasGoodJudgment: "",
-      integrityConcerns: "",
-      wouldRecommend: "",
-      signatureName: "",
-      signaturePrintName: "",
-      signatureDate: "",
     }
   });
-
-  const isChildcareReference = referenceRequest?.is_childcare_reference;
-  const totalSections = isChildcareReference ? 5 : 4;
 
   useEffect(() => {
     if (!token) {
@@ -173,76 +149,29 @@ export default function ReferenceForm() {
     }
   };
 
-  const getActualSectionNumber = (section: number) => {
-    // If not childcare reference, skip section 3
-    if (!isChildcareReference && section >= 3) {
-      return section + 1;
-    }
-    return section;
-  };
-
-  const getSections = () => {
-    if (isChildcareReference) {
-      return SECTION_LABELS.map((label, i) => ({ id: i + 1, label }));
-    }
-    // Remove "Childcare Suitability" for non-childcare references
-    return SECTION_LABELS.filter((_, i) => i !== 2).map((label, i) => ({ id: i + 1, label }));
-  };
-
-  const renderSection = () => {
-    const actualSection = getActualSectionNumber(currentSection);
-    
-    switch (actualSection) {
-      case 1:
-        return (
-          <ReferenceFormSection1 
-            form={form} 
-            refereeName={referenceRequest?.referee_name || ""}
-            applicantName={applicantName}
-          />
-        );
-      case 2:
-        return <ReferenceFormSection2 form={form} />;
-      case 3:
-        return (
-          <ReferenceFormSection3 
-            form={form} 
-            isChildcareReference={isChildcareReference}
-          />
-        );
-      case 4:
-        return <ReferenceFormSection4 form={form} />;
-      case 5:
-        return <ReferenceFormSection5 form={form} />;
-      default:
-        return null;
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading reference form...</p>
-        </div>
+      <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (alreadySubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-        <div className="bg-card rounded-2xl shadow-xl p-8 max-w-md text-center border">
+      <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-amber-600" />
+            <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Already Submitted</h1>
-          <p className="text-muted-foreground mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Already Submitted</h1>
+          <p className="text-gray-600 mb-4">
             This reference has already been submitted
             {completedAt && ` on ${new Date(completedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Thank you for providing the reference. No further action is required.
           </p>
         </div>
@@ -252,102 +181,76 @@ export default function ReferenceForm() {
 
   if (!referenceRequest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-        <div className="bg-card rounded-2xl shadow-xl p-8 max-w-md text-center border">
-          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-destructive" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Invalid Reference Link</h1>
-          <p className="text-muted-foreground">
-            This reference link is invalid or has expired.
-          </p>
+      <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))] flex items-center justify-center">
+        <div className="max-w-2xl mx-auto p-8 bg-white">
+          <h1 className="text-2xl font-bold text-foreground">Invalid Reference Link</h1>
+          <p className="mt-4">This reference link is invalid or has expired.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <RKFormHeader 
-        title="Reference Form" 
-        subtitle={`Providing reference for ${applicantName}`}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            <RKProgressCard
-              currentSection={currentSection}
-              totalSections={totalSections}
-            />
-            
-            <RKSectionNav
-              sections={getSections()}
-              currentSection={currentSection}
-              onSectionClick={setCurrentSection}
-            />
-          </div>
-
-          {/* Main Form Content */}
-          <div className="lg:col-span-8">
-            <div className="bg-card rounded-2xl shadow-lg border p-6 sm:p-8">
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                {renderSection()}
-              </form>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Fixed Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <RKButton
-              type="button"
-              variant="secondary"
-              onClick={() => setCurrentSection(prev => Math.max(1, prev - 1))}
-              disabled={currentSection === 1}
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back
-            </RKButton>
-
-            <span className="text-sm text-muted-foreground">
-              Section {currentSection} of {totalSections}
-            </span>
-
-            {currentSection < totalSections ? (
-              <RKButton
-                type="button"
-                onClick={() => setCurrentSection(prev => Math.min(totalSections, prev + 1))}
-                className="flex items-center gap-2"
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </RKButton>
-            ) : (
-              <RKButton
-                type="submit"
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={submitting}
-                className="flex items-center gap-2"
-              >
-                {submitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                {submitting ? "Submitting..." : "Submit Reference"}
-              </RKButton>
-            )}
-          </div>
+    <div className="min-h-screen bg-[hsl(var(--govuk-grey-background))]">
+      <div className="bg-[hsl(var(--govuk-blue))] text-white py-4">
+        <div className="max-w-4xl mx-auto px-4">
+          <h1 className="text-2xl font-bold">Ready Kids - Reference Form</h1>
         </div>
       </div>
 
-      <RKApplyFooter />
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="bg-white p-8 shadow-sm">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="p-4 bg-[hsl(var(--govuk-inset-blue-bg))] border-l-[10px] border-[hsl(var(--govuk-blue))]">
+              <h2 className="text-xl font-bold mb-2">Childminder Reference Request</h2>
+              <p className="text-sm">
+                Thank you for agreeing to provide a reference. Please answer all questions honestly and accurately.
+                Your reference will be treated confidentially.
+              </p>
+            </div>
+
+            <ReferenceFormSection1 
+              form={form} 
+              refereeName={referenceRequest.referee_name}
+              applicantName={applicantName}
+            />
+
+            <hr className="border-t-2 border-[hsl(var(--govuk-grey-border))]" />
+
+            <ReferenceFormSection2 form={form} />
+
+            <hr className="border-t-2 border-[hsl(var(--govuk-grey-border))]" />
+
+            {referenceRequest.is_childcare_reference && (
+              <>
+                <ReferenceFormSection3 
+                  form={form} 
+                  isChildcareReference={referenceRequest.is_childcare_reference}
+                />
+                <hr className="border-t-2 border-[hsl(var(--govuk-grey-border))]" />
+              </>
+            )}
+
+            <ReferenceFormSection4 form={form} />
+
+            <hr className="border-t-2 border-[hsl(var(--govuk-grey-border))]" />
+
+            <ReferenceFormSection5 form={form} />
+
+            <div className="flex gap-4 pt-6">
+              <GovUKButton
+                type="submit"
+                variant="primary"
+                disabled={submitting}
+                className="flex items-center gap-2"
+              >
+                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                {submitting ? "Submitting..." : "Submit Reference"}
+              </GovUKButton>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

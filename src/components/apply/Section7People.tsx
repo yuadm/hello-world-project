@@ -38,11 +38,11 @@ export const Section7People = ({ form }: Props) => {
     <div className="space-y-8">
       <RKSectionTitle 
         title="Household Members"
-        description="We must ensure the suitability of everyone connected to your registration. This includes staff working with you and people living or working at the premises."
+        description="Tell us about other people living or working at your childminding premises."
       />
 
       <RKInfoBox type="info">
-        List all regular household members (like students home for holidays or partners splitting households), even if they are not at home while you are minding children.
+        <strong>Important:</strong> All adults (16+) who live at or work at your childminding premises will require DBS checks. This includes cleaners, gardeners or other workers present during childminding hours. Children under 16 do not require checks but must be declared.
       </RKInfoBox>
 
       {/* Adults in Home - Only for domestic premises */}
@@ -65,9 +65,6 @@ export const Section7People = ({ form }: Props) => {
 
           {adultsInHome === "Yes" && (
             <div className="space-y-4">
-              <RKInfoBox type="info">
-                These individuals must complete a suitability check (Form CMA-H2) including an enhanced DBS check. Please provide their basic details below.
-              </RKInfoBox>
               {adults.map((_, index) => (
                 <div
                   key={index}
@@ -104,20 +101,6 @@ export const Section7People = ({ form }: Props) => {
                     widthClass="10"
                     {...register(`adults.${index}.dob`)}
                   />
-                  <div className="rk-address-grid">
-                    <RKInput 
-                      label="Email address" 
-                      type="email"
-                      required
-                      {...register(`adults.${index}.email`)} 
-                    />
-                    <RKInput 
-                      label="Mobile number"
-                      type="tel"
-                      required
-                      {...register(`adults.${index}.phone`)} 
-                    />
-                  </div>
                 </div>
               ))}
               <RKButton

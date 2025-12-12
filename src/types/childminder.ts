@@ -22,7 +22,6 @@ export interface TrainingEntry {
   provider?: string;
   completionDate?: string;
   certificateNumber?: string;
-  courseTitle?: string;
 }
 
 export interface EmploymentEntry {
@@ -37,22 +36,13 @@ export interface PersonEntry {
   fullName: string;
   relationship: string;
   dob: string;
-  email?: string;
-  phone?: string;
 }
 
 export interface AssistantEntry {
   firstName: string;
   lastName: string;
   dob: string;
-  email: string;
-  phone: string;
-}
-
-export interface CochildminderEntry {
-  firstName: string;
-  lastName: string;
-  dob: string;
+  role: "Assistant" | "Co-childminder" | "";
   email: string;
   phone: string;
 }
@@ -65,13 +55,14 @@ export interface ChildEntry {
 export interface RegistrationEntry {
   regulator: string;
   registrationNumber: string;
-  startDate: string;
-  endDate?: string;
+  dates: string;
+  status: string;
 }
 
 export interface OffenceEntry {
   date: string;
-  details: string;
+  description: string;
+  outcome: string;
 }
 
 export interface ChildminderApplication {
@@ -111,19 +102,14 @@ export interface ChildminderApplication {
 
   // Section 4: Service
   ageGroups: string[];
-  workWithAssistants: "Yes" | "No";
+  workWithOthers: "Yes" | "No";
   numberOfAssistants?: number;
-  workWithCochildminders: "Yes" | "No";
-  numberOfCochildminders?: number;
-  cochildminders?: CochildminderEntry[];
   childcareTimes?: string[];
   overnightCare?: "Yes" | "No";
   proposedUnder1?: number;
   proposedUnder5?: number;
   proposed5to8?: number;
   proposed8plus?: number;
-  // Legacy field for backwards compatibility
-  workWithOthers?: "Yes" | "No";
 
   // Section 5: Qualifications
   firstAid: TrainingEntry;
@@ -131,7 +117,6 @@ export interface ChildminderApplication {
   foodHygiene?: TrainingEntry;
   eyfsChildminding?: TrainingEntry;
   level2Qual?: TrainingEntry;
-  otherTraining?: string;
 
   // Section 6: Employment
   employmentHistory: EmploymentEntry[];

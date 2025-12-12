@@ -16,16 +16,13 @@ interface ReferencesCardProps {
   reference1Name: string;
   reference1Relationship: string;
   reference1Contact: string;
-  reference1Phone?: string;
   reference1Childcare?: string;
   reference2Name: string;
   reference2Relationship: string;
   reference2Contact: string;
-  reference2Phone?: string;
   reference2Childcare?: string;
   childVolunteered?: string;
   childVolunteeredConsent?: boolean;
-  workedWithChildren?: string;
 }
 
 export const ReferencesCard = ({
@@ -35,16 +32,13 @@ export const ReferencesCard = ({
   reference1Name,
   reference1Relationship,
   reference1Contact,
-  reference1Phone,
   reference1Childcare,
   reference2Name,
   reference2Relationship,
   reference2Contact,
-  reference2Phone,
   reference2Childcare,
   childVolunteered,
   childVolunteeredConsent,
-  workedWithChildren,
 }: ReferencesCardProps) => {
   const [referenceRequests, setReferenceRequests] = useState<any[]>([]);
   const [sendModalOpen, setSendModalOpen] = useState(false);
@@ -132,15 +126,13 @@ export const ReferencesCard = ({
     refNumber, 
     name, 
     relationship, 
-    contact,
-    phone,
+    contact, 
     isChildcare 
   }: { 
     refNumber: number;
     name: string; 
     relationship: string; 
-    contact: string;
-    phone?: string;
+    contact: string; 
     isChildcare?: string;
   }) => {
     const request = getRequestForReference(refNumber);
@@ -169,12 +161,6 @@ export const ReferencesCard = ({
             <Mail className="h-3 w-3" />
             {contact || "N/A"}
           </div>
-          {phone && (
-            <div className="flex items-center gap-1">
-              <span className="text-xs">📞</span>
-              {phone}
-            </div>
-          )}
           {request?.request_sent_date && (
             <div className="text-xs">
               Sent: {new Date(request.request_sent_date).toLocaleDateString()}
@@ -253,7 +239,6 @@ export const ReferencesCard = ({
             name={reference1Name}
             relationship={reference1Relationship}
             contact={reference1Contact}
-            phone={reference1Phone}
             isChildcare={reference1Childcare}
           />
         </div>
@@ -265,19 +250,9 @@ export const ReferencesCard = ({
             name={reference2Name}
             relationship={reference2Relationship}
             contact={reference2Contact}
-            phone={reference2Phone}
             isChildcare={reference2Childcare}
           />
         </div>
-
-        {workedWithChildren === "Yes" && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 p-3">
-              <CheckCircle2 className="h-4 w-4 text-blue-600" />
-              <div className="text-sm font-medium">Worked with children in past 5 years</div>
-            </div>
-          </div>
-        )}
 
         {childVolunteered === "Yes" && (
           <div className="mt-4 pt-4 border-t border-border">

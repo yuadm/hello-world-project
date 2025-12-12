@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ChildminderApplication } from "@/types/childminder";
-import { RKProgressCard, RKSectionNav, RKFormHeader, RKButton } from "@/components/apply/rk";
+import { RKProgressCard, RKSectionNav, RKFormHeader, RKButton, RKApplyFooter } from "@/components/apply/rk";
 import { Section1PersonalDetails } from "@/components/apply/Section1PersonalDetails";
 import { Section2AddressHistory } from "@/components/apply/Section2AddressHistory";
 import { Section3Premises } from "@/components/apply/Section3Premises";
@@ -13,10 +13,9 @@ import { Section6Employment } from "@/components/apply/Section6Employment";
 import { Section7People } from "@/components/apply/Section7People";
 import { Section8Suitability } from "@/components/apply/Section8Suitability";
 import { Section9Declaration } from "@/components/apply/Section9Declaration";
-import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, AlertCircle, LogOut, Heart } from "lucide-react";
 import { getValidatorForSection } from "@/lib/formValidation";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
 
 const SECTIONS = [
   { id: 1, label: "Personal Details" },
@@ -200,9 +199,6 @@ const Apply = () => {
             ages5to8: data.proposed5to8,
             ages8plus: data.proposed8plus
           },
-          work_with_cochildminders: data.workWithCochildminders,
-          number_of_cochildminders: data.numberOfCochildminders,
-          cochildminders: data.cochildminders,
           service_hours: data.childcareTimes,
           overnight_care: data.overnightCare,
           service_local_authority: data.localAuthority,
@@ -210,11 +206,8 @@ const Apply = () => {
             firstAid: data.firstAid,
             safeguarding: data.safeguarding,
             eyfsChildminding: data.eyfsChildminding,
-            level2Qual: data.level2Qual,
-            foodHygiene: data.foodHygiene,
-            otherTraining: data.otherTraining
+            level2Qual: data.level2Qual
           },
-          worked_with_children: data.workedWithChildren,
           employment_history: data.employmentHistory,
           employment_gaps: data.employmentGaps,
           child_volunteered: data.childVolunteered,
@@ -224,14 +217,12 @@ const Apply = () => {
               name: data.reference1Name,
               relationship: data.reference1Relationship,
               contact: data.reference1Contact,
-              phone: data.reference1Phone,
               childcare: data.reference1ChildcareRole
             },
             reference2: {
               name: data.reference2Name,
               relationship: data.reference2Relationship,
               contact: data.reference2Contact,
-              phone: data.reference2Phone,
               childcare: data.reference2ChildcareRole
             }
           },
@@ -272,7 +263,6 @@ const Apply = () => {
           declaration_information_sharing: data.consentLAShare,
           declaration_data_processing: data.consentDataProtection,
           declaration_signature: data.signatureFullName,
-          declaration_print_name: data.declarationPrintName,
           declaration_date: data.signatureDate,
           payment_method: null,
           user_id: null,
@@ -363,30 +353,6 @@ const Apply = () => {
             }
           }
         }
-
-        // Create co-childminder compliance records
-        if (data.cochildminders && Array.isArray(data.cochildminders)) {
-          const cochildminderRecords = data.cochildminders.map((cochildminder: any) => ({
-            application_id: applicationId,
-            first_name: cochildminder.firstName,
-            last_name: cochildminder.lastName,
-            date_of_birth: cochildminder.dob,
-            email: cochildminder.email,
-            phone: cochildminder.phone,
-            dbs_status: 'not_requested' as const,
-            form_status: 'not_sent' as const
-          }));
-
-          if (cochildminderRecords.length > 0) {
-            const { error: cochildminderError } = await supabase
-              .from('compliance_cochildminders')
-              .insert(cochildminderRecords);
-            
-            if (cochildminderError) {
-              console.error("Failed to create co-childminder records:", cochildminderError);
-            }
-          }
-        }
       }
 
       toast.success("Application submitted successfully! We'll review and be in touch soon.");
@@ -428,11 +394,26 @@ const Apply = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-[#F1F5F9] to-[#E8F5F0] rk-apply flex flex-col">
-      {/* Navigation - Same as home page */}
-      <Navigation />
-
-      {/* Spacer for fixed navbar */}
-      <div className="h-20" />
+      {/* Header */}
+      <header className="bg-white border-b border-rk-border sticky top-0 z-50 shadow-sm">
+        <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-[10px] bg-gradient-to-br from-[hsl(163,50%,38%)] to-[hsl(163,50%,32%)] flex items-center justify-center shadow-[0_4px_12px_rgba(12,124,89,0.25)]">
+              <Heart className="h-6 w-6 text-white" fill="currentColor" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-rk-primary font-fraunces leading-tight">ReadyKids</h1>
+              <p className="text-sm text-rk-text-light font-dm-sans">Childminder Registration</p>
+            </div>
+          </Link>
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-rk-gray-700 bg-white border border-rk-gray-300 rounded-md hover:bg-rk-gray-100 transition-all"
+          >
+            Save & Exit
+          </Link>
+        </div>
+      </header>
 
       {/* Main 2-Column Layout */}
       <div className="max-w-[1200px] mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 flex-1">
@@ -527,8 +508,8 @@ const Apply = () => {
         </main>
       </div>
 
-      {/* Footer - Same as home page */}
-      <Footer />
+      {/* Footer */}
+      <RKApplyFooter />
     </div>
   );
 };
