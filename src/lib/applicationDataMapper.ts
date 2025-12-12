@@ -267,6 +267,9 @@ export function formToDbData(formData: Partial<ChildminderApplication>) {
     service_age_range: formData.ageGroups,
     work_with_others: formData.workWithAssistants || formData.workWithOthers,
     number_of_assistants: formData.numberOfAssistants,
+    work_with_cochildminders: formData.workWithCochildminders,
+    number_of_cochildminders: formData.numberOfCochildminders,
+    cochildminders: formData.cochildminders,
     // Note: cochildminders are stored in compliance_cochildminders table, not here
     service_capacity: {
       under1: formData.proposedUnder1,
