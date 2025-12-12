@@ -116,6 +116,33 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 220 10% 95%;
     --sidebar-border: 220 12% 16%;
     --sidebar-ring: 262 83% 58%;
+
+    /* Admin Design System */
+    --admin-bg: 220 20% 97%;
+    --admin-bg-subtle: 220 15% 95%;
+    --admin-card: 0 0% 100%;
+    --admin-card-hover: 220 20% 99%;
+    --admin-border: 220 15% 90%;
+    --admin-border-hover: 220 15% 80%;
+    --admin-text: 220 15% 15%;
+    --admin-text-muted: 220 10% 50%;
+    --admin-accent: 210 100% 50%;
+    --admin-accent-light: 210 100% 96%;
+    --admin-success: 142 72% 40%;
+    --admin-success-light: 142 72% 95%;
+    --admin-warning: 38 92% 50%;
+    --admin-warning-light: 38 92% 95%;
+    --admin-error: 0 84% 60%;
+    --admin-error-light: 0 84% 96%;
+    --admin-gradient-start: 210 100% 50%;
+    --admin-gradient-end: 262 83% 58%;
+    --admin-glass: 0 0% 100% / 0.8;
+    --admin-glass-border: 220 15% 90% / 0.5;
+    --admin-shadow-sm: 0 1px 2px 0 hsl(220 15% 15% / 0.03);
+    --admin-shadow-md: 0 4px 6px -1px hsl(220 15% 15% / 0.05), 0 2px 4px -2px hsl(220 15% 15% / 0.05);
+    --admin-shadow-lg: 0 10px 15px -3px hsl(220 15% 15% / 0.08), 0 4px 6px -4px hsl(220 15% 15% / 0.05);
+    --admin-shadow-xl: 0 20px 25px -5px hsl(220 15% 15% / 0.1), 0 8px 10px -6px hsl(220 15% 15% / 0.08);
+    --admin-shadow-glow: 0 0 20px hsl(210 100% 50% / 0.15);
   }
 
   .dark {
