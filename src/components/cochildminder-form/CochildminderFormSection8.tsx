@@ -29,7 +29,7 @@ export function CochildminderFormSection8({ formData, setFormData, validationErr
 
           <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-xl p-5">
             <RKCheckbox
-              id="consentChecks"
+              name="consentChecks"
               label="I consent to background checks being carried out, including DBS checks, references, and local authority checks"
               checked={formData.consentChecks}
               onChange={(checked) => setFormData(prev => ({ ...prev, consentChecks: checked }))}
@@ -43,14 +43,14 @@ export function CochildminderFormSection8({ formData, setFormData, validationErr
 
           <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-xl p-5">
             <RKCheckbox
-              id="declarationTruth"
+              name="declarationTruth"
               label="I declare that the information I have provided in this application is true and complete to the best of my knowledge"
               checked={formData.declarationTruth}
               onChange={(checked) => setFormData(prev => ({ ...prev, declarationTruth: checked }))}
             />
 
             <RKCheckbox
-              id="declarationNotify"
+              name="declarationNotify"
               label="I understand that I must notify ReadyKids and the childminder agency of any changes to my circumstances that may affect my suitability to work with children"
               checked={formData.declarationNotify}
               onChange={(checked) => setFormData(prev => ({ ...prev, declarationNotify: checked }))}
