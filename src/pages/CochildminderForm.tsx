@@ -116,8 +116,17 @@ export default function CochildminderForm() {
       let prefillData: Partial<CochildminderFormData> = {};
       if (!isEmployee && cochildminder.childminder_applications) {
         const app = cochildminder.childminder_applications;
+        const premisesAddr = (app.premises_address as any) || { line1: "", line2: "", town: "", postcode: "" };
         prefillData = {
-          premisesAddress: (app.premises_address as any) || { line1: "", line2: "", town: "", postcode: "" },
+          // Autofill current address from premises (they share the same address), but NOT the move-in date
+          currentAddress: {
+            line1: premisesAddr.line1 || "",
+            line2: premisesAddr.line2 || "",
+            town: premisesAddr.town || "",
+            postcode: premisesAddr.postcode || "",
+            moveIn: "", // Leave empty - co-childminder may have different move-in date
+          },
+          premisesAddress: premisesAddr,
           localAuthority: app.service_local_authority || "",
           serviceAgeGroups: Array.isArray(app.service_age_range) ? (app.service_age_range as string[]) : [],
           serviceHours: Array.isArray(app.service_hours) ? (app.service_hours as string[]) : [],
@@ -151,12 +160,13 @@ export default function CochildminderForm() {
         restoreFormData(existingForm, prefillData);
         toast.success("Draft form loaded");
       } else {
-        // Set initial form data with prefilled values
+        // Set initial form data with prefilled values (including current address from premises)
         setFormData(prev => ({
           ...prev,
           firstName: cochildminder.first_name || "",
           lastName: cochildminder.last_name || "",
           dateOfBirth: cochildminder.date_of_birth || "",
+          currentAddress: prefillData.currentAddress || prev.currentAddress,
           ...prefillData,
         }));
       }
