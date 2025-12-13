@@ -338,18 +338,20 @@ const Apply = () => {
           }
         }
 
-        if (data.assistants && Array.isArray(data.assistants)) {
-          const assistantRecords = data.assistants.map((assistant: any) => ({
-            application_id: applicationId,
-            first_name: assistant.firstName,
-            last_name: assistant.lastName,
-            date_of_birth: assistant.dob,
-            role: assistant.role,
-            email: assistant.email,
-            phone: assistant.phone,
-            dbs_status: 'not_requested' as const,
-            form_status: 'not_sent' as const
-          }));
+        if (data.assistants && Array.isArray(data.assistants) && data.assistants.length > 0) {
+          const assistantRecords = data.assistants
+            .filter((assistant: any) => assistant.firstName && assistant.lastName && assistant.dob)
+            .map((assistant: any) => ({
+              application_id: applicationId,
+              first_name: assistant.firstName,
+              last_name: assistant.lastName,
+              date_of_birth: assistant.dob,
+              role: 'Assistant',
+              email: assistant.email || null,
+              phone: assistant.phone || null,
+              dbs_status: 'not_requested' as const,
+              form_status: 'not_sent'
+            }));
 
           if (assistantRecords.length > 0) {
             const { error: assistantError } = await supabase
@@ -363,17 +365,19 @@ const Apply = () => {
         }
 
         // Create co-childminder compliance records
-        if (data.cochildminders && Array.isArray(data.cochildminders)) {
-          const cochildminderRecords = data.cochildminders.map((ccm: any) => ({
-            application_id: applicationId,
-            first_name: ccm.firstName,
-            last_name: ccm.lastName,
-            date_of_birth: ccm.dob,
-            email: ccm.email,
-            phone: ccm.phone,
-            dbs_status: 'not_requested' as const,
-            form_status: 'not_sent' as const
-          }));
+        if (data.cochildminders && Array.isArray(data.cochildminders) && data.cochildminders.length > 0) {
+          const cochildminderRecords = data.cochildminders
+            .filter((ccm: any) => ccm.firstName && ccm.lastName && ccm.dob)
+            .map((ccm: any) => ({
+              application_id: applicationId,
+              first_name: ccm.firstName,
+              last_name: ccm.lastName,
+              date_of_birth: ccm.dob,
+              email: ccm.email || null,
+              phone: ccm.phone || null,
+              dbs_status: 'not_requested' as const,
+              form_status: 'not_sent'
+            }));
 
           if (cochildminderRecords.length > 0) {
             const { error: ccmError } = await supabase
