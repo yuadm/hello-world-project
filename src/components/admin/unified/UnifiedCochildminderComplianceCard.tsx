@@ -162,11 +162,12 @@ export const UnifiedCochildminderComplianceCard = ({
       const { data: cochildmindersData, error: cochildmindersError } = await query;
       if (cochildmindersError) throw cochildmindersError;
 
-      // Query cochildminder_applications for submitted forms
+      // Query cochildminder_applications for submitted forms, ordered by most recent first
       const formsQuery = supabase
         .from("cochildminder_applications")
         .select("*")
-        .eq("status", "submitted");
+        .eq("status", "submitted")
+        .order("submitted_at", { ascending: false });
 
       if (parentType === 'application') {
         formsQuery.eq("application_id", parentId);
@@ -177,7 +178,14 @@ export const UnifiedCochildminderComplianceCard = ({
       const { data: formsData, error: formsError } = await formsQuery;
       if (formsError) throw formsError;
 
-      const formsMap = new Map(formsData?.map((f) => [f.cochildminder_id, f]) || []);
+      // Build map keeping only the most recent form for each cochildminder
+      const formsMap = new Map<string, CochildminderFormData>();
+      formsData?.forEach((form) => {
+        // Only add if not already in Map (keeps the first/most recent one due to ordering)
+        if (!formsMap.has(form.cochildminder_id)) {
+          formsMap.set(form.cochildminder_id, form as CochildminderFormData);
+        }
+      });
 
       setCochildminders(cochildmindersData || []);
       setForms(formsMap);
