@@ -88,22 +88,17 @@ export const AdminApplicationEditForm = ({
   const syncComplianceTables = async (data: Partial<ChildminderApplication>) => {
     // Sync assistants from assistants array
     const assistants = data.assistants || [];
-    for (const assistant of assistants) {
+    const { data: existingAssistants } = await supabase
+      .from("compliance_assistants")
+      .select("id, first_name, last_name, date_of_birth")
+      .eq("application_id", applicationId);
+
+    // Update assistants by index (assuming order is preserved)
+    for (let i = 0; i < assistants.length; i++) {
+      const assistant = assistants[i];
       if (!assistant.firstName || !assistant.lastName) continue;
       
-      // Try to find existing assistant by matching name
-      const { data: existingAssistants } = await supabase
-        .from("compliance_assistants")
-        .select("id, first_name, last_name, date_of_birth")
-        .eq("application_id", applicationId);
-
-      // Find matching assistant by original or similar name
-      const matchingAssistant = existingAssistants?.find(
-        (a) => 
-          (a.first_name?.toLowerCase() === assistant.firstName?.toLowerCase() ||
-           a.last_name?.toLowerCase() === assistant.lastName?.toLowerCase())
-      );
-
+      const matchingAssistant = existingAssistants?.[i];
       if (matchingAssistant) {
         await supabase
           .from("compliance_assistants")
@@ -112,11 +107,39 @@ export const AdminApplicationEditForm = ({
             last_name: assistant.lastName,
             date_of_birth: assistant.dob || matchingAssistant.date_of_birth,
             role: "Assistant",
-            email: assistant.email,
-            phone: assistant.phone,
+            email: assistant.email || null,
+            phone: assistant.phone || null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", matchingAssistant.id);
+      }
+    }
+
+    // Sync co-childminders from cochildminders array
+    const cochildminders = data.cochildminders || [];
+    const { data: existingCochildminders } = await supabase
+      .from("compliance_cochildminders")
+      .select("id, first_name, last_name, date_of_birth")
+      .eq("application_id", applicationId);
+
+    // Update co-childminders by index
+    for (let i = 0; i < cochildminders.length; i++) {
+      const ccm = cochildminders[i];
+      if (!ccm.firstName || !ccm.lastName) continue;
+      
+      const matchingCcm = existingCochildminders?.[i];
+      if (matchingCcm) {
+        await supabase
+          .from("compliance_cochildminders")
+          .update({
+            first_name: ccm.firstName,
+            last_name: ccm.lastName,
+            date_of_birth: ccm.dob || matchingCcm.date_of_birth,
+            email: ccm.email || null,
+            phone: ccm.phone || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", matchingCcm.id);
       }
     }
 
@@ -124,20 +147,17 @@ export const AdminApplicationEditForm = ({
     const adults = data.adults || [];
     const children = data.children || [];
     
-    for (const adult of adults) {
+    const { data: existingAdults } = await supabase
+      .from("compliance_household_members")
+      .select("id, full_name, date_of_birth")
+      .eq("application_id", applicationId)
+      .eq("member_type", "adult");
+
+    for (let i = 0; i < adults.length; i++) {
+      const adult = adults[i];
       if (!adult.fullName) continue;
 
-      const { data: existingMembers } = await supabase
-        .from("compliance_household_members")
-        .select("id, full_name, date_of_birth")
-        .eq("application_id", applicationId)
-        .eq("member_type", "adult");
-
-      // Find matching member by name
-      const matchingMember = existingMembers?.find(
-        (m) => m.full_name?.toLowerCase().includes(adult.fullName?.toLowerCase().split(' ')[0] || '')
-      );
-
+      const matchingMember = existingAdults?.[i];
       if (matchingMember) {
         await supabase
           .from("compliance_household_members")
@@ -151,19 +171,17 @@ export const AdminApplicationEditForm = ({
       }
     }
 
-    for (const child of children) {
+    const { data: existingChildren } = await supabase
+      .from("compliance_household_members")
+      .select("id, full_name, date_of_birth")
+      .eq("application_id", applicationId)
+      .eq("member_type", "child");
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
       if (!child.fullName) continue;
 
-      const { data: existingMembers } = await supabase
-        .from("compliance_household_members")
-        .select("id, full_name, date_of_birth")
-        .eq("application_id", applicationId)
-        .eq("member_type", "child");
-
-      const matchingMember = existingMembers?.find(
-        (m) => m.full_name?.toLowerCase().includes(child.fullName?.toLowerCase().split(' ')[0] || '')
-      );
-
+      const matchingMember = existingChildren?.[i];
       if (matchingMember) {
         await supabase
           .from("compliance_household_members")
