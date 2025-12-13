@@ -1224,6 +1224,7 @@ export type Database = {
           risk_level: string | null
           safeguarding_completion_date: string | null
           safeguarding_training: string | null
+          service_capacity: Json | null
           service_type: string | null
           town_city: string | null
           updated_at: string | null
@@ -1276,6 +1277,7 @@ export type Database = {
           risk_level?: string | null
           safeguarding_completion_date?: string | null
           safeguarding_training?: string | null
+          service_capacity?: Json | null
           service_type?: string | null
           town_city?: string | null
           updated_at?: string | null
@@ -1328,6 +1330,7 @@ export type Database = {
           risk_level?: string | null
           safeguarding_completion_date?: string | null
           safeguarding_training?: string | null
+          service_capacity?: Json | null
           service_type?: string | null
           town_city?: string | null
           updated_at?: string | null
