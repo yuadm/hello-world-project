@@ -38,8 +38,14 @@ export interface Employee {
   local_authority_other: string | null;
   premises_type: string | null;
   premises_postcode: string | null;
-  age_groups_cared_for: any;
+  age_groups_cared_for: string[] | null;
   max_capacity: number | null;
+  service_capacity: {
+    under1?: number;
+    under5?: number;
+    ages5to8?: number;
+    ages8plus?: number;
+  } | null;
   service_type: string | null;
   first_aid_qualification: string | null;
   first_aid_expiry_date: string | null;

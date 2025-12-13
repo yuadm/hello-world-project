@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
         premises_postcode: application.premises_address?.postcode || null,
         age_groups_cared_for: application.service_age_range || null,
         max_capacity: calculateTotalCapacity(application.service_capacity),
+        service_capacity: application.service_capacity || null,
         service_type: application.service_type,
         first_aid_qualification: application.first_aid_qualification,
         first_aid_expiry_date: application.first_aid_expiry_date,

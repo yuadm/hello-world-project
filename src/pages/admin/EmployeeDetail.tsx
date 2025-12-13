@@ -173,8 +173,32 @@ const AdminEmployeeDetail = () => {
                 <p className="text-sm font-medium text-muted-foreground">Local Authority:</p>
                 <p className="text-sm">{employee.local_authority || "N/A"}</p>
                 
-                <p className="text-sm font-medium text-muted-foreground">Max Capacity:</p>
-                <p className="text-sm">{employee.max_capacity || "N/A"}</p>
+                <p className="text-sm font-medium text-muted-foreground">Age Groups:</p>
+                <div className="flex flex-wrap gap-1">
+                  {employee.age_groups_cared_for && Array.isArray(employee.age_groups_cared_for) && employee.age_groups_cared_for.length > 0 ? (
+                    employee.age_groups_cared_for.map((group: string) => (
+                      <Badge key={group} variant="secondary" className="rounded-full text-xs">
+                        {group}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm">N/A</span>
+                  )}
+                </div>
+                
+                <p className="text-sm font-medium text-muted-foreground">Capacity:</p>
+                <div className="text-sm space-y-1">
+                  {employee.service_capacity ? (
+                    <>
+                      <p>Under 1: {employee.service_capacity.under1 ?? 0}</p>
+                      <p>Under 5: {employee.service_capacity.under5 ?? 0}</p>
+                      <p>5-8 years: {employee.service_capacity.ages5to8 ?? 0}</p>
+                      <p>8+ years: {employee.service_capacity.ages8plus ?? 0}</p>
+                    </>
+                  ) : (
+                    <span>N/A</span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
