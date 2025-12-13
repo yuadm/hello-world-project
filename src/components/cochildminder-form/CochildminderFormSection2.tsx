@@ -15,7 +15,10 @@ interface Props {
 }
 
 export function CochildminderFormSection2({ formData, setFormData, validationErrors = {} }: Props) {
-  const [showManualAddress, setShowManualAddress] = useState(!!formData.currentAddress.line1);
+  // Show address fields if any current address field is populated (from prefill)
+  const [showManualAddress, setShowManualAddress] = useState(
+    !!(formData.currentAddress.line1 || formData.currentAddress.postcode)
+  );
   const [previousAddressManual, setPreviousAddressManual] = useState<Record<number, boolean>>(() => {
     const initial: Record<number, boolean> = {};
     formData.addressHistory.forEach((addr, index) => {
