@@ -1177,6 +1177,7 @@ export type Database = {
       }
       employees: {
         Row: {
+          address_history: Json | null
           address_line_1: string | null
           address_line_2: string | null
           age_groups_cared_for: Json | null
@@ -1228,6 +1229,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          address_history?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
           age_groups_cared_for?: Json | null
@@ -1279,6 +1281,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          address_history?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
           age_groups_cared_for?: Json | null

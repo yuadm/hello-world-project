@@ -243,6 +243,17 @@ const AdminEmployeeDetail = () => {
             }}
             localAuthority={employee.local_authority || ''}
             role="childminder"
+            previousAddresses={
+              Array.isArray((employee as any).address_history) 
+                ? (employee as any).address_history.map((item: any) => ({
+                    address: [item.address?.line1, item.address?.line2, item.address?.town, item.address?.postcode]
+                      .filter(Boolean)
+                      .join(', '),
+                    dateFrom: item.moveIn || '',
+                    dateTo: item.moveOut || '',
+                  }))
+                : []
+            }
           />
         </div>
 

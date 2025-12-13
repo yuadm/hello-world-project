@@ -103,6 +103,8 @@ Deno.serve(async (req) => {
         // Transfer DBS data from application
         dbs_certificate_number: application.dbs_number || null,
         dbs_status: application.has_dbs === 'Yes' && application.dbs_number ? 'received' : 'not_requested',
+        // Transfer address history for LA checks
+        address_history: application.address_history || null,
       })
       .select()
       .single();
