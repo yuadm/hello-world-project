@@ -174,18 +174,6 @@ export const Section9Declaration = ({ form }: Props) => {
           </div>
           <div>
             <label className="block text-sm font-medium text-rk-text mb-1">
-              Full name (PRINT) <span className="text-rk-error">*</span>
-            </label>
-            <p className="text-xs text-rk-text-light mb-2">FULL NAME IN CAPITALS</p>
-            <input 
-              type="text"
-              placeholder="FULL NAME IN CAPITALS"
-              className="w-full px-4 py-3 border-2 border-rk-border rounded-[10px] bg-white focus:border-rk-primary focus:outline-none uppercase"
-              {...register("declarationPrintName")} 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-rk-text mb-1">
               Date <span className="text-rk-error">*</span>
             </label>
             <p className="text-xs text-rk-text-light mb-2">&nbsp;</p>

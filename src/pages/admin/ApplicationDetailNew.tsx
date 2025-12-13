@@ -14,6 +14,7 @@ import { AdminApplicationEditForm } from "@/components/admin/AdminApplicationEdi
 import { dbToFormData } from "@/lib/applicationDataMapper";
 import { UnifiedHouseholdComplianceCard } from "@/components/admin/unified/UnifiedHouseholdComplianceCard";
 import { UnifiedAssistantComplianceCard } from "@/components/admin/unified/UnifiedAssistantComplianceCard";
+import { UnifiedCochildminderComplianceCard } from "@/components/admin/unified/UnifiedCochildminderComplianceCard";
 import { RequestApplicantDBSModal } from "@/components/admin/RequestApplicantDBSModal";
 import { AppleCard } from "@/components/admin/AppleCard";
 import { PersonalInfoCard } from "@/components/admin/application-detail/PersonalInfoCard";
@@ -46,6 +47,9 @@ interface DBApplication {
   service_local_authority: string;
   work_with_others: string;
   number_of_assistants: number;
+  work_with_cochildminders: string;
+  number_of_cochildminders: number;
+  cochildminders: any;
   qualifications: any;
   people_in_household: any;
   people_regular_contact: any;
@@ -97,6 +101,7 @@ interface DBApplication {
   declaration_information_sharing: boolean;
   declaration_data_processing: boolean;
   declaration_signature: string;
+  declaration_print_name: string;
   declaration_date: string;
   payment_method: string;
 }
@@ -336,6 +341,9 @@ const ApplicationDetailNew = () => {
             localAuthority={dbApplication.service_local_authority}
             workWithOthers={dbApplication.work_with_others}
             numberOfAssistants={dbApplication.number_of_assistants}
+            workWithCochildminders={dbApplication.work_with_cochildminders}
+            numberOfCochildminders={dbApplication.number_of_cochildminders}
+            cochildminders={dbApplication.cochildminders}
             serviceHours={serviceHours}
             overnightCare={dbApplication.overnight_care}
             ofstedRegistered={dbApplication.service_ofsted_registered}
@@ -375,6 +383,8 @@ const ApplicationDetailNew = () => {
             safeguarding={qualifications.safeguarding}
             eyfsChildminding={qualifications.eyfsChildminding}
             level2Qual={qualifications.level2Qual}
+            foodHygiene={qualifications.foodHygiene}
+            otherTraining={qualifications.otherTraining}
           />
 
           <DBSVettingCard
@@ -406,10 +416,12 @@ const ApplicationDetailNew = () => {
             reference1Name={references.reference1?.name}
             reference1Relationship={references.reference1?.relationship}
             reference1Contact={references.reference1?.contact}
+            reference1Phone={references.reference1?.phone}
             reference1Childcare={references.reference1?.childcare}
             reference2Name={references.reference2?.name}
             reference2Relationship={references.reference2?.relationship}
             reference2Contact={references.reference2?.contact}
+            reference2Phone={references.reference2?.phone}
             reference2Childcare={references.reference2?.childcare}
             childVolunteered={dbApplication.child_volunteered}
             childVolunteeredConsent={dbApplication.child_volunteered_consent}
@@ -445,7 +457,7 @@ const ApplicationDetailNew = () => {
           </AppleCard>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <UnifiedHouseholdComplianceCard
                 parentId={id!}
                 parentType="application"
@@ -453,6 +465,12 @@ const ApplicationDetailNew = () => {
                 parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
               />
               <UnifiedAssistantComplianceCard
+                parentId={id!}
+                parentType="application"
+                parentEmail={dbApplication.email}
+                parentName={`${dbApplication.first_name} ${dbApplication.last_name}`}
+              />
+              <UnifiedCochildminderComplianceCard
                 parentId={id!}
                 parentType="application"
                 parentEmail={dbApplication.email}

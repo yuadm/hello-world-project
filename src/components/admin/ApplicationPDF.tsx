@@ -482,7 +482,7 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
                   <View style={styles.qualGrid}>
                     <View style={styles.qualGridItem}>
                       <Text style={styles.cardSubtitle}>Role</Text>
-                      <Text style={styles.cardText}>{person.role || "N/A"}</Text>
+                      <Text style={styles.cardText}>Assistant</Text>
                     </View>
                     <View style={styles.qualGridItem}>
                       <Text style={styles.cardSubtitle}>Date of Birth</Text>
@@ -804,8 +804,8 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
                   <View key={index} style={styles.card}>
                     <Text style={styles.cardText}>Regulator: {reg.regulator}</Text>
                     <Text style={styles.cardText}>Registration Number: {reg.registrationNumber}</Text>
-                    <Text style={styles.cardText}>Dates: {reg.dates}</Text>
-                    <Text style={styles.cardText}>Status: {reg.status}</Text>
+                    <Text style={styles.cardText}>Start Date: {reg.startDate}</Text>
+                    <Text style={styles.cardText}>End Date: {reg.endDate || "Still registered"}</Text>
                   </View>
                 ))}
               </View>
@@ -897,8 +897,7 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
                 <View key={index} style={styles.card}>
                   <Text style={styles.cardTitle}>Offence {index + 1}</Text>
                   <Text style={styles.cardText}>Date: {offence.date}</Text>
-                  <Text style={styles.cardText}>Description: {offence.description}</Text>
-                  <Text style={styles.cardText}>Outcome: {offence.outcome}</Text>
+                  <Text style={styles.cardText}>Details: {offence.details}</Text>
                 </View>
               ))}
             </View>

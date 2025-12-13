@@ -67,6 +67,7 @@ export const DeclarationCard = ({
           </div>
         )}
 
+
         {declarationDate && (
           <div className="flex items-center gap-3 rounded-lg bg-muted/30 p-3">
             <Calendar className="h-4 w-4 text-primary" />

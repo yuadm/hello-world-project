@@ -42,7 +42,7 @@ export const Section7People = ({ form }: Props) => {
       />
 
       <RKInfoBox type="info">
-        <strong>Important:</strong> All adults (16+) who live at or work at your childminding premises will require DBS checks. This includes cleaners, gardeners or other workers present during childminding hours. Children under 16 do not require checks but must be declared.
+        List all regular household members (like students home for holidays or partners splitting households), even if they are not at home while you are minding children.
       </RKInfoBox>
 
       {/* Adults in Home - Only for domestic premises */}

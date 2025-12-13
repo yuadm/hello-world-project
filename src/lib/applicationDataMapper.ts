@@ -19,6 +19,9 @@ interface DBApplication {
   service_local_authority: string;
   work_with_others: string;
   number_of_assistants: number;
+  work_with_cochildminders: string;
+  number_of_cochildminders: number;
+  cochildminders: any;
   qualifications: any;
   people_in_household: any;
   people_regular_contact: any;
@@ -68,6 +71,7 @@ interface DBApplication {
   declaration_information_sharing: boolean;
   declaration_data_processing: boolean;
   declaration_signature: string;
+  
   declaration_date: string;
   payment_method: string;
   home_postcode: string;
@@ -137,7 +141,11 @@ export function dbToFormData(dbApp: DBApplication): Partial<ChildminderApplicati
     // Section 4: Service
     ageGroups: dbApp.service_age_range || [],
     workWithOthers: dbApp.work_with_others as "Yes" | "No",
+    workWithAssistants: dbApp.work_with_others as "Yes" | "No",
     numberOfAssistants: dbApp.number_of_assistants,
+    workWithCochildminders: dbApp.work_with_cochildminders as "Yes" | "No",
+    numberOfCochildminders: dbApp.number_of_cochildminders,
+    cochildminders: dbApp.cochildminders || [],
     childcareTimes: dbApp.service_hours || [],
     overnightCare: dbApp.overnight_care as "Yes" | "No",
     proposedUnder1: serviceCapacity.under1,
@@ -150,6 +158,8 @@ export function dbToFormData(dbApp: DBApplication): Partial<ChildminderApplicati
     safeguarding: qualifications.safeguarding,
     eyfsChildminding: qualifications.eyfsChildminding,
     level2Qual: qualifications.level2Qual,
+    foodHygiene: qualifications.foodHygiene,
+    otherTraining: qualifications.otherTraining,
 
     // Section 6: Employment
     employmentHistory: dbApp.employment_history || [],
@@ -159,10 +169,12 @@ export function dbToFormData(dbApp: DBApplication): Partial<ChildminderApplicati
     reference1Name: references.reference1?.name,
     reference1Relationship: references.reference1?.relationship,
     reference1Contact: references.reference1?.contact,
+    reference1Phone: references.reference1?.phone,
     reference1ChildcareRole: references.reference1?.childcare,
     reference2Name: references.reference2?.name,
     reference2Relationship: references.reference2?.relationship,
     reference2Contact: references.reference2?.contact,
+    reference2Phone: references.reference2?.phone,
     reference2ChildcareRole: references.reference2?.childcare,
 
     // Section 7: People Connected
@@ -206,7 +218,6 @@ export function dbToFormData(dbApp: DBApplication): Partial<ChildminderApplicati
     declarationTruth: dbApp.declaration_confirmed,
     declarationNotify: dbApp.declaration_change_notification,
     signatureFullName: dbApp.declaration_signature,
-    declarationPrintName: dbApp.declaration_signature,
     signatureDate: dbApp.declaration_date,
   };
 }
@@ -251,8 +262,12 @@ export function formToDbData(formData: Partial<ChildminderApplication>) {
     // Service Details
     service_type: formData.premisesType,
     service_age_range: formData.ageGroups,
-    work_with_others: formData.workWithOthers,
+    work_with_others: formData.workWithAssistants || formData.workWithOthers,
     number_of_assistants: formData.numberOfAssistants,
+    work_with_cochildminders: formData.workWithCochildminders,
+    number_of_cochildminders: formData.numberOfCochildminders,
+    cochildminders: formData.cochildminders,
+    // Note: cochildminders are stored in compliance_cochildminders table, not here
     service_capacity: {
       under1: formData.proposedUnder1,
       under5: formData.proposedUnder5,
@@ -269,6 +284,8 @@ export function formToDbData(formData: Partial<ChildminderApplication>) {
       safeguarding: formData.safeguarding,
       eyfsChildminding: formData.eyfsChildminding,
       level2Qual: formData.level2Qual,
+      foodHygiene: formData.foodHygiene,
+      otherTraining: formData.otherTraining,
     },
     employment_history: formData.employmentHistory,
     employment_gaps: formData.employmentGaps,
@@ -279,12 +296,14 @@ export function formToDbData(formData: Partial<ChildminderApplication>) {
         name: formData.reference1Name,
         relationship: formData.reference1Relationship,
         contact: formData.reference1Contact,
+        phone: formData.reference1Phone,
         childcare: formData.reference1ChildcareRole,
       },
       reference2: {
         name: formData.reference2Name,
         relationship: formData.reference2Relationship,
         contact: formData.reference2Contact,
+        phone: formData.reference2Phone,
         childcare: formData.reference2ChildcareRole,
       },
     },

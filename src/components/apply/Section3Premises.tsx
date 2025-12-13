@@ -109,11 +109,11 @@ export const Section3Premises = ({ form }: Props) => {
 
       {showChildcareAddress && (
         <div className="space-y-4 p-5 bg-rk-bg-form border border-rk-border rounded-xl">
-          <p className="text-sm text-rk-text-light">
+          <RKInfoBox type="info">
             Please provide the full address of the premises. If it is a domestic address that is not
             your own home, we will need to conduct suitability checks on everyone living there aged
             16 or over.
-          </p>
+          </RKInfoBox>
           
           <div className="rk-address-grid">
             <RKInput

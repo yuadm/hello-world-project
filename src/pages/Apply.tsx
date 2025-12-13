@@ -200,6 +200,9 @@ const Apply = () => {
             ages5to8: data.proposed5to8,
             ages8plus: data.proposed8plus
           },
+          work_with_cochildminders: data.workWithCochildminders,
+          number_of_cochildminders: data.numberOfCochildminders,
+          cochildminders: data.cochildminders,
           service_hours: data.childcareTimes,
           overnight_care: data.overnightCare,
           service_local_authority: data.localAuthority,
@@ -207,7 +210,9 @@ const Apply = () => {
             firstAid: data.firstAid,
             safeguarding: data.safeguarding,
             eyfsChildminding: data.eyfsChildminding,
-            level2Qual: data.level2Qual
+            level2Qual: data.level2Qual,
+            foodHygiene: data.foodHygiene,
+            otherTraining: data.otherTraining
           },
           employment_history: data.employmentHistory,
           employment_gaps: data.employmentGaps,
@@ -218,12 +223,14 @@ const Apply = () => {
               name: data.reference1Name,
               relationship: data.reference1Relationship,
               contact: data.reference1Contact,
+              phone: data.reference1Phone,
               childcare: data.reference1ChildcareRole
             },
             reference2: {
               name: data.reference2Name,
               relationship: data.reference2Relationship,
               contact: data.reference2Contact,
+              phone: data.reference2Phone,
               childcare: data.reference2ChildcareRole
             }
           },
@@ -351,6 +358,30 @@ const Apply = () => {
             
             if (assistantError) {
               console.error("Failed to create assistant records:", assistantError);
+            }
+          }
+        }
+
+        // Create co-childminder compliance records
+        if (data.cochildminders && Array.isArray(data.cochildminders)) {
+          const cochildminderRecords = data.cochildminders.map((ccm: any) => ({
+            application_id: applicationId,
+            first_name: ccm.firstName,
+            last_name: ccm.lastName,
+            date_of_birth: ccm.dob,
+            email: ccm.email,
+            phone: ccm.phone,
+            dbs_status: 'not_requested' as const,
+            form_status: 'not_sent' as const
+          }));
+
+          if (cochildminderRecords.length > 0) {
+            const { error: ccmError } = await supabase
+              .from('compliance_cochildminders')
+              .insert(cochildminderRecords);
+            
+            if (ccmError) {
+              console.error("Failed to create co-childminder records:", ccmError);
             }
           }
         }

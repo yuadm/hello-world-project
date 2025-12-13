@@ -45,7 +45,14 @@ export interface AssistantEntry {
   firstName: string;
   lastName: string;
   dob: string;
-  role: "Assistant" | "Co-childminder" | "";
+  email: string;
+  phone: string;
+}
+
+export interface CochildminderEntry {
+  firstName: string;
+  lastName: string;
+  dob: string;
   email: string;
   phone: string;
 }
@@ -58,14 +65,13 @@ export interface ChildEntry {
 export interface RegistrationEntry {
   regulator: string;
   registrationNumber: string;
-  dates: string;
-  status: string;
+  startDate: string;
+  endDate?: string;
 }
 
 export interface OffenceEntry {
   date: string;
-  description: string;
-  outcome: string;
+  details: string;
 }
 
 export interface ChildminderApplication {
@@ -105,14 +111,19 @@ export interface ChildminderApplication {
 
   // Section 4: Service
   ageGroups: string[];
-  workWithOthers: "Yes" | "No";
+  workWithAssistants: "Yes" | "No";
   numberOfAssistants?: number;
+  workWithCochildminders: "Yes" | "No";
+  numberOfCochildminders?: number;
+  cochildminders?: CochildminderEntry[];
   childcareTimes?: string[];
   overnightCare?: "Yes" | "No";
   proposedUnder1?: number;
   proposedUnder5?: number;
   proposed5to8?: number;
   proposed8plus?: number;
+  // Legacy field for backwards compatibility
+  workWithOthers?: "Yes" | "No";
 
   // Section 5: Qualifications
   firstAid: TrainingEntry;
@@ -184,6 +195,5 @@ export interface ChildminderApplication {
   declarationNotify: boolean;
   // Signature
   signatureFullName: string;
-  declarationPrintName: string;
   signatureDate: string;
 }

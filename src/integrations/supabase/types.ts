@@ -24,6 +24,7 @@ export type Database = {
           child_volunteered: string | null
           child_volunteered_consent: boolean | null
           children_in_home: string | null
+          cochildminders: Json | null
           convictions_details: string | null
           created_at: string
           criminal_convictions: string | null
@@ -58,6 +59,7 @@ export type Database = {
           military_base: string | null
           national_insurance_number: string | null
           number_of_assistants: number | null
+          number_of_cochildminders: number | null
           other_circumstances: string | null
           other_circumstances_details: string | null
           outdoor_space: string | null
@@ -99,6 +101,7 @@ export type Database = {
           updated_at: string
           use_additional_premises: string | null
           user_id: string | null
+          work_with_cochildminders: string | null
           work_with_others: string | null
         }
         Insert: {
@@ -110,6 +113,7 @@ export type Database = {
           child_volunteered?: string | null
           child_volunteered_consent?: boolean | null
           children_in_home?: string | null
+          cochildminders?: Json | null
           convictions_details?: string | null
           created_at?: string
           criminal_convictions?: string | null
@@ -144,6 +148,7 @@ export type Database = {
           military_base?: string | null
           national_insurance_number?: string | null
           number_of_assistants?: number | null
+          number_of_cochildminders?: number | null
           other_circumstances?: string | null
           other_circumstances_details?: string | null
           outdoor_space?: string | null
@@ -185,6 +190,7 @@ export type Database = {
           updated_at?: string
           use_additional_premises?: string | null
           user_id?: string | null
+          work_with_cochildminders?: string | null
           work_with_others?: string | null
         }
         Update: {
@@ -196,6 +202,7 @@ export type Database = {
           child_volunteered?: string | null
           child_volunteered_consent?: boolean | null
           children_in_home?: string | null
+          cochildminders?: Json | null
           convictions_details?: string | null
           created_at?: string
           criminal_convictions?: string | null
@@ -230,6 +237,7 @@ export type Database = {
           military_base?: string | null
           national_insurance_number?: string | null
           number_of_assistants?: number | null
+          number_of_cochildminders?: number | null
           other_circumstances?: string | null
           other_circumstances_details?: string | null
           outdoor_space?: string | null
@@ -271,9 +279,254 @@ export type Database = {
           updated_at?: string
           use_additional_premises?: string | null
           user_id?: string | null
+          work_with_cochildminders?: string | null
           work_with_others?: string | null
         }
         Relationships: []
+      }
+      cochildminder_applications: {
+        Row: {
+          address_history: Json | null
+          application_id: string | null
+          birth_town: string | null
+          cochildminder_id: string
+          consent_checks: boolean | null
+          created_at: string | null
+          criminal_history: string | null
+          criminal_history_details: string | null
+          current_address: Json | null
+          date_of_birth: string | null
+          dbs_number: string | null
+          dbs_update_service: string | null
+          declaration_notify: boolean | null
+          declaration_truth: boolean | null
+          disqualified: string | null
+          employee_id: string | null
+          employment_gaps: string | null
+          employment_history: Json | null
+          eyfs_completed: string | null
+          eyfs_date: string | null
+          eyfs_provider: string | null
+          first_aid_completed: string | null
+          first_aid_date: string | null
+          first_aid_provider: string | null
+          first_name: string | null
+          form_token: string
+          has_dbs: string | null
+          health_conditions: string | null
+          health_conditions_details: string | null
+          id: string
+          last_name: string | null
+          level_2_date: string | null
+          level_2_provider: string | null
+          level_2_qualification: string | null
+          lived_outside_uk: string | null
+          local_authority: string | null
+          middle_names: string | null
+          ni_number: string | null
+          other_qualifications: string | null
+          outside_uk_details: string | null
+          pfa_completed: string | null
+          premises_address: Json | null
+          premises_type: string | null
+          previous_names: Json | null
+          previous_registration: string | null
+          previous_registration_details: Json | null
+          reference_1_childcare: boolean | null
+          reference_1_email: string | null
+          reference_1_name: string | null
+          reference_1_phone: string | null
+          reference_1_relationship: string | null
+          reference_2_childcare: boolean | null
+          reference_2_email: string | null
+          reference_2_name: string | null
+          reference_2_phone: string | null
+          reference_2_relationship: string | null
+          safeguarding_completed: string | null
+          safeguarding_date: string | null
+          safeguarding_provider: string | null
+          service_age_groups: Json | null
+          service_hours: Json | null
+          sex: string | null
+          signature_date: string | null
+          signature_name: string | null
+          smoker: string | null
+          social_services: string | null
+          social_services_details: string | null
+          status: string | null
+          submitted_at: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address_history?: Json | null
+          application_id?: string | null
+          birth_town?: string | null
+          cochildminder_id: string
+          consent_checks?: boolean | null
+          created_at?: string | null
+          criminal_history?: string | null
+          criminal_history_details?: string | null
+          current_address?: Json | null
+          date_of_birth?: string | null
+          dbs_number?: string | null
+          dbs_update_service?: string | null
+          declaration_notify?: boolean | null
+          declaration_truth?: boolean | null
+          disqualified?: string | null
+          employee_id?: string | null
+          employment_gaps?: string | null
+          employment_history?: Json | null
+          eyfs_completed?: string | null
+          eyfs_date?: string | null
+          eyfs_provider?: string | null
+          first_aid_completed?: string | null
+          first_aid_date?: string | null
+          first_aid_provider?: string | null
+          first_name?: string | null
+          form_token: string
+          has_dbs?: string | null
+          health_conditions?: string | null
+          health_conditions_details?: string | null
+          id?: string
+          last_name?: string | null
+          level_2_date?: string | null
+          level_2_provider?: string | null
+          level_2_qualification?: string | null
+          lived_outside_uk?: string | null
+          local_authority?: string | null
+          middle_names?: string | null
+          ni_number?: string | null
+          other_qualifications?: string | null
+          outside_uk_details?: string | null
+          pfa_completed?: string | null
+          premises_address?: Json | null
+          premises_type?: string | null
+          previous_names?: Json | null
+          previous_registration?: string | null
+          previous_registration_details?: Json | null
+          reference_1_childcare?: boolean | null
+          reference_1_email?: string | null
+          reference_1_name?: string | null
+          reference_1_phone?: string | null
+          reference_1_relationship?: string | null
+          reference_2_childcare?: boolean | null
+          reference_2_email?: string | null
+          reference_2_name?: string | null
+          reference_2_phone?: string | null
+          reference_2_relationship?: string | null
+          safeguarding_completed?: string | null
+          safeguarding_date?: string | null
+          safeguarding_provider?: string | null
+          service_age_groups?: Json | null
+          service_hours?: Json | null
+          sex?: string | null
+          signature_date?: string | null
+          signature_name?: string | null
+          smoker?: string | null
+          social_services?: string | null
+          social_services_details?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address_history?: Json | null
+          application_id?: string | null
+          birth_town?: string | null
+          cochildminder_id?: string
+          consent_checks?: boolean | null
+          created_at?: string | null
+          criminal_history?: string | null
+          criminal_history_details?: string | null
+          current_address?: Json | null
+          date_of_birth?: string | null
+          dbs_number?: string | null
+          dbs_update_service?: string | null
+          declaration_notify?: boolean | null
+          declaration_truth?: boolean | null
+          disqualified?: string | null
+          employee_id?: string | null
+          employment_gaps?: string | null
+          employment_history?: Json | null
+          eyfs_completed?: string | null
+          eyfs_date?: string | null
+          eyfs_provider?: string | null
+          first_aid_completed?: string | null
+          first_aid_date?: string | null
+          first_aid_provider?: string | null
+          first_name?: string | null
+          form_token?: string
+          has_dbs?: string | null
+          health_conditions?: string | null
+          health_conditions_details?: string | null
+          id?: string
+          last_name?: string | null
+          level_2_date?: string | null
+          level_2_provider?: string | null
+          level_2_qualification?: string | null
+          lived_outside_uk?: string | null
+          local_authority?: string | null
+          middle_names?: string | null
+          ni_number?: string | null
+          other_qualifications?: string | null
+          outside_uk_details?: string | null
+          pfa_completed?: string | null
+          premises_address?: Json | null
+          premises_type?: string | null
+          previous_names?: Json | null
+          previous_registration?: string | null
+          previous_registration_details?: Json | null
+          reference_1_childcare?: boolean | null
+          reference_1_email?: string | null
+          reference_1_name?: string | null
+          reference_1_phone?: string | null
+          reference_1_relationship?: string | null
+          reference_2_childcare?: boolean | null
+          reference_2_email?: string | null
+          reference_2_name?: string | null
+          reference_2_phone?: string | null
+          reference_2_relationship?: string | null
+          safeguarding_completed?: string | null
+          safeguarding_date?: string | null
+          safeguarding_provider?: string | null
+          service_age_groups?: Json | null
+          service_hours?: Json | null
+          sex?: string | null
+          signature_date?: string | null
+          signature_name?: string | null
+          smoker?: string | null
+          social_services?: string | null
+          social_services_details?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cochildminder_applications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "childminder_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cochildminder_applications_cochildminder_id_fkey"
+            columns: ["cochildminder_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_cochildminders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cochildminder_applications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compliance_assistant_forms: {
         Row: {
@@ -539,6 +792,114 @@ export type Database = {
           },
           {
             foreignKeyName: "compliance_assistants_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_cochildminders: {
+        Row: {
+          application_id: string | null
+          compliance_status: string | null
+          created_at: string | null
+          date_of_birth: string
+          dbs_certificate_date: string | null
+          dbs_certificate_expiry_date: string | null
+          dbs_certificate_number: string | null
+          dbs_request_date: string | null
+          dbs_status: Database["public"]["Enums"]["dbs_status"] | null
+          email: string | null
+          employee_id: string | null
+          expiry_reminder_sent: boolean | null
+          first_name: string
+          follow_up_due_date: string | null
+          form_sent_date: string | null
+          form_status: string | null
+          form_submitted_date: string | null
+          form_token: string | null
+          id: string
+          last_contact_date: string | null
+          last_name: string
+          last_reminder_date: string | null
+          notes: string | null
+          phone: string | null
+          reminder_count: number | null
+          reminder_history: Json | null
+          risk_level: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          application_id?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          date_of_birth: string
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_request_date?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email?: string | null
+          employee_id?: string | null
+          expiry_reminder_sent?: boolean | null
+          first_name: string
+          follow_up_due_date?: string | null
+          form_sent_date?: string | null
+          form_status?: string | null
+          form_submitted_date?: string | null
+          form_token?: string | null
+          id?: string
+          last_contact_date?: string | null
+          last_name: string
+          last_reminder_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          date_of_birth?: string
+          dbs_certificate_date?: string | null
+          dbs_certificate_expiry_date?: string | null
+          dbs_certificate_number?: string | null
+          dbs_request_date?: string | null
+          dbs_status?: Database["public"]["Enums"]["dbs_status"] | null
+          email?: string | null
+          employee_id?: string | null
+          expiry_reminder_sent?: boolean | null
+          first_name?: string
+          follow_up_due_date?: string | null
+          form_sent_date?: string | null
+          form_status?: string | null
+          form_submitted_date?: string | null
+          form_token?: string | null
+          id?: string
+          last_contact_date?: string | null
+          last_name?: string
+          last_reminder_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          reminder_count?: number | null
+          reminder_history?: Json | null
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_cochildminders_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "childminder_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_cochildminders_employee_id_fkey"
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
