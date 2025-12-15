@@ -31,6 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUpdateEnforcementCase } from "@/hooks/useEnforcementData";
+import { useToast } from "@/hooks/use-toast";
 
 interface SuspensionReviewWorkflowProps {
   caseDetails: EnforcementCase;
@@ -45,6 +47,8 @@ export const SuspensionReviewWorkflow = ({
   onClose, 
   onComplete 
 }: SuspensionReviewWorkflowProps) => {
+  const { toast } = useToast();
+  const updateCase = useUpdateEnforcementCase();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<SuspensionReviewFormData>({
     investigationStatus: '',
@@ -64,6 +68,47 @@ export const SuspensionReviewWorkflow = ({
   const isStep2Valid = formData.supervisor && (
     formData.reviewOutcome === 'extend' ? formData.extensionWeeks : true
   );
+
+  const handleComplete = async () => {
+    try {
+      if (formData.reviewOutcome === 'lift') {
+        await updateCase.mutateAsync({
+          caseId: caseDetails.id,
+          updates: {
+            status: 'lifted' as any,
+            date_closed: new Date().toISOString().split('T')[0],
+            form_data: { ...caseDetails.form_data, reviewData: formData }
+          },
+          timelineEvent: {
+            event: 'Suspension Lifted',
+            type: 'completed'
+          },
+          supervisorName: getSupervisorName(formData.supervisor)
+        });
+      } else {
+        await updateCase.mutateAsync({
+          caseId: caseDetails.id,
+          updates: {
+            deadline: newExtensionDate.toISOString().split('T')[0],
+            form_data: { ...caseDetails.form_data, reviewData: formData }
+          },
+          timelineEvent: {
+            event: `Suspension Extended to ${formatDate(newExtensionDate)}`,
+            type: 'completed'
+          },
+          supervisorName: getSupervisorName(formData.supervisor)
+        });
+      }
+      
+      onComplete(formData);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update case",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -370,13 +415,14 @@ export const SuspensionReviewWorkflow = ({
             </Button>
           ) : (
             <Button
-              onClick={() => onComplete(formData)}
+              onClick={handleComplete}
+              disabled={updateCase.isPending}
               className={cn(
                 "gap-2 shadow-lg",
                 themeColor === 'emerald' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
               )}
             >
-              {formData.reviewOutcome === 'lift' ? 'LIFT SUSPENSION' : 'EXTEND SUSPENSION'}
+              {updateCase.isPending ? 'Processing...' : formData.reviewOutcome === 'lift' ? 'LIFT SUSPENSION' : 'EXTEND SUSPENSION'}
             </Button>
           )}
         </div>
