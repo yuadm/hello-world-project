@@ -31,6 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUpdateEnforcementCase } from "@/hooks/useEnforcementData";
+import { useToast } from "@/hooks/use-toast";
 
 interface DecisionWorkflowProps {
   caseDetails: EnforcementCase;
@@ -43,6 +45,8 @@ export const DecisionWorkflow = ({
   onClose, 
   onComplete 
 }: DecisionWorkflowProps) => {
+  const { toast } = useToast();
+  const updateCase = useUpdateEnforcementCase();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<DecisionFormData>({
     repsReceived: 'no',
@@ -63,6 +67,34 @@ export const DecisionWorkflow = ({
 
   // Auto-set decision based on reps outcome
   const effectiveDecision = formData.repsOutcome === 'upheld' ? 'withdraw' : 'cancel';
+
+  const handleComplete = async () => {
+    try {
+      const finalDecision = { ...formData, decision: effectiveDecision as 'cancel' | 'withdraw' };
+      
+      await updateCase.mutateAsync({
+        caseId: caseDetails.id,
+        updates: {
+          status: effectiveDecision === 'cancel' ? 'cancelled' as any : 'closed' as any,
+          date_closed: new Date().toISOString().split('T')[0],
+          form_data: { ...caseDetails.form_data, decisionData: finalDecision }
+        },
+        timelineEvent: {
+          event: effectiveDecision === 'cancel' ? 'Decision Notice Issued - Registration Cancelled' : 'Notice Withdrawn',
+          type: 'completed'
+        },
+        supervisorName: getSupervisorName(formData.supervisor)
+      });
+      
+      onComplete(finalDecision);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update case",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -347,10 +379,11 @@ export const DecisionWorkflow = ({
             </Button>
           ) : (
             <Button
-              onClick={() => onComplete({ ...formData, decision: effectiveDecision as 'cancel' | 'withdraw' })}
+              onClick={handleComplete}
+              disabled={updateCase.isPending}
               className="gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg"
             >
-              ISSUE DECISION NOTICE
+              {updateCase.isPending ? 'Processing...' : 'ISSUE DECISION NOTICE'}
             </Button>
           )}
         </div>

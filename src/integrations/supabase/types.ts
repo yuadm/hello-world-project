@@ -1345,6 +1345,191 @@ export type Database = {
           },
         ]
       }
+      enforcement_cases: {
+        Row: {
+          concern: string | null
+          created_at: string | null
+          date_closed: string | null
+          date_created: string
+          deadline: string | null
+          employee_id: string
+          form_data: Json | null
+          id: string
+          risk_categories: Json | null
+          risk_detail: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          status: Database["public"]["Enums"]["enforcement_case_status"]
+          supervisor_id: string | null
+          supervisor_name: string | null
+          type: Database["public"]["Enums"]["enforcement_case_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          concern?: string | null
+          created_at?: string | null
+          date_closed?: string | null
+          date_created?: string
+          deadline?: string | null
+          employee_id: string
+          form_data?: Json | null
+          id?: string
+          risk_categories?: Json | null
+          risk_detail?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          status?: Database["public"]["Enums"]["enforcement_case_status"]
+          supervisor_id?: string | null
+          supervisor_name?: string | null
+          type: Database["public"]["Enums"]["enforcement_case_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          concern?: string | null
+          created_at?: string | null
+          date_closed?: string | null
+          date_created?: string
+          deadline?: string | null
+          employee_id?: string
+          form_data?: Json | null
+          id?: string
+          risk_categories?: Json | null
+          risk_detail?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          status?: Database["public"]["Enums"]["enforcement_case_status"]
+          supervisor_id?: string | null
+          supervisor_name?: string | null
+          type?: Database["public"]["Enums"]["enforcement_case_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_cases_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enforcement_notices: {
+        Row: {
+          case_id: string
+          generated_at: string | null
+          id: string
+          notice_type: string
+          pdf_url: string | null
+          reference_number: string
+        }
+        Insert: {
+          case_id: string
+          generated_at?: string | null
+          id?: string
+          notice_type: string
+          pdf_url?: string | null
+          reference_number: string
+        }
+        Update: {
+          case_id?: string
+          generated_at?: string | null
+          id?: string
+          notice_type?: string
+          pdf_url?: string | null
+          reference_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_notices_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enforcement_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enforcement_notifications: {
+        Row: {
+          agency: string
+          agency_detail: string | null
+          agency_email: string
+          agency_name: string
+          case_id: string
+          created_at: string | null
+          id: string
+          sent_at: string | null
+          sent_by: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+        }
+        Insert: {
+          agency: string
+          agency_detail?: string | null
+          agency_email: string
+          agency_name: string
+          case_id: string
+          created_at?: string | null
+          id?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+        }
+        Update: {
+          agency?: string
+          agency_detail?: string | null
+          agency_email?: string
+          agency_name?: string
+          case_id?: string
+          created_at?: string | null
+          id?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_notifications_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enforcement_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enforcement_timeline: {
+        Row: {
+          case_id: string
+          created_at: string | null
+          created_by: string | null
+          date: string
+          event: string
+          id: string
+          type: Database["public"]["Enums"]["timeline_event_type"]
+        }
+        Insert: {
+          case_id: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          event: string
+          id?: string
+          type?: Database["public"]["Enums"]["timeline_event_type"]
+        }
+        Update: {
+          case_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          event?: string
+          id?: string
+          type?: Database["public"]["Enums"]["timeline_event_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_timeline_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "enforcement_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       la_form_submissions: {
         Row: {
           applicant_name: string
@@ -1734,7 +1919,19 @@ export type Database = {
       app_role: "admin" | "user"
       dbs_status: "not_requested" | "requested" | "received" | "expired"
       employment_status: "active" | "on_leave" | "terminated"
+      enforcement_case_status:
+        | "pending"
+        | "in_effect"
+        | "representations_received"
+        | "decision_pending"
+        | "lifted"
+        | "cancelled"
+        | "closed"
+      enforcement_case_type: "suspension" | "warning" | "cancellation"
       member_type: "adult" | "child"
+      notification_status: "pending" | "sent" | "failed"
+      risk_level: "low" | "medium" | "high" | "critical"
+      timeline_event_type: "completed" | "pending" | "urgent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1865,7 +2062,20 @@ export const Constants = {
       app_role: ["admin", "user"],
       dbs_status: ["not_requested", "requested", "received", "expired"],
       employment_status: ["active", "on_leave", "terminated"],
+      enforcement_case_status: [
+        "pending",
+        "in_effect",
+        "representations_received",
+        "decision_pending",
+        "lifted",
+        "cancelled",
+        "closed",
+      ],
+      enforcement_case_type: ["suspension", "warning", "cancellation"],
       member_type: ["adult", "child"],
+      notification_status: ["pending", "sent", "failed"],
+      risk_level: ["low", "medium", "high", "critical"],
+      timeline_event_type: ["completed", "pending", "urgent"],
     },
   },
 } as const

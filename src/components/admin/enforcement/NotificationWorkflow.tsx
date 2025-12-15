@@ -13,6 +13,7 @@ import {
 import { NOTIFICATION_AGENCIES } from "@/lib/enforcementUtils";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useSendNotification } from "@/hooks/useEnforcementData";
 
 interface NotificationWorkflowProps {
   provider: { id: string; name: string };
@@ -37,6 +38,7 @@ export const NotificationWorkflow = ({
   onClose 
 }: NotificationWorkflowProps) => {
   const { toast } = useToast();
+  const sendNotification = useSendNotification();
   const [notifications, setNotifications] = useState<NotificationItem[]>(
     NOTIFICATION_AGENCIES.map(a => ({
       id: a.id,
@@ -52,9 +54,22 @@ export const NotificationWorkflow = ({
 
   const handleSend = async (notificationId: string) => {
     setSendingId(notificationId);
+    const notification = notifications.find(n => n.id === notificationId);
     
-    // Simulate sending
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    if (notification && caseId) {
+      try {
+        await sendNotification.mutateAsync({
+          caseId,
+          agency: notification.id,
+          agencyName: notification.name,
+          agencyDetail: notification.detail,
+          agencyEmail: notification.email,
+          sentBy: 'Admin User'
+        });
+      } catch (error) {
+        console.error('Failed to save notification:', error);
+      }
+    }
     
     setNotifications(prev => prev.map(n => 
       n.id === notificationId 
@@ -66,7 +81,7 @@ export const NotificationWorkflow = ({
     
     toast({
       title: "Notification Sent",
-      description: `${notifications.find(n => n.id === notificationId)?.name} has been notified.`,
+      description: `${notification?.name} has been notified.`,
     });
   };
 

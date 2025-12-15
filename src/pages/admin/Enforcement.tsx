@@ -25,67 +25,16 @@ import { CancellationWorkflow } from "@/components/admin/enforcement/Cancellatio
 import { SuspensionReviewWorkflow } from "@/components/admin/enforcement/SuspensionReviewWorkflow";
 import { DecisionWorkflow } from "@/components/admin/enforcement/DecisionWorkflow";
 import { NotificationWorkflow } from "@/components/admin/enforcement/NotificationWorkflow";
+import { RecentActivity } from "@/components/admin/enforcement/RecentActivity";
+import { RecordRepresentationsModal } from "@/components/admin/enforcement/RecordRepresentationsModal";
 import { EnforcementProvider, EnforcementCase, EnforcementTimeline as TimelineType } from "@/types/enforcement";
-import { formatDate } from "@/lib/enforcementUtils";
+import { formatDate, getSupervisorName } from "@/lib/enforcementUtils";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data for cases (will be replaced with real data later)
-const MOCK_CASES: EnforcementCase[] = [
-  {
-    id: 'CASE-001',
-    employee_id: 'emp-1',
-    type: 'suspension',
-    status: 'in_effect',
-    risk_level: 'critical',
-    concern: 'Safeguarding concern identified during inspection',
-    risk_detail: 'Inadequate supervision of children under 2',
-    risk_categories: ['Safeguarding concern', 'Supervision inadequacy'],
-    deadline: '2025-01-21',
-    date_created: '2024-12-10',
-    date_closed: null,
-    supervisor_id: 'sup1',
-    supervisor_name: 'Jane Director',
-    form_data: null,
-    created_at: '2024-12-10',
-    updated_at: '2024-12-10',
-    employee_name: 'Michael Ross',
-    employee_local_authority: 'South Gloucestershire'
-  },
-  {
-    id: 'CASE-002',
-    employee_id: 'emp-2',
-    type: 'cancellation',
-    status: 'representations_received',
-    risk_level: 'medium',
-    concern: 'Failure to meet prescribed requirements',
-    risk_detail: 'Ongoing compliance failures',
-    risk_categories: ['Compliance / EYFS Failure'],
-    deadline: '2025-01-03',
-    date_created: '2024-12-20',
-    date_closed: null,
-    supervisor_id: 'sup2',
-    supervisor_name: 'Robert Chief',
-    form_data: null,
-    created_at: '2024-12-20',
-    updated_at: '2024-12-20',
-    employee_name: 'Emma Thompson',
-    employee_local_authority: 'Bath & NE Somerset'
-  }
-];
-
-const MOCK_TIMELINES: Record<string, TimelineType[]> = {
-  'CASE-001': [
-    { id: '1', case_id: 'CASE-001', event: 'Risk Assessment Completed', date: '2024-12-10', type: 'completed', created_by: null, created_at: '' },
-    { id: '2', case_id: 'CASE-001', event: 'Suspension Notice Issued', date: '2024-12-10', type: 'completed', created_by: null, created_at: '' },
-    { id: '3', case_id: 'CASE-001', event: 'Notifications Sent (Ofsted/LA)', date: '2024-12-11', type: 'completed', created_by: null, created_at: '' },
-    { id: '4', case_id: 'CASE-001', event: '6-Week Review Deadline', date: '2025-01-21', type: 'pending', created_by: null, created_at: '' },
-  ],
-  'CASE-002': [
-    { id: '5', case_id: 'CASE-002', event: 'Notice of Intention Issued', date: '2024-12-20', type: 'completed', created_by: null, created_at: '' },
-    { id: '6', case_id: 'CASE-002', event: 'Representations Received', date: '2025-01-03', type: 'urgent', created_by: null, created_at: '' },
-    { id: '7', case_id: 'CASE-002', event: 'Decision Notice Due', date: '2025-01-17', type: 'pending', created_by: null, created_at: '' },
-  ]
-};
+import { 
+  useEnforcementCases, 
+  useAllTimelines,
+  useCreateEnforcementCase 
+} from "@/hooks/useEnforcementData";
 
 const Enforcement = () => {
   const { toast } = useToast();
@@ -96,6 +45,17 @@ const Enforcement = () => {
   const [workflowAction, setWorkflowAction] = useState<'review' | 'lift'>('review');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationContext, setNotificationContext] = useState<{ provider: any; action: string; caseId: string } | null>(null);
+  const [showRecordReps, setShowRecordReps] = useState(false);
+
+  // Fetch enforcement cases from database
+  const { data: cases = [], isLoading: casesLoading } = useEnforcementCases();
+  
+  // Fetch timelines for all cases
+  const caseIds = cases.map(c => c.id);
+  const { data: timelines = {} } = useAllTimelines(caseIds);
+
+  // Create case mutation
+  const createCase = useCreateEnforcementCase();
 
   // Fetch employees as providers
   const { data: employees = [] } = useQuery({
@@ -121,8 +81,6 @@ const Enforcement = () => {
     email: emp.email
   }));
 
-  const cases = MOCK_CASES;
-
   const handleStartWorkflow = (type: 'suspension' | 'warning' | 'cancellation', provider: EnforcementProvider) => {
     setSelectedProvider(provider);
     setActiveWorkflow(type);
@@ -134,23 +92,62 @@ const Enforcement = () => {
     setActiveWorkflow(action);
   };
 
-  const handleWorkflowComplete = (formData: any, isWarning?: boolean) => {
-    setActiveWorkflow(null);
-    
-    // Show notification workflow
+  const handleRecordRepresentations = (caseData: EnforcementCase) => {
+    setSelectedCase(caseData);
+    setShowRecordReps(true);
+  };
+
+  const handleWorkflowComplete = async (formData: any, isWarning?: boolean) => {
     if (selectedProvider) {
-      setNotificationContext({
-        provider: selectedProvider,
-        action: isWarning ? 'Warning Notice' : 'Suspension',
-        caseId: 'new-case'
-      });
-      setShowNotifications(true);
+      try {
+        const result = await createCase.mutateAsync({
+          employeeId: selectedProvider.id,
+          type: isWarning ? 'warning' : 'suspension',
+          formData,
+          supervisorId: formData.supervisor,
+          supervisorName: getSupervisorName(formData.supervisor)
+        });
+
+        setActiveWorkflow(null);
+        
+        // Show notification workflow
+        setNotificationContext({
+          provider: selectedProvider,
+          action: isWarning ? 'Warning Notice' : 'Suspension',
+          caseId: result.id
+        });
+        setShowNotifications(true);
+        
+        toast({
+          title: "Notice Issued",
+          description: "The enforcement notice has been generated successfully.",
+        });
+      } catch (error) {
+        console.error('Failed to create case:', error);
+      }
     }
-    
-    toast({
-      title: "Notice Issued",
-      description: "The enforcement notice has been generated successfully.",
-    });
+  };
+
+  const handleCancellationComplete = async (formData: any) => {
+    if (selectedProvider) {
+      try {
+        const result = await createCase.mutateAsync({
+          employeeId: selectedProvider.id,
+          type: 'cancellation',
+          formData,
+          supervisorId: formData.supervisor,
+          supervisorName: getSupervisorName(formData.supervisor)
+        });
+
+        setActiveWorkflow(null);
+        toast({ 
+          title: "Notice of Intention Issued", 
+          description: "The cancellation process has been initiated." 
+        });
+      } catch (error) {
+        console.error('Failed to create cancellation case:', error);
+      }
+    }
   };
 
   const handleNotificationComplete = (allSent: boolean) => {
@@ -170,6 +167,11 @@ const Enforcement = () => {
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.la.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Calculate stats
+  const activeSuspensions = cases.filter(c => c.type === 'suspension' && c.status === 'in_effect').length;
+  const pendingDecisions = cases.filter(c => c.status === 'representations_received' || c.status === 'decision_pending').length;
+  const representationsReceived = cases.filter(c => c.status === 'representations_received').length;
 
   return (
     <AdminLayout>
@@ -207,17 +209,17 @@ const Enforcement = () => {
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
             {/* Urgent Actions */}
-            {cases.some(c => c.status === 'in_effect') && (
+            {cases.some(c => c.status === 'in_effect' && c.type === 'suspension') && (
               <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl">
                 <div className="flex items-center gap-2 text-rose-700 font-bold mb-3">
                   <AlertTriangle className="w-6 h-6" />
                   Urgent Actions Required
                 </div>
-                {cases.filter(c => c.status === 'in_effect').map(c => (
+                {cases.filter(c => c.status === 'in_effect' && c.type === 'suspension').map(c => (
                   <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                     <div>
                       <p className="font-bold text-slate-900">{c.employee_name}</p>
-                      <p className="text-sm text-slate-500">Suspension Review Due</p>
+                      <p className="text-sm text-slate-500">Suspension Review Due: {c.deadline ? formatDate(c.deadline) : 'N/A'}</p>
                     </div>
                     <Button 
                       size="sm" 
@@ -235,26 +237,25 @@ const Enforcement = () => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <StatsCard 
                 title="Active Suspensions" 
-                value={cases.filter(c => c.type === 'suspension' && c.status === 'in_effect').length}
+                value={activeSuspensions}
                 variant="critical"
                 icon={ShieldAlert}
               />
               <StatsCard 
                 title="Pending Decisions" 
-                value={cases.filter(c => c.status === 'representations_received').length}
-                subtitle="1 due this week"
+                value={pendingDecisions}
+                subtitle={pendingDecisions > 0 ? "Review required" : undefined}
                 icon={Clock}
               />
               <StatsCard 
                 title="Representations" 
-                value={2}
+                value={representationsReceived}
                 subtitle="Under review"
                 icon={FileCheck}
               />
               <StatsCard 
-                title="Appeals" 
-                value={1}
-                subtitle="Hearing scheduled"
+                title="Total Cases" 
+                value={cases.length}
                 icon={Scale}
               />
               <StatsCard 
@@ -265,67 +266,119 @@ const Enforcement = () => {
               />
             </div>
 
-            {/* Active Cases Overview */}
-            <EnforcementCard title="Active Cases" icon={FileText}>
-              <div className="space-y-4">
-                {cases.map(c => (
-                  <div key={c.id} className="p-4 border rounded-xl hover:bg-slate-50 transition-all">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-slate-900">{c.employee_name}</span>
-                          <EnforcementBadge variant="type" value={c.type} />
-                          <EnforcementBadge variant="status" value={c.status} />
-                        </div>
-                        <p className="text-sm text-slate-500">{c.employee_local_authority}</p>
-                        <p className="text-xs text-slate-400 mt-1">Deadline: {formatDate(c.deadline || '')}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        {c.type === 'suspension' && (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => handleCaseAction('suspension-review', c, 'review')}>
-                              Review
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleCaseAction('suspension-review', c, 'lift')}>
-                              Lift
-                            </Button>
-                          </>
-                        )}
-                        {c.type === 'cancellation' && (
-                          <Button size="sm" variant="outline" onClick={() => handleCaseAction('decision', c)}>
-                            Decision Notice
-                          </Button>
-                        )}
-                      </div>
+            {/* Two column layout for Active Cases and Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Active Cases Overview */}
+              <div className="lg:col-span-2">
+                <EnforcementCard title="Active Cases" icon={FileText}>
+                  {casesLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-24 bg-slate-100 animate-pulse rounded-xl" />
+                      ))}
                     </div>
-                    {MOCK_TIMELINES[c.id] && (
-                      <div className="mt-4 pt-4 border-t">
-                        <EnforcementTimeline events={MOCK_TIMELINES[c.id]} />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ) : cases.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p>No active enforcement cases</p>
+                      <p className="text-sm mt-1">Use the Provider Registry to initiate actions</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {cases.map(c => (
+                        <div key={c.id} className="p-4 border rounded-xl hover:bg-slate-50 transition-all">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-slate-900">{c.employee_name}</span>
+                                <EnforcementBadge variant="type" value={c.type} />
+                                <EnforcementBadge variant="status" value={c.status} />
+                              </div>
+                              <p className="text-sm text-slate-500">{c.employee_local_authority}</p>
+                              <p className="text-xs text-slate-400 mt-1">Deadline: {c.deadline ? formatDate(c.deadline) : 'N/A'}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              {c.type === 'suspension' && c.status === 'in_effect' && (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => handleCaseAction('suspension-review', c, 'review')}>
+                                    Review
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => handleCaseAction('suspension-review', c, 'lift')}>
+                                    Lift
+                                  </Button>
+                                </>
+                              )}
+                              {c.type === 'cancellation' && c.status === 'pending' && (
+                                <Button size="sm" variant="outline" onClick={() => handleRecordRepresentations(c)}>
+                                  Record Reps
+                                </Button>
+                              )}
+                              {c.type === 'cancellation' && (c.status === 'representations_received' || c.status === 'decision_pending') && (
+                                <Button size="sm" variant="outline" onClick={() => handleCaseAction('decision', c)}>
+                                  Decision Notice
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          {timelines[c.id] && timelines[c.id].length > 0 && (
+                            <div className="mt-4 pt-4 border-t">
+                              <EnforcementTimeline events={timelines[c.id].map(t => ({
+                                ...t,
+                                created_at: t.created_at
+                              }))} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </EnforcementCard>
               </div>
-            </EnforcementCard>
+
+              {/* Recent Activity */}
+              <div className="lg:col-span-1">
+                <RecentActivity />
+              </div>
+            </div>
           </TabsContent>
 
           {/* Active Cases Tab */}
           <TabsContent value="cases" className="space-y-4">
-            {cases.map(c => (
-              <div key={c.id} className="p-6 bg-white border rounded-xl shadow-sm">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-900">{c.employee_name}</h3>
-                    <p className="text-sm text-slate-500">{c.id} • {c.employee_local_authority}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <EnforcementBadge variant="type" value={c.type} />
-                    <EnforcementBadge variant="risk" value={c.risk_level} />
-                  </div>
-                </div>
-                <EnforcementTimeline events={MOCK_TIMELINES[c.id] || []} />
+            {casesLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-32 bg-slate-100 animate-pulse rounded-xl" />
+                ))}
               </div>
-            ))}
+            ) : cases.length === 0 ? (
+              <div className="text-center py-12 bg-white border rounded-xl">
+                <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                <p className="text-lg font-medium text-slate-700">No Active Cases</p>
+                <p className="text-sm text-slate-500 mt-1">Go to Provider Registry to initiate enforcement actions</p>
+              </div>
+            ) : (
+              cases.map(c => (
+                <div key={c.id} className="p-6 bg-white border rounded-xl shadow-sm">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-900">{c.employee_name}</h3>
+                      <p className="text-sm text-slate-500">{c.id.slice(0, 8)} • {c.employee_local_authority}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <EnforcementBadge variant="type" value={c.type} />
+                      <EnforcementBadge variant="risk" value={c.risk_level} />
+                    </div>
+                  </div>
+                  {c.concern && (
+                    <p className="text-sm text-slate-600 mb-4 p-3 bg-slate-50 rounded-lg">{c.concern}</p>
+                  )}
+                  <EnforcementTimeline events={(timelines[c.id] || []).map(t => ({
+                    ...t,
+                    created_at: t.created_at
+                  }))} />
+                </div>
+              ))
+            )}
           </TabsContent>
 
           {/* Provider Registry Tab */}
@@ -342,29 +395,37 @@ const Enforcement = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {filteredProviders.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="p-4 text-sm font-mono text-slate-500">{p.id.slice(0, 8)}</td>
-                      <td className="p-4 font-medium text-slate-900">{p.name}</td>
-                      <td className="p-4 text-sm text-slate-600">{p.la}</td>
-                      <td className="p-4"><EnforcementBadge variant="status" value={p.status} /></td>
-                      <td className="p-4">
-                        {p.status === 'active' && (
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="text-amber-700 border-amber-200 hover:bg-amber-50" onClick={() => handleStartWorkflow('warning', p)}>
-                              Warning
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-rose-700 border-rose-200 hover:bg-rose-50" onClick={() => handleStartWorkflow('suspension', p)}>
-                              Suspend
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleStartWorkflow('cancellation', p)}>
-                              Cancel Reg
-                            </Button>
-                          </div>
-                        )}
+                  {filteredProviders.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-slate-500">
+                        No providers found
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredProviders.map(p => (
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="p-4 text-sm font-mono text-slate-500">{p.id.slice(0, 8)}</td>
+                        <td className="p-4 font-medium text-slate-900">{p.name}</td>
+                        <td className="p-4 text-sm text-slate-600">{p.la}</td>
+                        <td className="p-4"><EnforcementBadge variant="status" value={p.status} /></td>
+                        <td className="p-4">
+                          {p.status === 'active' && (
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-amber-700 border-amber-200 hover:bg-amber-50" onClick={() => handleStartWorkflow('warning', p)}>
+                                Warning
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-rose-700 border-rose-200 hover:bg-rose-50" onClick={() => handleStartWorkflow('suspension', p)}>
+                                Suspend
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleStartWorkflow('cancellation', p)}>
+                                Cancel Reg
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -386,10 +447,7 @@ const Enforcement = () => {
         <CancellationWorkflow
           provider={selectedProvider}
           onClose={() => setActiveWorkflow(null)}
-          onComplete={(formData) => {
-            setActiveWorkflow(null);
-            toast({ title: "Notice of Intention Issued", description: "The cancellation process has been initiated." });
-          }}
+          onComplete={handleCancellationComplete}
         />
       )}
 
@@ -397,9 +455,13 @@ const Enforcement = () => {
         <SuspensionReviewWorkflow
           caseDetails={selectedCase}
           initialAction={workflowAction}
-          onClose={() => setActiveWorkflow(null)}
+          onClose={() => {
+            setActiveWorkflow(null);
+            setSelectedCase(null);
+          }}
           onComplete={(formData) => {
             setActiveWorkflow(null);
+            setSelectedCase(null);
             toast({ title: formData.reviewOutcome === 'lift' ? "Suspension Lifted" : "Suspension Extended" });
           }}
         />
@@ -408,9 +470,13 @@ const Enforcement = () => {
       {activeWorkflow === 'decision' && selectedCase && (
         <DecisionWorkflow
           caseDetails={selectedCase}
-          onClose={() => setActiveWorkflow(null)}
+          onClose={() => {
+            setActiveWorkflow(null);
+            setSelectedCase(null);
+          }}
           onComplete={(formData) => {
             setActiveWorkflow(null);
+            setSelectedCase(null);
             toast({ title: "Decision Notice Issued" });
           }}
         />
@@ -422,6 +488,16 @@ const Enforcement = () => {
           actionType={notificationContext.action}
           caseId={notificationContext.caseId}
           onClose={handleNotificationComplete}
+        />
+      )}
+
+      {showRecordReps && selectedCase && (
+        <RecordRepresentationsModal
+          caseDetails={selectedCase}
+          onClose={() => {
+            setShowRecordReps(false);
+            setSelectedCase(null);
+          }}
         />
       )}
     </AdminLayout>
