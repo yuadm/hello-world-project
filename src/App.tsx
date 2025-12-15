@@ -24,6 +24,7 @@ import AdminEmployees from "./pages/admin/Employees";
 import AdminEmployeeDetail from "./pages/admin/EmployeeDetail";
 import OfstedForm from "./pages/OfstedForm";
 import LAForm from "./pages/LAForm";
+import AdminEnforcement from "./pages/admin/Enforcement";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/admin/applications/:id" element={<AdminApplicationDetail />} />
           <Route path="/admin/employees" element={<AdminEmployees />} />
           <Route path="/admin/employees/:id" element={<AdminEmployeeDetail />} />
+          <Route path="/admin/enforcement" element={<AdminEnforcement />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

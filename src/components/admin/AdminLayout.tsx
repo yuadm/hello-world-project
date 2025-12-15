@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, FileText, Users } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Users, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { NavLink } from "@/components/NavLink";
 
@@ -72,6 +72,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/admin/applications", icon: FileText, label: "Applications" },
     { to: "/admin/employees", icon: Users, label: "Employees" },
+    { to: "/admin/enforcement", icon: ShieldAlert, label: "Enforcement" },
   ];
 
   return (
