@@ -224,6 +224,7 @@ export const useCreateEnforcementCase = () => {
       }
 
       // Insert the case
+      // supervisor_id is set to null since the form uses display identifiers, not real UUIDs
       const { data: caseData, error: caseError } = await supabase
         .from('enforcement_cases')
         .insert([{
@@ -236,7 +237,7 @@ export const useCreateEnforcementCase = () => {
           risk_categories: riskCategories,
           deadline,
           date_created: today,
-          supervisor_id: supervisorId,
+          supervisor_id: null,
           supervisor_name: supervisorName,
           form_data: formData as any
         }])
