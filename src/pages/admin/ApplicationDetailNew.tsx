@@ -368,6 +368,7 @@ const ApplicationDetailNew = () => {
             pets={dbApplication.premises_animals}
             petsDetails={dbApplication.premises_animal_details}
             sameAddress={dbApplication.same_address}
+            premisesType={dbApplication.service_type}
             premisesAddress={dbApplication.premises_address}
             useAdditionalPremises={dbApplication.use_additional_premises}
             additionalPremises={dbApplication.additional_premises}
