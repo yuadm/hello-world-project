@@ -393,9 +393,11 @@ export const ApplicationPDF = ({ application, applicationId, submittedDate, stat
             </View>
           </View>
 
-          {application.childcareAddress && application.sameAddress === "No" && (
+          {application.childcareAddress && (application.sameAddress === "No" || application.premisesType === "Non-domestic") && (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Childcare Address</Text>
+              <Text style={styles.dataLabel}>
+                {application.premisesType === "Non-domestic" ? "Non-domestic Premises Address" : "Childcare Address"}
+              </Text>
               <Text style={styles.dataValue}>
                 {application.childcareAddress?.line1 || "N/A"}
                 {application.childcareAddress?.line2 && `, ${application.childcareAddress.line2}`}

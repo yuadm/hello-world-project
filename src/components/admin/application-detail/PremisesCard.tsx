@@ -7,6 +7,7 @@ interface PremisesCardProps {
   pets: string;
   petsDetails?: string;
   sameAddress?: string;
+  premisesType?: string;
   premisesAddress?: any;
   useAdditionalPremises?: string;
   additionalPremises?: any[];
@@ -18,6 +19,7 @@ export const PremisesCard = ({
   pets,
   petsDetails,
   sameAddress,
+  premisesType,
   premisesAddress,
   useAdditionalPremises,
   additionalPremises,
@@ -69,10 +71,10 @@ export const PremisesCard = ({
           )}
         </div>
 
-        {sameAddress === "No" && premisesAddress && (
+        {(sameAddress === "No" || premisesType === "Non-domestic") && premisesAddress && (
           <div className="mt-4 pt-4 border-t border-border">
             <div className="text-xs font-medium text-muted-foreground mb-2">
-              Childcare Address (Different)
+              {premisesType === "Non-domestic" ? "Non-domestic Premises Address" : "Childcare Address (Different)"}
             </div>
             <div className="text-sm rounded-lg bg-muted/30 p-3">
               {premisesAddress.line1}

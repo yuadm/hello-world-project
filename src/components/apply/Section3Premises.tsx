@@ -22,14 +22,11 @@ export const Section3Premises = ({ form }: Props) => {
   const homePostcode = watch("homePostcode");
   const localAuthority = watch("localAuthority");
 
-  // Initialize visibility states based on existing data
   const [showChildcareAddressFields, setShowChildcareAddressFields] = useState(() => {
     const childcareAddress = form.getValues("childcareAddress");
     return !!(childcareAddress?.line1 || childcareAddress?.town);
   });
 
-  const showChildcareAddress =
-    (premisesType === "Domestic" && sameAddress === "No") || premisesType === "Non-domestic";
 
   // Auto-populate local authority from home address postcode when section loads
   useEffect(() => {
@@ -97,7 +94,7 @@ export const Section3Premises = ({ form }: Props) => {
           { value: "Domestic", label: "Domestic (a home)" },
           { value: "Non-domestic", label: "Non-domestic (e.g., community hall, school site)" },
         ]}
-        value={premisesType || "Domestic"}
+        value={premisesType || ""}
         onChange={(value) => setValue("premisesType", value as "Domestic" | "Non-domestic")}
       />
 
@@ -110,17 +107,15 @@ export const Section3Premises = ({ form }: Props) => {
             { value: "Yes", label: "Yes" },
             { value: "No", label: "No" },
           ]}
-          value={sameAddress || "Yes"}
+          value={sameAddress || ""}
           onChange={(value) => setValue("sameAddress", value as "Yes" | "No")}
         />
       )}
 
-      {showChildcareAddress && (
+      {premisesType === "Domestic" && sameAddress === "No" && (
         <div className="space-y-4 p-5 bg-rk-bg-form border border-rk-border rounded-xl">
           <RKInfoBox type="info">
-            Please provide the full address of the premises. If it is a domestic address that is not
-            your own home, we will need to conduct suitability checks on everyone living there aged
-            16 or over.
+            Please provide the full address of the premises. We will need to conduct suitability checks on everyone living there aged 16 or over.
           </RKInfoBox>
           
           <RKPostcodeLookup
@@ -148,6 +143,29 @@ export const Section3Premises = ({ form }: Props) => {
               <RKInput label="Postcode" required widthClass="10" {...register("childcareAddress.postcode")} />
             </div>
           )}
+        </div>
+      )}
+
+      {premisesType === "Non-domestic" && (
+        <div className="space-y-4 p-5 bg-rk-bg-form border border-rk-border rounded-xl">
+          <RKInfoBox type="info">
+            Please provide the full address of the non-domestic premises where you will primarily provide childcare.
+          </RKInfoBox>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <RKInput
+                label="Address line 1"
+                required
+                {...register("childcareAddress.line1")}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <RKInput label="Address line 2" {...register("childcareAddress.line2")} />
+            </div>
+            <RKInput label="Town or city" required {...register("childcareAddress.town")} />
+            <RKInput label="Postcode" required widthClass="10" {...register("childcareAddress.postcode")} />
+          </div>
         </div>
       )}
 
