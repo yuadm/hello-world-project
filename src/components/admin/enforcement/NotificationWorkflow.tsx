@@ -13,12 +13,22 @@ import {
 import { NOTIFICATION_AGENCIES } from "@/lib/enforcementUtils";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useSendNotification } from "@/hooks/useEnforcementData";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { ProviderAddress } from "@/types/enforcement";
 
 interface NotificationWorkflowProps {
-  provider: { id: string; name: string };
+  provider: { 
+    id: string; 
+    name: string;
+    registrationRef?: string;
+    address?: ProviderAddress;
+  };
   actionType: string;
   caseId: string;
+  caseReference?: string;
+  effectiveDate?: string;
+  concerns?: string[];
   onClose: (allSent: boolean) => void;
 }
 
@@ -27,18 +37,22 @@ interface NotificationItem {
   name: string;
   detail: string;
   email: string;
-  status: 'pending' | 'sent';
+  status: 'pending' | 'sent' | 'error';
   sentAt?: Date;
+  error?: string;
 }
 
 export const NotificationWorkflow = ({ 
   provider, 
   actionType, 
   caseId,
+  caseReference,
+  effectiveDate,
+  concerns,
   onClose 
 }: NotificationWorkflowProps) => {
   const { toast } = useToast();
-  const sendNotification = useSendNotification();
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<NotificationItem[]>(
     NOTIFICATION_AGENCIES.map(a => ({
       id: a.id,
@@ -58,50 +72,125 @@ export const NotificationWorkflow = ({
     
     if (notification && caseId) {
       try {
-        await sendNotification.mutateAsync({
-          caseId,
-          agency: notification.id,
-          agencyName: notification.name,
-          agencyDetail: notification.detail,
-          agencyEmail: notification.email,
-          sentBy: 'Admin User'
+        console.log('Sending enforcement notification to:', notification.name);
+        
+        const { data, error } = await supabase.functions.invoke('send-enforcement-notification', {
+          body: {
+            caseId,
+            agency: notification.id,
+            agencyName: notification.name,
+            agencyDetail: notification.detail,
+            agencyEmail: notification.email,
+            sentBy: 'Admin User',
+            provider: {
+              id: provider.id,
+              name: provider.name,
+              registrationRef: provider.registrationRef,
+              address: provider.address
+            },
+            actionType,
+            effectiveDate,
+            concerns,
+            caseReference
+          }
         });
-      } catch (error) {
-        console.error('Failed to save notification:', error);
+
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(error.message || 'Failed to send notification');
+        }
+
+        console.log('Notification sent successfully:', data);
+        
+        setNotifications(prev => prev.map(n => 
+          n.id === notificationId 
+            ? { ...n, status: 'sent', sentAt: new Date() }
+            : n
+        ));
+        
+        queryClient.invalidateQueries({ queryKey: ['enforcement-notifications'] });
+        
+        toast({
+          title: "Notification Sent",
+          description: `Email sent to ${notification.name} (${notification.email}).`,
+        });
+      } catch (error: any) {
+        console.error('Failed to send notification:', error);
+        
+        setNotifications(prev => prev.map(n => 
+          n.id === notificationId 
+            ? { ...n, status: 'error', error: error.message }
+            : n
+        ));
+        
+        toast({
+          title: "Failed to Send",
+          description: `Could not send notification to ${notification.name}. ${error.message}`,
+          variant: "destructive"
+        });
       }
     }
     
-    setNotifications(prev => prev.map(n => 
-      n.id === notificationId 
-        ? { ...n, status: 'sent', sentAt: new Date() }
-        : n
-    ));
-    
     setSendingId(null);
-    
-    toast({
-      title: "Notification Sent",
-      description: `${notification?.name} has been notified.`,
-    });
   };
 
   const handleSendAll = async () => {
     setSendingId('all');
     
-    for (const notification of notifications.filter(n => n.status === 'pending')) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setNotifications(prev => prev.map(n => 
-        n.id === notification.id 
-          ? { ...n, status: 'sent', sentAt: new Date() }
-          : n
-      ));
+    const pendingNotifications = notifications.filter(n => n.status === 'pending');
+    
+    for (const notification of pendingNotifications) {
+      try {
+        const { data, error } = await supabase.functions.invoke('send-enforcement-notification', {
+          body: {
+            caseId,
+            agency: notification.id,
+            agencyName: notification.name,
+            agencyDetail: notification.detail,
+            agencyEmail: notification.email,
+            sentBy: 'Admin User',
+            provider: {
+              id: provider.id,
+              name: provider.name,
+              registrationRef: provider.registrationRef,
+              address: provider.address
+            },
+            actionType,
+            effectiveDate,
+            concerns,
+            caseReference
+          }
+        });
+
+        if (error) throw error;
+        
+        setNotifications(prev => prev.map(n => 
+          n.id === notification.id 
+            ? { ...n, status: 'sent', sentAt: new Date() }
+            : n
+        ));
+        
+        // Small delay between sends
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error: any) {
+        console.error(`Failed to send to ${notification.name}:`, error);
+        setNotifications(prev => prev.map(n => 
+          n.id === notification.id 
+            ? { ...n, status: 'error', error: error.message }
+            : n
+        ));
+      }
     }
     
+    queryClient.invalidateQueries({ queryKey: ['enforcement-notifications'] });
     setSendingId(null);
     
+    const sentCount = notifications.filter(n => n.status === 'sent').length + 
+                      pendingNotifications.filter(n => !notifications.find(nn => nn.id === n.id && nn.status === 'error')).length;
+    
     toast({
-      title: "All Notifications Sent",
-      description: "All required agencies have been notified.",
+      title: "Notifications Complete",
+      description: `${sentCount} of ${NOTIFICATION_AGENCIES.length} agencies have been notified.`,
     });
   };
 
@@ -138,25 +227,35 @@ export const NotificationWorkflow = ({
                   "flex items-center justify-between p-4 rounded-xl border transition-all",
                   n.status === 'sent' 
                     ? 'bg-emerald-50 border-emerald-200' 
+                    : n.status === 'error'
+                    ? 'bg-red-50 border-red-200'
                     : 'bg-white border-slate-200'
                 )}
               >
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center",
-                    n.status === 'sent' ? 'bg-emerald-100' : 'bg-slate-100'
+                    n.status === 'sent' ? 'bg-emerald-100' : n.status === 'error' ? 'bg-red-100' : 'bg-slate-100'
                   )}>
                     {n.status === 'sent' 
                       ? <Check className="w-5 h-5 text-emerald-600" /> 
+                      : n.status === 'error'
+                      ? <X className="w-5 h-5 text-red-600" />
                       : <Mail className="w-5 h-5 text-slate-500" />
                     }
                   </div>
                   <div>
                     <p className="font-bold text-slate-900">{n.name}</p>
                     <p className="text-sm text-slate-500">{n.detail}</p>
+                    <p className="text-xs text-slate-400">{n.email}</p>
                     {n.status === 'sent' && n.sentAt && (
                       <p className="text-xs text-emerald-600 mt-1">
                         Sent: {n.sentAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                    {n.status === 'error' && n.error && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Error: {n.error}
                       </p>
                     )}
                   </div>
@@ -165,7 +264,7 @@ export const NotificationWorkflow = ({
                 <Button
                   onClick={() => handleSend(n.id)}
                   disabled={n.status === 'sent' || sendingId !== null}
-                  variant={n.status === 'sent' ? 'ghost' : 'outline'}
+                  variant={n.status === 'sent' ? 'ghost' : n.status === 'error' ? 'destructive' : 'outline'}
                   size="sm"
                   className={cn(
                     "gap-2",
@@ -176,6 +275,8 @@ export const NotificationWorkflow = ({
                     <>Processing...</>
                   ) : n.status === 'sent' ? (
                     <>Verified</>
+                  ) : n.status === 'error' ? (
+                    <>Retry <Send className="w-3 h-3" /></>
                   ) : (
                     <>Send Notice <Send className="w-3 h-3" /></>
                   )}

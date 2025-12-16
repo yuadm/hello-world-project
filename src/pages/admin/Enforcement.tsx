@@ -28,7 +28,7 @@ import { NotificationWorkflow } from "@/components/admin/enforcement/Notificatio
 import { RecentActivity } from "@/components/admin/enforcement/RecentActivity";
 import { RecordRepresentationsModal } from "@/components/admin/enforcement/RecordRepresentationsModal";
 import { EnforcementProvider, EnforcementCase, EnforcementTimeline as TimelineType } from "@/types/enforcement";
-import { formatDate, getSupervisorName } from "@/lib/enforcementUtils";
+import { formatDate, getSupervisorName, generateReferenceNumber } from "@/lib/enforcementUtils";
 import { useToast } from "@/hooks/use-toast";
 import { 
   useEnforcementCases, 
@@ -44,7 +44,14 @@ const Enforcement = () => {
   const [selectedCase, setSelectedCase] = useState<EnforcementCase | null>(null);
   const [workflowAction, setWorkflowAction] = useState<'review' | 'lift'>('review');
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationContext, setNotificationContext] = useState<{ provider: any; action: string; caseId: string } | null>(null);
+  const [notificationContext, setNotificationContext] = useState<{ 
+    provider: EnforcementProvider; 
+    action: string; 
+    caseId: string;
+    caseReference?: string;
+    effectiveDate?: string;
+    concerns?: string[];
+  } | null>(null);
   const [showRecordReps, setShowRecordReps] = useState(false);
 
   // Fetch enforcement cases from database
@@ -117,11 +124,16 @@ const Enforcement = () => {
 
         setActiveWorkflow(null);
         
-        // Show notification workflow
+        // Show notification workflow with full context
+        const actionType = isWarning ? 'Warning Notice' : 'Suspension';
+        const caseRef = generateReferenceNumber(isWarning ? 'WRN' : 'SUS', selectedProvider.agencyId || 'CMA-01');
         setNotificationContext({
           provider: selectedProvider,
-          action: isWarning ? 'Warning Notice' : 'Suspension',
-          caseId: result.id
+          action: actionType,
+          caseId: result.id,
+          caseReference: caseRef,
+          effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : undefined,
+          concerns: formData.riskCategory ? [formData.riskCategory] : (formData.concerns || [])
         });
         setShowNotifications(true);
         
@@ -494,6 +506,9 @@ const Enforcement = () => {
           provider={notificationContext.provider}
           actionType={notificationContext.action}
           caseId={notificationContext.caseId}
+          caseReference={notificationContext.caseReference}
+          effectiveDate={notificationContext.effectiveDate}
+          concerns={notificationContext.concerns}
           onClose={handleNotificationComplete}
         />
       )}
