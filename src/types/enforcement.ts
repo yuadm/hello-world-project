@@ -119,6 +119,15 @@ export interface DecisionFormData {
   confirmReview: boolean;
 }
 
+// Address type for providers
+export interface ProviderAddress {
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  townCity?: string | null;
+  county?: string | null;
+  postcode?: string | null;
+}
+
 // Provider type for the portal
 export interface EnforcementProvider {
   id: string;
@@ -128,6 +137,7 @@ export interface EnforcementProvider {
   agencyId: string;
   la: string;
   email: string;
+  address?: ProviderAddress;
 }
 
 // Stats for dashboard

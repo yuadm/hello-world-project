@@ -78,7 +78,14 @@ const Enforcement = () => {
     status: emp.employment_status === 'active' ? 'active' : 'terminated',
     agencyId: 'CMA-01',
     la: emp.local_authority || 'Unknown',
-    email: emp.email
+    email: emp.email,
+    address: {
+      addressLine1: emp.address_line_1,
+      addressLine2: emp.address_line_2,
+      townCity: emp.town_city,
+      county: emp.county,
+      postcode: emp.postcode
+    }
   }));
 
   const handleStartWorkflow = (type: 'suspension' | 'warning' | 'cancellation', provider: EnforcementProvider) => {
