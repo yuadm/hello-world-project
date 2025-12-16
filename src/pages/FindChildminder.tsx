@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
@@ -13,7 +13,6 @@ import {
   Phone, 
   Mail, 
   User, 
-  Clock, 
   Baby, 
   ChevronRight,
   RefreshCw,
@@ -22,6 +21,7 @@ import {
   Circle
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import ChildminderMap from "@/components/find-childminder/ChildminderMap";
 
 interface Employee {
   id: string;
@@ -45,6 +45,8 @@ interface Employee {
 interface EmployeeWithDistance extends Employee {
   distance?: number;
   distanceLabel?: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface PostcodeResult {
@@ -183,16 +185,23 @@ const FindChildminder = () => {
       
       let distance: number | undefined;
       let distanceLabel = "Distance unknown";
+      let lat: number | undefined;
+      let lng: number | undefined;
       
-      if (userCoords && empCoord) {
-        distance = calculateHaversineDistance(
-          userCoords.lat, userCoords.lng,
-          empCoord.latitude, empCoord.longitude
-        );
-        distanceLabel = `${distance.toFixed(1)} miles away`;
+      if (empCoord) {
+        lat = empCoord.latitude;
+        lng = empCoord.longitude;
+        
+        if (userCoords) {
+          distance = calculateHaversineDistance(
+            userCoords.lat, userCoords.lng,
+            empCoord.latitude, empCoord.longitude
+          );
+          distanceLabel = `${distance.toFixed(1)} miles away`;
+        }
       }
       
-      return { ...employee, distance, distanceLabel };
+      return { ...employee, distance, distanceLabel, lat, lng };
     }).sort((a, b) => {
       if (a.distance === undefined && b.distance === undefined) return 0;
       if (a.distance === undefined) return 1;
@@ -449,185 +458,22 @@ const FindChildminder = () => {
           </div>
 
           {/* Right Side - Map */}
-          <div className="flex-1 relative bg-[hsl(var(--rk-gray-100))]">
-            {/* Decorative map background */}
-            <div className="absolute inset-0 opacity-30">
-              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground/50"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-              </svg>
-            </div>
-
-            {/* Decorative roads */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-              <path 
-                d="M 0 40% Q 30% 35%, 50% 50% T 100% 60%" 
-                stroke="hsl(var(--rk-gray-300))" 
-                strokeWidth="8" 
-                fill="none"
-                opacity="0.6"
-              />
-              <path 
-                d="M 20% 0 Q 25% 30%, 40% 50% T 30% 100%" 
-                stroke="hsl(var(--rk-gray-300))" 
-                strokeWidth="6" 
-                fill="none"
-                opacity="0.5"
-              />
-              {/* Water feature */}
-              <path 
-                d="M 60% 70% Q 70% 75%, 80% 68% T 100% 75%" 
-                stroke="hsl(190 80% 70%)" 
-                strokeWidth="20" 
-                fill="none"
-                opacity="0.4"
-              />
-            </svg>
-
-            {/* Map pins for childminders */}
-            {employeesWithDistance.slice(0, 15).map((employee, index) => {
-              const seed = employee.id.charCodeAt(0) + employee.id.charCodeAt(1);
-              const top = 10 + ((seed * 3) % 75);
-              const left = 10 + ((seed * 7) % 75);
-              
-              return (
-                <div
-                  key={employee.id}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 ${
-                    selectedChildminder === employee.id ? 'z-30 scale-110' : 'z-10 hover:scale-105'
-                  }`}
-                  style={{ top: `${top}%`, left: `${left}%` }}
-                  onClick={() => setSelectedChildminder(employee.id)}
-                >
-                  <div className={`relative`}>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg border-4 border-white ${
-                      selectedChildminder === employee.id 
-                        ? 'bg-[hsl(var(--rk-accent))]' 
-                        : 'bg-[hsl(var(--rk-primary))]'
-                    }`}>
-                      {employee.first_name[0]}
-                    </div>
-                    
-                    {/* Popup card on selection */}
-                    {selectedChildminder === employee.id && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 bg-white rounded-xl shadow-2xl p-4 min-w-[240px] z-40 border border-border">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-full bg-[hsl(var(--rk-primary))] flex items-center justify-center text-white font-semibold">
-                            {employee.first_name[0]}{employee.last_name[0]}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-sm text-foreground">
-                              {employee.first_name} {employee.last_name}
-                            </p>
-                            <div className="flex items-center gap-1 text-xs text-emerald-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>Available</span>
-                              {employee.distance !== undefined && (
-                                <span className="text-muted-foreground ml-1">
-                                  · {employee.distance.toFixed(1)}mi away
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {employee.phone && (
-                            <Button 
-                              size="icon" 
-                              variant="outline" 
-                              className="h-8 w-8 rounded-full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.location.href = `tel:${employee.phone}`;
-                              }}
-                            >
-                              <Phone className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2 text-xs">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MapPin className="w-3.5 h-3.5" />
-                            <span>{employee.town_city || employee.premises_postcode || 'Location available'}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Baby className="w-3.5 h-3.5" />
-                            <span>{formatAgeGroups(employee.age_groups_cared_for)}</span>
-                          </div>
-                        </div>
-                        
-                        <Button 
-                          size="sm" 
-                          className="w-full mt-3 bg-[hsl(var(--rk-primary))] hover:bg-[hsl(var(--rk-primary-dark))]"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = `mailto:${employee.email}`;
-                          }}
-                        >
-                          Contact Childminder
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* User location marker */}
-            {submittedPostcode && userCoords && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                <div className="relative">
-                  <div className="w-8 h-8 bg-red-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full" />
-                  </div>
-                  <div className="absolute w-16 h-16 bg-red-500/20 rounded-full -top-4 -left-4 animate-ping" />
-                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg">
-                    Your location
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!submittedPostcode && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-                <div className="text-center p-8">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[hsl(var(--rk-primary-light))] flex items-center justify-center">
-                    <MapPin className="w-10 h-10 text-[hsl(var(--rk-primary))]" />
-                  </div>
-                  <h3 className="font-fraunces text-2xl font-semibold mb-3 text-foreground">
-                    Enter your postcode
-                  </h3>
-                  <p className="text-muted-foreground max-w-sm">
-                    Search by postcode to see childminders near you and calculate distances
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Refresh Button */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="absolute top-4 right-4 bg-white shadow-md border-border"
-              onClick={() => refetch()}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-
-            {/* Zoom Controls */}
-            <div className="absolute bottom-4 right-4 flex flex-col gap-1">
-              <Button variant="outline" size="icon" className="bg-white shadow-md h-8 w-8">
-                <span className="text-lg font-medium">+</span>
-              </Button>
-              <Button variant="outline" size="icon" className="bg-white shadow-md h-8 w-8">
-                <span className="text-lg font-medium">−</span>
-              </Button>
-            </div>
+          <div className="flex-1 relative bg-muted min-h-[400px] lg:min-h-0">
+            <ChildminderMap
+              userCoords={userCoords}
+              childminders={employeesWithDistance.map(e => ({
+                id: e.id,
+                first_name: e.first_name,
+                last_name: e.last_name,
+                lat: e.lat,
+                lng: e.lng,
+                distance: e.distance,
+                distanceLabel: e.distanceLabel
+              }))}
+              selectedChildminder={selectedChildminder}
+              onSelectChildminder={setSelectedChildminder}
+              onRefresh={() => refetch()}
+            />
           </div>
         </div>
       </main>
