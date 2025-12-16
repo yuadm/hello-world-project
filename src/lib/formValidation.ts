@@ -372,8 +372,8 @@ export function validateSection9(data: Partial<ChildminderApplication>): Validat
   if (!data.signatureFullName) {
     errors.push("Signature is required");
   } else {
-    // Validate signature matches full name
-    const expectedSignature = `${data.title} ${data.firstName} ${data.lastName}`;
+    // Validate signature matches full name (first name + last name only, no title)
+    const expectedSignature = `${data.firstName} ${data.lastName}`;
     if (data.signatureFullName !== expectedSignature) {
       errors.push(`Signature must match your full legal name: "${expectedSignature}"`);
     }

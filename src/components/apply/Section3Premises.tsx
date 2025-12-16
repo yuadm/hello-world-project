@@ -1,12 +1,11 @@
 import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
-import { RKInput, RKRadio, RKButton, RKTextarea, RKSectionTitle, RKInfoBox } from "./rk";
+import { RKInput, RKRadio, RKButton, RKTextarea, RKSectionTitle, RKInfoBox, RKPostcodeLookup } from "./rk";
 import { RKAutocomplete } from "./rk/RKAutocomplete";
 import { UK_LOCAL_AUTHORITIES } from "@/lib/ukLocalAuthorities";
-import { Plus, Trash2, Search } from "lucide-react";
-import { useState } from "react";
-import { lookupPostcode, validatePostcode } from "@/lib/postcodeService";
-import { toast } from "sonner";
+import { Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { lookupPostcode } from "@/lib/postcodeService";
 
 interface Props {
   form: UseFormReturn<Partial<ChildminderApplication>>;
@@ -14,16 +13,46 @@ interface Props {
 
 export const Section3Premises = ({ form }: Props) => {
   const { register, watch, setValue } = form;
-  const [isLookingUpChildcarePostcode, setIsLookingUpChildcarePostcode] = useState(false);
   const premisesType = watch("premisesType");
   const sameAddress = watch("sameAddress");
   const useAdditionalPremises = watch("useAdditionalPremises");
   const additionalPremises = watch("additionalPremises") || [];
   const pets = watch("pets");
-  const childcarePostcode = watch("childcareAddress.postcode");
+  const childcarePostcode = watch("childcareAddress.postcode") || "";
+  const homePostcode = watch("homePostcode");
+  const localAuthority = watch("localAuthority");
+
+  // Initialize visibility states based on existing data
+  const [showChildcareAddressFields, setShowChildcareAddressFields] = useState(() => {
+    const childcareAddress = form.getValues("childcareAddress");
+    return !!(childcareAddress?.line1 || childcareAddress?.town);
+  });
 
   const showChildcareAddress =
     (premisesType === "Domestic" && sameAddress === "No") || premisesType === "Non-domestic";
+
+  // Auto-populate local authority from home address postcode when section loads
+  useEffect(() => {
+    const autoPopulateLocalAuthority = async () => {
+      if (!localAuthority && homePostcode) {
+        try {
+          const result = await lookupPostcode(homePostcode);
+          if (result?.admin_district) {
+            // Check if the district matches any LA in our list
+            const matchingLA = UK_LOCAL_AUTHORITIES.find(
+              la => la.toLowerCase() === result.admin_district.toLowerCase()
+            );
+            if (matchingLA) {
+              setValue("localAuthority", matchingLA);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to auto-populate local authority:", error);
+        }
+      }
+    };
+    autoPopulateLocalAuthority();
+  }, [homePostcode, localAuthority, setValue]);
 
   const addAdditionalPremises = () => {
     setValue("additionalPremises", [...additionalPremises, { address: "", reason: "" }]);
@@ -33,33 +62,12 @@ export const Section3Premises = ({ form }: Props) => {
     setValue("additionalPremises", additionalPremises.filter((_, i) => i !== index));
   };
 
-  const handleChildcarePostcodeLookup = async () => {
-    if (!childcarePostcode) {
-      toast.error("Please enter a postcode first");
-      return;
-    }
-
-    if (!validatePostcode(childcarePostcode)) {
-      toast.error("Please enter a valid UK postcode");
-      return;
-    }
-
-    setIsLookingUpChildcarePostcode(true);
-    try {
-      const result = await lookupPostcode(childcarePostcode);
-      
-      if (result) {
-        setValue("childcareAddress.town", result.admin_district || result.region || "");
-        setValue("childcareAddress.postcode", result.postcode);
-        toast.success("Postcode found! Please complete the address details.");
-      } else {
-        toast.error("Postcode not found. Please check and try again.");
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to lookup postcode");
-    } finally {
-      setIsLookingUpChildcarePostcode(false);
-    }
+  const handleChildcareAddressSelect = (address: { line1: string; line2: string; town: string; postcode: string }) => {
+    setValue("childcareAddress.line1", address.line1);
+    setValue("childcareAddress.line2", address.line2);
+    setValue("childcareAddress.town", address.town);
+    setValue("childcareAddress.postcode", address.postcode);
+    setShowChildcareAddressFields(true);
   };
 
   return (
@@ -115,34 +123,31 @@ export const Section3Premises = ({ form }: Props) => {
             16 or over.
           </RKInfoBox>
           
-          <div className="rk-address-grid">
-            <RKInput
-              label="Address line 1"
-              required
-              {...register("childcareAddress.line1")}
-            />
-            <RKInput label="Address line 2" {...register("childcareAddress.line2")} />
-            <RKInput label="Town or city" required {...register("childcareAddress.town")} />
-            <div className="flex gap-2 items-end">
-              <RKInput
-                label="Postcode"
-                required
-                widthClass="full"
-                placeholder="e.g. SW1A 1AA"
-                {...register("childcareAddress.postcode")}
-              />
-              <RKButton
-                type="button"
-                variant="secondary"
-                onClick={handleChildcarePostcodeLookup}
-                disabled={isLookingUpChildcarePostcode || !childcarePostcode}
-                className="flex items-center gap-2 whitespace-nowrap h-[42px]"
-              >
-                <Search className="h-4 w-4" />
-                {isLookingUpChildcarePostcode ? "..." : "Find"}
-              </RKButton>
+          <RKPostcodeLookup
+            label="Postcode"
+            hint="Start typing your postcode to search for addresses"
+            required
+            value={childcarePostcode}
+            onChange={(postcode) => setValue("childcareAddress.postcode", postcode)}
+            onAddressSelect={handleChildcareAddressSelect}
+          />
+
+          {showChildcareAddressFields && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="md:col-span-2">
+                <RKInput
+                  label="Address line 1"
+                  required
+                  {...register("childcareAddress.line1")}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <RKInput label="Address line 2" {...register("childcareAddress.line2")} />
+              </div>
+              <RKInput label="Town or city" required {...register("childcareAddress.town")} />
+              <RKInput label="Postcode" required widthClass="10" {...register("childcareAddress.postcode")} />
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -179,11 +184,13 @@ export const Section3Premises = ({ form }: Props) => {
               </div>
               <RKTextarea
                 label="Full address"
+                required
                 {...register(`additionalPremises.${index}.address`)}
                 rows={3}
               />
               <RKTextarea
                 label="Reason for using this premises"
+                required
                 {...register(`additionalPremises.${index}.reason`)}
                 rows={2}
               />
