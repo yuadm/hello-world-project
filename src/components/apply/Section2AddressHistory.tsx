@@ -1,8 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { ChildminderApplication } from "@/types/childminder";
 import { RKInput, RKRadio, RKTextarea, RKSectionTitle, RKInfoBox, RKPostcodeLookup } from "./rk";
-import { useState, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { 
   calculateAddressHistoryCoverage, 
   formatDateRange, 
@@ -15,14 +15,38 @@ interface Props {
 
 export const Section2AddressHistory = ({ form }: Props) => {
   const { register, watch, setValue } = form;
-  const [showManualAddress, setShowManualAddress] = useState(false);
-  const [previousAddressManual, setPreviousAddressManual] = useState<Record<number, boolean>>({});
   
   const addressHistory = watch("addressHistory") || [];
   const livedOutsideUK = watch("livedOutsideUK");
   const militaryBase = watch("militaryBase");
   const homeMoveIn = watch("homeMoveIn");
   const homePostcode = watch("homePostcode") || "";
+  const homeAddress = watch("homeAddress");
+
+  // Initialize visibility states based on existing form data
+  const [showManualAddress, setShowManualAddress] = useState(false);
+  const [previousAddressManual, setPreviousAddressManual] = useState<Record<number, boolean>>({});
+
+  // Initialize states when component mounts or form data changes
+  useEffect(() => {
+    // Show current address fields if data exists
+    if (homeAddress?.line1 || homeAddress?.town) {
+      setShowManualAddress(true);
+    }
+  }, [homeAddress?.line1, homeAddress?.town]);
+
+  useEffect(() => {
+    // Show previous address fields if data exists
+    const newManual: Record<number, boolean> = {};
+    addressHistory.forEach((entry, index) => {
+      if (entry.address?.line1 || entry.address?.town) {
+        newManual[index] = true;
+      }
+    });
+    if (Object.keys(newManual).length > 0) {
+      setPreviousAddressManual(prev => ({ ...prev, ...newManual }));
+    }
+  }, [addressHistory]);
 
   // Create a serialized key of all dates to trigger recalculation when nested values change
   const addressHistoryDatesKey = useMemo(() => {
