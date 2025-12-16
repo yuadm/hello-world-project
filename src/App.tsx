@@ -16,6 +16,7 @@ import Parents from "./pages/Parents";
 import Childminders from "./pages/Childminders";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
+import FindChildminder from "./pages/FindChildminder";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminApplications from "./pages/admin/Applications";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/childminders" element={<Childminders />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/find-childminder" element={<FindChildminder />} />
           <Route path="/join" element={<Join />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/household-form" element={<HouseholdForm />} />

@@ -65,7 +65,7 @@ const Navigation = () => {
                 Admin
               </Button>
             </NavLink>
-            <NavLink to="/parents">
+            <NavLink to="/find-childminder">
               <Button variant="default">Find Childcare</Button>
             </NavLink>
           </div>
@@ -132,7 +132,7 @@ const Navigation = () => {
                   Admin Login
                 </Button>
               </NavLink>
-              <NavLink to="/parents" className="block" onClick={() => setMobileMenuOpen(false)}>
+              <NavLink to="/find-childminder" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="default" className="w-full">Find Childcare</Button>
               </NavLink>
             </div>
