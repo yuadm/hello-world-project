@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-    const senderEmail = Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@readykids.co.uk";
+    const senderEmail = "yuadm3@gmail.com";
 
     if (!brevoApiKey) {
       console.error("BREVO_API_KEY not configured");
