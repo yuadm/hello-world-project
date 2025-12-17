@@ -127,7 +127,7 @@ export const CancellationWorkflow = ({
               <Label className="text-sm font-semibold text-slate-700">Select Provider *</Label>
               <div className="mt-2 flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-slate-900">{provider.name} ({provider.id}) — 14 Oak Lane, Bristol BS1 4TH</p>
+                  <p className="font-bold text-slate-900">{provider.name} ({provider.id}) — {[provider.address?.addressLine1, provider.address?.addressLine2, provider.address?.townCity, provider.address?.postcode].filter(Boolean).join(', ')}</p>
                 </div>
                 <span className="px-3 py-1 bg-slate-200 rounded-full text-xs font-medium">{provider.type}</span>
               </div>
@@ -358,9 +358,10 @@ export const CancellationWorkflow = ({
 
               <div className="mb-6">
                 <p className="font-bold text-slate-900">{provider.name}</p>
-                <p className="text-sm text-slate-600">14 Oak Lane</p>
-                <p className="text-sm text-slate-600">Bristol</p>
-                <p className="text-sm text-slate-600">BS1 4TH</p>
+                {provider.address?.addressLine1 && <p className="text-sm text-slate-600">{provider.address.addressLine1}</p>}
+                {provider.address?.addressLine2 && <p className="text-sm text-slate-600">{provider.address.addressLine2}</p>}
+                {provider.address?.townCity && <p className="text-sm text-slate-600">{provider.address.townCity}</p>}
+                {provider.address?.postcode && <p className="text-sm text-slate-600">{provider.address.postcode}</p>}
               </div>
 
               <div className="space-y-4 text-sm text-slate-700">
