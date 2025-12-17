@@ -70,10 +70,10 @@ export const CANCELLATION_GROUNDS = [
 ];
 
 export const NOTIFICATION_AGENCIES = [
-  { id: 'LA', name: 'Local Authority', detail: 'Safeguarding Lead', email: 'lado@localauthority.gov.uk', required: true },
-  { id: 'HMRC', name: 'HMRC', detail: 'Tax-Free Childcare Team', email: 'enforcement@hmrc.gov.uk', required: true },
-  { id: 'DWP', name: 'Universal Credit (DWP)', detail: 'Verification Team', email: 'childcare.verification@dwp.gov.uk', required: true },
-  { id: 'Ofsted', name: 'Ofsted', detail: 'Information Sharing', email: 'enquiries@ofsted.gov.uk', required: true },
+  { id: 'LA', name: 'Local Authority', detail: 'Safeguarding Lead', email: 'daryelcare72@gmail.com', required: true },
+  { id: 'HMRC', name: 'HMRC', detail: 'Tax-Free Childcare Team', email: 'daryelcare72@gmail.com', required: true },
+  { id: 'DWP', name: 'Universal Credit (DWP)', detail: 'Verification Team', email: 'daryelcare72@gmail.com', required: true },
+  { id: 'Ofsted', name: 'Ofsted', detail: 'Information Sharing', email: 'daryelcare72@gmail.com', required: true },
 ];
 
 export const getStatusColor = (status: string): string => {
