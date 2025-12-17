@@ -1,9 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+const brevoSenderEmail = Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@readykids.co.uk";
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface EnforcementNotificationRequest {
@@ -38,9 +45,6 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-    const senderEmail = Deno.env.get("BREVO_SENDER_EMAIL") || "noreply@readykids.co.uk";
-
     if (!brevoApiKey) {
       console.error("BREVO_API_KEY not configured");
       throw new Error("Email service not configured");
@@ -192,7 +196,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         sender: {
           name: "Ready Kids Enforcement Team",
-          email: senderEmail,
+          email: brevoSenderEmail,
         },
         to: [{ email: agencyEmail, name: agencyName }],
         subject: `URGENT: Notification of ${actionType} - ${provider.name} - Ref: ${caseReference || caseId}`,
@@ -210,8 +214,6 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Email sent successfully:", emailResult);
 
     // Save notification record to database
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { error: dbError } = await supabase
