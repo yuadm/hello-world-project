@@ -70,7 +70,7 @@ export const CANCELLATION_GROUNDS = [
 ];
 
 export const NOTIFICATION_AGENCIES = [
-  { id: 'LA', name: 'Local Authority (LADO)', detail: 'Safeguarding Lead', email: 'lado@localauthority.gov.uk', required: true },
+  { id: 'LA', name: 'Local Authority', detail: 'Safeguarding Lead', email: 'lado@localauthority.gov.uk', required: true },
   { id: 'HMRC', name: 'HMRC', detail: 'Tax-Free Childcare Team', email: 'enforcement@hmrc.gov.uk', required: true },
   { id: 'DWP', name: 'Universal Credit (DWP)', detail: 'Verification Team', email: 'childcare.verification@dwp.gov.uk', required: true },
   { id: 'Ofsted', name: 'Ofsted', detail: 'Information Sharing', email: 'enquiries@ofsted.gov.uk', required: true },
