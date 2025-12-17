@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   Building, 
   Mail, 
@@ -8,7 +9,10 @@ import {
   Send, 
   AlertTriangle, 
   ExternalLink,
-  X
+  X,
+  Plus,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import { NOTIFICATION_AGENCIES } from "@/lib/enforcementUtils";
 import { cn } from "@/lib/utils";
@@ -40,6 +44,7 @@ interface NotificationItem {
   status: 'pending' | 'sent' | 'error';
   sentAt?: Date;
   error?: string;
+  isCustom?: boolean;
 }
 
 export const NotificationWorkflow = ({ 
@@ -63,8 +68,76 @@ export const NotificationWorkflow = ({
     }))
   );
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editEmail, setEditEmail] = useState('');
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customEmail, setCustomEmail] = useState('');
 
   const allSent = notifications.every(n => n.status === 'sent');
+
+  const handleEditEmail = (notificationId: string, currentEmail: string) => {
+    setEditingId(notificationId);
+    setEditEmail(currentEmail);
+  };
+
+  const handleSaveEmail = (notificationId: string) => {
+    if (editEmail && editEmail.includes('@')) {
+      setNotifications(prev => prev.map(n =>
+        n.id === notificationId ? { ...n, email: editEmail } : n
+      ));
+      setEditingId(null);
+      setEditEmail('');
+      toast({
+        title: "Email Updated",
+        description: "Recipient email address has been updated.",
+      });
+    } else {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAddCustomRecipient = () => {
+    if (!customName.trim() || !customEmail.includes('@')) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a valid name and email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newNotification: NotificationItem = {
+      id: `custom-${Date.now()}`,
+      name: customName.trim(),
+      detail: 'Custom recipient',
+      email: customEmail.trim(),
+      status: 'pending',
+      isCustom: true
+    };
+
+    setNotifications(prev => [...prev, newNotification]);
+    setCustomName('');
+    setCustomEmail('');
+    setShowAddCustom(false);
+    
+    toast({
+      title: "Recipient Added",
+      description: `${customName} has been added to the notification list.`,
+    });
+  };
+
+  const handleRemoveCustom = (notificationId: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    toast({
+      title: "Recipient Removed",
+      description: "Custom recipient has been removed.",
+    });
+  };
 
   const handleSend = async (notificationId: string) => {
     setSendingId(notificationId);
@@ -190,7 +263,7 @@ export const NotificationWorkflow = ({
     
     toast({
       title: "Notifications Complete",
-      description: `${sentCount} of ${NOTIFICATION_AGENCIES.length} agencies have been notified.`,
+      description: `${sentCount} of ${notifications.length} recipients have been notified.`,
     });
   };
 
@@ -232,9 +305,9 @@ export const NotificationWorkflow = ({
                     : 'bg-white border-slate-200'
                 )}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
                     n.status === 'sent' ? 'bg-emerald-100' : n.status === 'error' ? 'bg-red-100' : 'bg-slate-100'
                   )}>
                     {n.status === 'sent' 
@@ -244,10 +317,58 @@ export const NotificationWorkflow = ({
                       : <Mail className="w-5 h-5 text-slate-500" />
                     }
                   </div>
-                  <div>
-                    <p className="font-bold text-slate-900">{n.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-slate-900">{n.name}</p>
+                      {n.isCustom && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Custom</span>
+                      )}
+                    </div>
                     <p className="text-sm text-slate-500">{n.detail}</p>
-                    <p className="text-xs text-slate-400">{n.email}</p>
+                    
+                    {editingId === n.id ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input
+                          type="email"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          className="h-7 text-xs"
+                          placeholder="Enter email address"
+                          autoFocus
+                        />
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => handleSaveEmail(n.id)}>
+                          <Check className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingId(null)}>
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-slate-400 truncate">{n.email}</p>
+                        {n.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 px-1 text-slate-400 hover:text-slate-600"
+                            onClick={() => handleEditEmail(n.id, n.email)}
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                        )}
+                        {n.isCustom && n.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 px-1 text-red-400 hover:text-red-600"
+                            onClick={() => handleRemoveCustom(n.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    
                     {n.status === 'sent' && n.sentAt && (
                       <p className="text-xs text-emerald-600 mt-1">
                         Sent: {n.sentAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -267,7 +388,7 @@ export const NotificationWorkflow = ({
                   variant={n.status === 'sent' ? 'ghost' : n.status === 'error' ? 'destructive' : 'outline'}
                   size="sm"
                   className={cn(
-                    "gap-2",
+                    "gap-2 shrink-0 ml-2",
                     n.status === 'sent' && 'text-emerald-600'
                   )}
                 >
@@ -283,6 +404,44 @@ export const NotificationWorkflow = ({
                 </Button>
               </div>
             ))}
+
+            {/* Add Custom Recipient */}
+            {showAddCustom ? (
+              <div className="p-4 rounded-xl border border-dashed border-blue-300 bg-blue-50 space-y-3">
+                <p className="text-sm font-medium text-blue-800">Add Custom Recipient</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Recipient name"
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    className="bg-white"
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Email address"
+                    value={customEmail}
+                    onChange={(e) => setCustomEmail(e.target.value)}
+                    className="bg-white"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleAddCustomRecipient} className="gap-1">
+                    <Plus className="w-3 h-3" /> Add Recipient
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowAddCustom(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full border-dashed gap-2"
+                onClick={() => setShowAddCustom(true)}
+              >
+                <Plus className="w-4 h-4" /> Add Custom Recipient
+              </Button>
+            )}
           </div>
 
           {/* Action Buttons */}
