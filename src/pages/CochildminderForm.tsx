@@ -380,23 +380,14 @@ export default function CochildminderForm() {
   };
 
   const handleSectionClick = (sectionId: number) => {
-    if (sectionId < currentSection) {
-      setValidationErrors({});
-      setCurrentSection(sectionId);
-    } else if (sectionId === currentSection + 1) {
-      if (validateSection(currentSection)) {
-        setValidationErrors({});
-        setCurrentSection(sectionId);
-      }
-    }
+    setValidationErrors({});
+    setCurrentSection(sectionId);
   };
 
   const handleNext = () => {
-    if (validateSection(currentSection)) {
-      setValidationErrors({});
-      setCurrentSection(currentSection + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setValidationErrors({});
+    setCurrentSection(currentSection + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBack = () => {
